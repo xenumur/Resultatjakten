@@ -55,7 +55,7 @@ export async function lockAllGroupStages(gameId: string, groupId: string, lock: 
   
   if (lock) {
     // Lägg till alla gruppnamn som inte redan finns
-    groupNames.forEach(name => {
+    groupNames.forEach((name: string) => {
       if (!currentLocked.includes(name)) currentLocked.push(name)
     })
   } else {

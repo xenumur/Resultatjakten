@@ -42,7 +42,7 @@ export default async function PredictionsPage({
   
   // Hämta alla unika lagnamn från turneringen för att kunna välja i slutspelet
   const allTeams = Array.from(new Set((matches || []).flatMap(m => [m.home_team, m.away_team])))
-    .filter(name => name && !name.includes('Winner') && !name.includes('Loser') && !name.includes('Match'))
+    .filter((name: string) => name && !name.includes('Winner') && !name.includes('Loser') && !name.includes('Match'))
     .sort()
 
   // Gruppera matcherna
