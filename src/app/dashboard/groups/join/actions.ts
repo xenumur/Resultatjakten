@@ -21,7 +21,8 @@ export async function joinGroup(formData: FormData) {
     .single()
 
   if (groupError || !group) {
-    return { error: 'Ingen grupp hittades med den koden.' }
+    // I en riktig app skulle vi använda useFormState för att visa detta
+    return;
   }
 
   const { error: memberError } = await supabase
@@ -38,7 +39,7 @@ export async function joinGroup(formData: FormData) {
       revalidatePath('/dashboard', 'layout')
       redirect(`/dashboard/groups/${group.id}`)
     }
-    return { error: 'Kunde inte gå med i gruppen. Försök igen.' }
+    return;
   }
 
   revalidatePath('/dashboard', 'layout')

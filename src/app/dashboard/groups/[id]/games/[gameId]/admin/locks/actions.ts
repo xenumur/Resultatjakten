@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function toggleStageLock(gameId: string, groupId: string, stage: string, isLocked: boolean, currentLockedStages: string[]) {
+export async function toggleStageLock(gameId: string, groupId: string, stage: string, isLocked: boolean, currentLockedStages: string[], _formData: FormData) {
   const supabase = await createClient()
 
   let newLockedStages = [...(currentLockedStages || [])];
@@ -21,15 +21,13 @@ export async function toggleStageLock(gameId: string, groupId: string, stage: st
 
   if (error) {
     console.error("Fel vid låsning av stage:", error)
-    return { error: error.message }
   }
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/predictions`)
-  return { success: true }
 }
 
-export async function lockAllGroupStages(gameId: string, groupId: string, lock: boolean) {
+export async function lockAllGroupStages(gameId: string, groupId: string, lock: boolean, _formData: FormData) {
   const supabase = await createClient()
 
   // 1. Hämta alla unika group_names för detta spel
@@ -39,7 +37,10 @@ export async function lockAllGroupStages(gameId: string, groupId: string, lock: 
     .eq('game_id', gameId)
     .not('group_name', 'is', null)
 
-  if (!matches) return { error: 'Inga matcher hittades.' }
+  if (!matches) {
+    console.error('Inga matcher hittades.')
+    return
+  }
   
   const groupNames = Array.from(new Set(matches.map(m => m.group_name as string)))
 
@@ -67,9 +68,10 @@ export async function lockAllGroupStages(gameId: string, groupId: string, lock: 
     .update({ locked_stages: currentLocked })
     .eq('id', gameId)
 
-  if (error) return { error: error.message }
+  if (error) {
+    console.error(error.message)
+  }
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/predictions`)
-  return { success: true }
 }

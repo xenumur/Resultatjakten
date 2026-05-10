@@ -29,7 +29,7 @@ export async function updateMatchResult(
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
 }
 
-export async function calculateScores(groupId: string, gameId: string) {
+export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
   const supabase = await createClient()
 
   const { data: matches } = await supabase
@@ -37,7 +37,10 @@ export async function calculateScores(groupId: string, gameId: string) {
     .select('id, final_home_score, final_away_score, status, home_team, away_team')
     .eq('game_id', gameId)
 
-  if (!matches || matches.length === 0) return { error: 'Inga matcher hittades.' }
+  if (!matches || matches.length === 0) {
+    console.error('Inga matcher hittades.')
+    return
+  }
 
   const matchIds = matches.map(m => m.id)
   const { data: predictions } = await supabase
@@ -45,7 +48,10 @@ export async function calculateScores(groupId: string, gameId: string) {
     .select('*')
     .in('match_id', matchIds)
 
-  if (!predictions) return { error: 'Inga tips hittades.' }
+  if (!predictions) {
+    console.error('Inga tips hittades.')
+    return
+  }
 
   for (const match of matches) {
     const matchPredictions = predictions.filter(p => p.match_id === match.id)
@@ -82,12 +88,11 @@ export async function calculateScores(groupId: string, gameId: string) {
   }
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`)
-  return { success: true }
 }
 
 import { getProvider } from '@/lib/providers'
 
-export async function syncMatchesWithProvider(groupId: string, gameId: string) {
+export async function syncMatchesWithProvider(groupId: string, gameId: string, _formData: FormData) {
   const supabase = await createClient()
 
   const { data: game } = await supabase
@@ -96,14 +101,20 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string) {
     .eq('id', gameId)
     .single()
 
-  if (!game) return { error: 'Spelet hittades inte.' }
+  if (!game) {
+    console.error('Spelet hittades inte.')
+    return
+  }
 
   const { data: dbMatches } = await supabase
     .from('matches')
     .select('*')
     .eq('game_id', gameId)
 
-  if (!dbMatches) return { error: 'Kunde inte hämta befintliga matcher.' }
+  if (!dbMatches) {
+    console.error('Kunde inte hämta befintliga matcher.')
+    return
+  }
   
   const sourceProvider = dbMatches[0]?.source_provider || 'open_football'
 
@@ -159,14 +170,12 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string) {
     }
     
     revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
-    return { success: true }
   } catch (err: any) {
     console.error('Sync error:', err)
-    return { error: 'Kunde inte synkronisera med API: ' + err.message }
   }
 }
 
-export async function acceptApiResult(groupId: string, gameId: string, matchId: string) {
+export async function acceptApiResult(groupId: string, gameId: string, matchId: string, _formData: FormData) {
   const supabase = await createClient()
 
   const { data: match } = await supabase
@@ -193,7 +202,7 @@ export async function acceptApiResult(groupId: string, gameId: string, matchId: 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
 }
 
-export async function deleteMatch(groupId: string, gameId: string, matchId: string) {
+export async function deleteMatch(groupId: string, gameId: string, matchId: string, _formData: FormData) {
   const supabase = await createClient()
 
   await supabase

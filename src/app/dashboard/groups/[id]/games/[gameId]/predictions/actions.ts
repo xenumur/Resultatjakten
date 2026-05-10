@@ -69,7 +69,8 @@ export async function saveAllPredictions(
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Du måste vara inloggad.' }
+    console.error('Du måste vara inloggad.')
+    return
   }
 
   // Hämta spelet för att veta vilka stages som är manuellt låsta
@@ -87,7 +88,10 @@ export async function saveAllPredictions(
     .select('id, kickoff_time, status, stage, group_name')
     .eq('game_id', gameId)
 
-  if (!matches) return { error: 'Inga matcher hittades.' }
+  if (!matches) {
+    console.error('Inga matcher hittades.')
+    return
+  }
   const matchMap = new Map(matches.map(m => [m.id, m]))
 
   const predictionsToUpsert = []
@@ -148,10 +152,8 @@ export async function saveAllPredictions(
 
     if (error) {
       console.error(error)
-      return { error: 'Ett fel uppstod när tipsen skulle sparas.' }
     }
   }
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/predictions`)
-  return { success: true }
 }

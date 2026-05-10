@@ -1,8 +1,15 @@
 import { TournamentProvider, MatchData } from './TournamentProvider';
 
 export class ApiFootballProvider implements TournamentProvider {
-  id = 'api_football';
-  name = 'API-Football (Live)';
+  getProviderId(): string {
+    return 'api_football';
+  }
+
+  async getTournamentName(tournamentId: string): Promise<string> {
+    if (tournamentId === 'wc-2026') return 'FIFA World Cup 2026';
+    if (tournamentId === 'wc-2022') return 'FIFA World Cup 2022';
+    return tournamentId;
+  }
 
   private apiKey: string;
   private apiHost = 'v3.football.api-sports.io';
@@ -54,7 +61,7 @@ export class ApiFootballProvider implements TournamentProvider {
     }
 
     return data.response.map((item: any) => {
-      let status = 'upcoming';
+      let status: 'upcoming' | 'live' | 'finished' = 'upcoming';
       const statusCode = item.fixture.status.short;
       
       if (['1H', '2H', 'HT', 'ET', 'BT', 'P', 'SUSP', 'INT'].includes(statusCode)) {
@@ -64,7 +71,7 @@ export class ApiFootballProvider implements TournamentProvider {
       }
 
       return {
-        external_id: item.fixture.id.toString(),
+        external_match_id: item.fixture.id.toString(),
         home_team: item.teams.home.name,
         away_team: item.teams.away.name,
         kickoff_time: item.fixture.date,
@@ -73,7 +80,7 @@ export class ApiFootballProvider implements TournamentProvider {
         status: status,
         final_home_score: item.goals.home,
         final_away_score: item.goals.away,
-      } as MatchData;
+      };
     });
   }
 }

@@ -1,8 +1,15 @@
 import { TournamentProvider, MatchData } from './TournamentProvider';
 
 export class OpenFootballProvider implements TournamentProvider {
-  id = 'open_football';
-  name = 'OpenFootball (GitHub JSON)';
+  getProviderId(): string {
+    return 'open_football';
+  }
+
+  async getTournamentName(tournamentId: string): Promise<string> {
+    if (tournamentId === 'wc-2026') return 'FIFA World Cup 2026';
+    if (tournamentId === 'wc-2022') return 'FIFA World Cup 2022';
+    return tournamentId;
+  }
 
   async fetchMatches(tournamentId: string): Promise<MatchData[]> {
     // Vi hämtar datan direkt från master-branchen
@@ -65,21 +72,21 @@ export class OpenFootballProvider implements TournamentProvider {
       
       let status = 'upcoming';
       if (homeScore !== null && awayScore !== null) {
-        status = 'finished';
+        status = 'finished' as const;
       }
 
       return {
-        external_id: `of-${tournamentId}-${index}`,
+        external_match_id: `of-${tournamentId}-${index}`,
         home_team: item.team1,
         away_team: item.team2,
         kickoff_time: isoDate,
         stage: item.round,
         group_name: item.group || null,
         venue: item.ground || '',
-        status: status,
+        status: status as 'upcoming' | 'live' | 'finished',
         final_home_score: homeScore,
         final_away_score: awayScore,
-      } as MatchData;
+      };
     });
   }
 }
