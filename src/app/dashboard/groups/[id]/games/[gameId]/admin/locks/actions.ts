@@ -59,7 +59,7 @@ export async function lockAllGroupStages(gameId: string, groupId: string, lock: 
     })
   } else {
     // Ta bort alla gruppnamn
-    currentLocked = currentLocked.filter(name => !groupNames.includes(name))
+    currentLocked = currentLocked.filter((name: string) => !groupNames.includes(name))
   }
 
   const { error } = await supabase
