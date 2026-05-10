@@ -30,10 +30,14 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string
   const name = formData.get('name') as string
 
+  const { headers } = await import('next/headers')
+  const origin = (await headers()).get('origin')
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: `${origin}/auth/callback`,
       data: {
         display_name: name || email.split('@')[0]
       }
