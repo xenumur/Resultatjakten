@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Scoriq | Tips för Fotboll",
+  title: "Skorio | Tips för Fotboll",
   description: "Tippa fotbollsturneringar med vänner. Skapa privata grupper och klättra på leaderboarden.",
   manifest: "/manifest.json",
   icons: {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Scoriq"
+    title: "Skorio"
   }
 };
 
