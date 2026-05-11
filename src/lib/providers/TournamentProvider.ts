@@ -10,6 +10,7 @@ export interface MatchData {
   final_home_score?: number;
   final_away_score?: number;
   api_match_num?: number;
+  broadcaster?: string;
 }
 
 export interface TournamentProvider {

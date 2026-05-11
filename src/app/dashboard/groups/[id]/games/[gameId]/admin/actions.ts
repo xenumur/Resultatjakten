@@ -250,7 +250,8 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
             provider_status: liveMatch.status,
             provider_home_team: liveMatch.home_team,
             provider_away_team: liveMatch.away_team,
-            api_match_num: liveMatch.api_match_num // Uppdatera num om det saknades
+            api_match_num: liveMatch.api_match_num, // Uppdatera num om det saknades
+            broadcaster: liveMatch.broadcaster // Uppdatera broadcaster
           })
           .eq('id', existingMatch.id)
       } else {
@@ -274,7 +275,8 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
             provider_status: liveMatch.status,
             provider_home_team: liveMatch.home_team,
             provider_away_team: liveMatch.away_team,
-            api_match_num: liveMatch.api_match_num
+            api_match_num: liveMatch.api_match_num,
+            broadcaster: liveMatch.broadcaster
           })
       }
     }

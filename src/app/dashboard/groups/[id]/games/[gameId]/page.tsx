@@ -32,7 +32,8 @@ export default async function GameDetailPage({
         final_away_score,
         stage,
         group_name,
-        venue
+        venue,
+        broadcaster
       )
     `)
     .eq('id', gameId)
@@ -117,6 +118,11 @@ export default async function GameDetailPage({
                     <div className="flex flex-col items-center md:items-start w-full md:w-auto">
                       <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-2">
                         {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'yyyy-MM-dd HH:mm')} {match.venue && `• ${match.venue}`}
+                        {match.broadcaster && (
+                          <span className="ml-2 px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded text-[10px] font-black uppercase tracking-tighter border border-zinc-200 dark:border-zinc-700">
+                            {match.broadcaster}
+                          </span>
+                        )}
                       </p>
                       <div className="flex items-center justify-center md:justify-start gap-3 md:gap-4 text-base md:text-lg font-bold">
                         <span className="w-28 md:w-40 text-right flex items-center justify-end gap-2">
