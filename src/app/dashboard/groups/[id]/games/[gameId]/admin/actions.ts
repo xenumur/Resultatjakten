@@ -4,6 +4,51 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { calculatePoints, DEFAULT_RULES } from '@/lib/scoring/engine'
 
+export async function bulkUpdateMatchResults(
+  groupId: string,
+  gameId: string,
+  formData: FormData
+) {
+  const supabase = await createClient()
+  
+  // Hitta alla match-ids i formdatan
+  const matchIds = new Set<string>()
+  for (const key of Array.from(formData.keys())) {
+    const matchId = key.split('_')[0]
+    if (matchId && matchId.length > 20) { // Enkel koll för UUID-liknande strängar
+      matchIds.add(matchId)
+    }
+  }
+
+  try {
+    for (const matchId of Array.from(matchIds)) {
+      const homeScoreStr = formData.get(`${matchId}_homeScore`) as string
+      const awayScoreStr = formData.get(`${matchId}_awayScore`) as string
+      const status = formData.get(`${matchId}_status`) as string
+
+      if (homeScoreStr === null || awayScoreStr === null) continue
+
+      const homeScore = parseInt(homeScoreStr, 10)
+      const awayScore = parseInt(awayScoreStr, 10)
+
+      await supabase
+        .from('matches')
+        .update({
+          final_home_score: isNaN(homeScore) ? null : homeScore,
+          final_away_score: isNaN(awayScore) ? null : awayScore,
+          status: status,
+          is_manual_override: true
+        })
+        .eq('id', matchId)
+    }
+  } catch (err: any) {
+    return { success: false, error: 'Kunde inte spara: ' + err.message }
+  }
+
+  revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+  return { success: true, message: 'Alla matchresultat har sparats!' }
+}
+
 export async function updateMatchResult(
   groupId: string,
   gameId: string,

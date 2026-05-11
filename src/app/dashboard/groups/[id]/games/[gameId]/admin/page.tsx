@@ -7,6 +7,7 @@ import { updateMatchResult, calculateScores, syncMatchesWithProvider, acceptApiR
 import { AlertTriangle, RefreshCw, Check, ArrowLeft, Lock, ArrowRight } from 'lucide-react'
 import { DeleteMatchButton } from './DeleteMatchButton'
 import { AdminActionButton } from './AdminActionButtons'
+import { BulkMatchSaveButton } from './BulkMatchSaveButton'
 import { MatchResultForm } from './MatchResultForm'
 
 export default async function GameAdminPage({
@@ -53,7 +54,8 @@ export default async function GameAdminPage({
           <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white">Admin: Matchresultat</h1>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <BulkMatchSaveButton groupId={groupId} gameId={gameId} />
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`} className="flex items-center justify-center gap-2 px-5 py-2 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white rounded-lg font-bold transition-all shadow-sm active:scale-95">
             <Lock className="w-4 h-4" />
             Låsningar
@@ -79,13 +81,11 @@ export default async function GameAdminPage({
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Datum</th>
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Resultat</th>
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Status</th>
-              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400 text-right">Åtgärd</th>
+              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400 text-right w-10"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {matches?.map(match => {
-              const bindedUpdate = updateMatchResult.bind(null, groupId, gameId, match.id)
-              
               const hasScoreConflict = match.provider_home_score !== null && (
                 match.final_home_score !== match.provider_home_score ||
                 match.final_away_score !== match.provider_away_score
@@ -113,7 +113,6 @@ export default async function GameAdminPage({
                     </td>
                     
                     <MatchResultForm 
-                      action={bindedUpdate}
                       matchId={match.id}
                       homeScore={match.final_home_score}
                       awayScore={match.final_away_score}
