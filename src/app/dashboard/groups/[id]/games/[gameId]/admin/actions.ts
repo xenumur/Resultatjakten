@@ -183,7 +183,35 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
 
   try {
     const provider = getProvider(sourceProvider)
-    const liveMatches = await provider.fetchMatches(game.tournament_type)
+    const allLiveMatches = await provider.fetchMatches(game.tournament_type)
+
+    // Filter out knockout matches with placeholder names (e.g., "Winner Group A", "W49", "TBD")
+    // to avoid cluttering the interface with undecided matches.
+    const isPlaceholder = (name: string) => {
+      if (!name) return true
+      const n = name.toLowerCase()
+      return n.includes('winner') || 
+             n.includes('loser') || 
+             n.includes('tbd') || 
+             /^w\d+$/.test(n) || 
+             /^l\d+$/.test(n) ||
+             n.includes('match') // e.g. "Match 49"
+    }
+
+    const liveMatches = allLiveMatches.filter(m => {
+      const isKnockout = m.stage && (
+        m.stage.toLowerCase().includes('round') || 
+        m.stage.toLowerCase().includes('final') || 
+        m.stage.toLowerCase().includes('quarter') || 
+        m.stage.toLowerCase().includes('semi') ||
+        m.stage.toLowerCase().includes('play-off')
+      )
+
+      if (isKnockout && (isPlaceholder(m.home_team) || isPlaceholder(m.away_team))) {
+        return false
+      }
+      return true
+    })
 
     for (const liveMatch of liveMatches) {
       const existingMatch = dbMatches.find(m =>
