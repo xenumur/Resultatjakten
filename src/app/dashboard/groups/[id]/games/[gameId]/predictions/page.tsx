@@ -81,10 +81,10 @@ export default async function PredictionsPage({
                 const isLocked = isManuallyLocked || isTimeLocked
 
                 return (
-                  <div key={match.id} className={`p-6 transition-all ${isLocked ? 'bg-zinc-50/50 dark:bg-zinc-900/30' : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40'}`}>
-                    <div className="flex justify-between items-center mb-6">
-                      <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full">
-                        {format(new Date(match.kickoff_time), 'd MMM HH:mm')} • {match.venue || match.stage}
+                  <div key={match.id} className={`p-4 md:p-6 transition-all ${isLocked ? 'bg-zinc-50/50 dark:bg-zinc-900/30' : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40'}`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 md:px-3 py-1 rounded-full">
+                        {format(new Date(match.kickoff_time), 'd MMM HH:mm')} {match.venue ? `• ${match.venue}` : ''}
                       </span>
                       {match.group_name === null && (
                         <span className="text-[10px] font-black uppercase tracking-tighter text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded">
@@ -104,23 +104,22 @@ export default async function PredictionsPage({
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4 md:gap-6">
                       <div className="flex items-center justify-between gap-4">
-                        <div className="flex flex-col items-center flex-1">
+                        <div className="flex flex-col items-center flex-1 min-w-0">
                           {match.group_name === null ? (
                             <select 
                               name={`homeTeam_${match.id}`}
                               disabled={isLocked}
                               defaultValue={prediction?.predicted_home_team || match.home_team}
-                              className="w-full mb-3 text-sm font-bold p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-full mb-2 text-xs md:text-sm font-bold p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 truncate"
                             >
                               <option value="">Välj lag...</option>
                               {allTeams.map(team => <option key={team} value={team}>{team}</option>)}
-                              {/* Lägg till nuvarande ifall det är Winner Match X */}
                               {!allTeams.includes(match.home_team) && <option value={match.home_team}>{match.home_team}</option>}
                             </select>
                           ) : (
-                            <span className="font-extrabold text-xl mb-4 text-center tracking-tight text-zinc-900 dark:text-white">{match.home_team}</span>
+                            <span className="font-extrabold text-sm md:text-xl mb-2 md:mb-4 text-center tracking-tight text-zinc-900 dark:text-white truncate w-full">{match.home_team}</span>
                           )}
                           <input 
                             type="number" 
@@ -128,26 +127,26 @@ export default async function PredictionsPage({
                             min="0"
                             disabled={isLocked}
                             defaultValue={prediction?.predicted_home_score ?? ''}
-                            className="w-20 h-24 text-center text-4xl font-black rounded-2xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm text-indigo-600 dark:text-indigo-400 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-60 disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 transition-all outline-none"
+                            className="w-14 h-16 md:w-20 md:h-24 text-center text-2xl md:text-4xl font-black rounded-xl md:rounded-2xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm text-indigo-600 dark:text-indigo-400 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-60 disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 transition-all outline-none"
                           />
                         </div>
                         
-                        <span className="text-zinc-300 dark:text-zinc-700 font-black text-2xl mt-10">-</span>
+                        <span className="text-zinc-300 dark:text-zinc-700 font-black text-xl md:text-2xl mt-8 md:mt-10">-</span>
                         
-                        <div className="flex flex-col items-center flex-1">
+                        <div className="flex flex-col items-center flex-1 min-w-0">
                           {match.group_name === null ? (
                             <select 
                               name={`awayTeam_${match.id}`}
                               disabled={isLocked}
                               defaultValue={prediction?.predicted_away_team || match.away_team}
-                              className="w-full mb-3 text-sm font-bold p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-full mb-2 text-xs md:text-sm font-bold p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 truncate"
                             >
                               <option value="">Välj lag...</option>
                               {allTeams.map(team => <option key={team} value={team}>{team}</option>)}
                               {!allTeams.includes(match.away_team) && <option value={match.away_team}>{match.away_team}</option>}
                             </select>
                           ) : (
-                            <span className="font-extrabold text-xl mb-4 text-center tracking-tight text-zinc-900 dark:text-white">{match.away_team}</span>
+                            <span className="font-extrabold text-sm md:text-xl mb-2 md:mb-4 text-center tracking-tight text-zinc-900 dark:text-white truncate w-full">{match.away_team}</span>
                           )}
                           <input 
                             type="number" 
@@ -155,7 +154,7 @@ export default async function PredictionsPage({
                             min="0"
                             disabled={isLocked}
                             defaultValue={prediction?.predicted_away_score ?? ''}
-                            className="w-20 h-24 text-center text-4xl font-black rounded-2xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm text-indigo-600 dark:text-indigo-400 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-60 disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 transition-all outline-none"
+                            className="w-14 h-16 md:w-20 md:h-24 text-center text-2xl md:text-4xl font-black rounded-xl md:rounded-2xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm text-indigo-600 dark:text-indigo-400 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-60 disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 transition-all outline-none"
                           />
                         </div>
                       </div>
@@ -183,9 +182,9 @@ export default async function PredictionsPage({
           </div>
         ))}
 
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 flex justify-center">
-          <button type="submit" className="w-full max-w-sm flex items-center justify-center gap-3 bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-xl shadow-indigo-600/20 hover:shadow-2xl hover:shadow-indigo-600/30">
-            <Save className="w-6 h-6" />
+        <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 flex justify-center pb-safe">
+          <button type="submit" className="w-full max-w-sm flex items-center justify-center gap-3 bg-indigo-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-base md:text-lg hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-xl shadow-indigo-600/20">
+            <Save className="w-5 h-5 md:w-6 md:h-6" />
             Spara Alla Tips
           </button>
         </div>
