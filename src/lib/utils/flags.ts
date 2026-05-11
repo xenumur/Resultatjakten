@@ -53,8 +53,10 @@ export const countryToFlag = (countryName: string): string => {
     'Georgia': '🇬🇪',
     'Georgien': '🇬🇪',
     'Bosnia and Herzegovina': '🇧🇦',
+    'Bosnia & Herzegovina': '🇧🇦',
     'Bosnia': '🇧🇦',
     'Bosnien och Hercegovina': '🇧🇦',
+    'Bosnien & Hercegovina': '🇧🇦',
     'Bosnien': '🇧🇦',
     'Iceland': '🇮🇸',
     'Island': '🇮🇸',
@@ -86,6 +88,8 @@ export const countryToFlag = (countryName: string): string => {
     'Jamaica': '🇯🇲',
     'Cuba': '🇨🇺',
     'Kuba': '🇨🇺',
+    'Curaçao': '🇨🇼',
+    'Curacao': '🇨🇼',
 
     // Afrika (fortsättning)
     'South Africa': '🇿🇦',
@@ -111,6 +115,8 @@ export const countryToFlag = (countryName: string): string => {
     'Mali': '🇲🇱',
     'Burkina Faso': '🇧🇫',
     'Angola': '🇦🇴',
+    'DR Congo': '🇨🇩',
+    'Kongo-Kinshasa': '🇨🇩',
 
     // Asien & Oceanien
     'Japan': '🇯🇵',
@@ -121,9 +127,17 @@ export const countryToFlag = (countryName: string): string => {
     'Saudi Arabia': '🇸🇦',
     'Saudiarabien': '🇸🇦',
     'Iran': '🇮🇷',
+    'Iraq': '🇮🇶',
+    'Irak': '🇮🇶',
+    'Jordan': '🇯🇴',
+    'Jordanien': '🇯🇴',
+    'Uzbekistan': '🇺🇿',
+    'Uzbekistan': '🇺🇿',
     'China': '🇨🇳',
     'Kina': '🇨🇳',
     'Qatar': '🇶🇦',
+    'New Zealand': '🇳🇿',
+    'Nya Zeeland': '🇳🇿',
   }
 
   // Försök hitta exakt matchning eller normaliserad matchning
