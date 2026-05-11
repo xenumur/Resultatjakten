@@ -23,19 +23,31 @@ export default async function GradePage({
     .eq('id', questionId)
     .single()
 
-  const { data: answers, error } = await supabase
+  // 1. Hämta alla svar
+  const { data: rawAnswers, error: answersError } = await supabase
     .from('bonus_answers')
-    .select(`
-      *,
-      profiles:user_id (
-        display_name
-      )
-    `)
+    .select('*')
     .eq('question_id', questionId)
     .order('submitted_at', { ascending: true })
 
-  if (error) {
-    console.error('Error fetching answers:', error)
+  if (answersError) {
+    console.error('Fel vid hämtning av svar:', answersError.message)
+  }
+
+  // 2. Hämta profiler för dessa svar (om det finns några)
+  let answers = rawAnswers || []
+  if (answers.length > 0) {
+    const userIds = answers.map(a => a.user_id)
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', userIds)
+
+    // 3. Slå ihop svar med profiler
+    answers = answers.map(a => ({
+      ...a,
+      profiles: profiles?.find(p => p.id === a.user_id) || { display_name: 'Okänd' }
+    }))
   }
 
   if (!question) redirect(`/dashboard/groups/${groupId}/bonus/admin`)
