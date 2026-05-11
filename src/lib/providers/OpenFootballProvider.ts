@@ -90,7 +90,7 @@ export class OpenFootballProvider implements TournamentProvider {
             .replace(/[^a-z0-9]/g, '');    // Ta bort specialtecken och mellanslag
         };
 
-        // Mappning från SVT (översatt till engelska för att matcha API-datan)
+        // Mappning av SVT-matcher (översatt till engelska för att matcha API-datan)
         const svtMatchesEn = [
           ['Canada', 'Bosnia and Herzegovina'],
           ['Brazil', 'Morocco'],
@@ -122,37 +122,19 @@ export class OpenFootballProvider implements TournamentProvider {
         const normH = normalize(h);
         const normA = normalize(a);
         
-        const isSvt = svtMatchesEn.some(([sh, sa]) => 
-          normalize(sh) === normH && normalize(sa) === normA
-        );
+        // Default för VM 2026 är TV4 (eftersom de visar majoriteten av matcherna)
+        broadcaster = 'TV4';
+
+        // Om matchen finns i SVT-listan, ändra till SVT
+        const isSvt = svtMatchesEn.some(([sh, sa]) => {
+          const nsh = normalize(sh);
+          const nsa = normalize(sa);
+          // Kolla båda håll utifall API:et vänder på hemma/borta
+          return (nsh === normH && nsa === normA) || (nsh === normA && nsa === normH);
+        });
 
         if (isSvt) {
           broadcaster = 'SVT';
-        } else {
-          // De flesta andra är TV4 enligt SVT-artikeln
-          const tv4MatchesEn = [
-             ['Mexico', 'South Africa'], ['South Korea', 'Czech Republic'], ['USA', 'Paraguay'], ['United States', 'Paraguay'],
-             ['Qatar', 'Switzerland'], ['Australia', 'Turkey'], ['Germany', 'Curacao'], ['Netherlands', 'Japan'], 
-             ['Ivory Coast', 'Ecurador'], ['Cote d\'Ivoire', 'Ecuador'], ['Saudi Arabia', 'Uruguay'], ['Iran', 'New Zealand'],
-             ['Iraq', 'Norway'], ['Argentina', 'Algeria'], ['Austria', 'Jordan'],
-             ['Portugal', 'DR Congo'], ['England', 'Croatia'], ['Ghana', 'Panama'], ['Uzbekistan', 'Colombia'],
-             ['Czech Republic', 'South Africa'], ['Switzerland', 'Bosnia and Herzegovina'], ['Canada', 'Qatar'], ['Mexico', 'South Korea'],
-             ['Brazil', 'Haiti'], ['Turkey', 'Paraguay'], ['Netherlands', 'Sweden'], ['Germany', 'Ivory Coast'], ['Germany', 'Cote d\'Ivoire'],
-             ['Ecuador', 'Curacao'], ['Spain', 'Saudi Arabia'], ['Belgium', 'Iran'], ['Uruguay', 'Cape Verde'], ['New Zealand', 'Egypt'],
-             ['Jordan', 'Algeria'], ['Panama', 'Croatia'], ['Colombia', 'DR Congo'], ['Switzerland', 'Canada'], ['Bosnia and Herzegovina', 'Qatar'],
-             ['Morocco', 'Haiti'], ['Scotland', 'Brazil'], ['Turkey', 'USA'], ['Turkey', 'United States'], ['Paraguay', 'Australia'],
-             ['Norway', 'France'], ['Senegal', 'Iraq'], ['Cape Verde', 'Saudi Arabia'], ['Uruguay', 'Spain'],
-             ['New Zealand', 'Belgium'], ['Egypt', 'Iran'], ['DR Congo', 'Uzbekistan'],
-             ['Colombia', 'Portugal'], ['Algeria', 'Austria'], ['Jordan', 'Argentina']
-          ];
-          
-          const isTv4 = tv4MatchesEn.some(([th, ta]) => 
-            normalize(th) === normH && normalize(ta) === normA
-          );
-
-          if (isTv4) {
-            broadcaster = 'TV4';
-          }
         }
       }
 
