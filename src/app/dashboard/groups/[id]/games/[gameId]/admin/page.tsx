@@ -2,13 +2,15 @@ import { Fragment } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 import { updateMatchResult, calculateScores, syncMatchesWithProvider, acceptApiResult, deleteMatch } from './actions'
 import { AlertTriangle, RefreshCw, Check, ArrowLeft, Lock, ArrowRight } from 'lucide-react'
 import { DeleteMatchButton } from './DeleteMatchButton'
 import { AdminActionButton } from './AdminActionButtons'
 import { BulkMatchSaveButton } from './BulkMatchSaveButton'
 import { MatchResultForm } from './MatchResultForm'
+
+const TIMEZONE = 'Europe/Stockholm'
 
 export default async function GameAdminPage({
   params,
@@ -109,7 +111,7 @@ export default async function GameAdminPage({
                       </div>
                     </td>
                     <td className="p-4 text-zinc-500 dark:text-zinc-400 text-sm">
-                      {format(new Date(match.kickoff_time), 'yyyy-MM-dd HH:mm')}
+                      {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'yyyy-MM-dd HH:mm')}
                     </td>
                     
                     <MatchResultForm 

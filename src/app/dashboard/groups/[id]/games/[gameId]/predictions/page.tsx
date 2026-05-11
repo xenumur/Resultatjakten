@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 import { saveAllPredictions } from './actions'
 import { ArrowLeft, Lock, Unlock, CheckCircle2, Save } from 'lucide-react'
 import { PredictionsForm } from './PredictionsForm'
 import { countryToFlag } from '@/lib/utils/flags'
+
+const TIMEZONE = 'Europe/Stockholm'
 
 export default async function PredictionsPage({
   params,
@@ -86,7 +88,7 @@ export default async function PredictionsPage({
                   <div key={match.id} className={`p-4 md:p-6 transition-all ${isLocked ? 'bg-zinc-50/50 dark:bg-zinc-900/30' : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40'}`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 md:px-3 py-1 rounded-full">
-                        {format(new Date(match.kickoff_time), 'd MMM HH:mm')} {match.venue ? `• ${match.venue}` : ''}
+                        {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')} {match.venue ? `• ${match.venue}` : ''}
                       </span>
                       {match.group_name === null && (
                         <span className="text-[10px] font-black uppercase tracking-tighter text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded">

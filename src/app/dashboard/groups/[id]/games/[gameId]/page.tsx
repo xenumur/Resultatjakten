@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
+
+const TIMEZONE = 'Europe/Stockholm'
 import { countryToFlag } from '@/lib/utils/flags'
 
 export default async function GameDetailPage({
@@ -97,7 +99,7 @@ export default async function GameDetailPage({
                   <li key={match.id} className="p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-6">
                     <div className="flex flex-col items-center md:items-start w-full md:w-auto">
                       <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-2">
-                        {format(new Date(match.kickoff_time), 'yyyy-MM-dd HH:mm')} {match.venue && `• ${match.venue}`}
+                        {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'yyyy-MM-dd HH:mm')} {match.venue && `• ${match.venue}`}
                       </p>
                       <div className="flex items-center justify-center md:justify-start gap-3 md:gap-4 text-base md:text-lg font-bold">
                         <span className="w-28 md:w-40 text-right flex items-center justify-end gap-2">
