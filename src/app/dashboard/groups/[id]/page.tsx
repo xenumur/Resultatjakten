@@ -86,24 +86,24 @@ export default async function GroupDetailPage({
   const formatMoney = (amount: number) => `${amount} ${group.currency}`
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-10 space-y-12">
+    <div className="max-w-6xl mx-auto px-4 py-8 md:px-10 md:py-12 space-y-10 md:space-y-16">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <Link href="/dashboard" className="text-sm font-bold text-zinc-500 hover:text-indigo-600 transition flex items-center gap-1">
-            &larr; Mina grupper
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 text-center md:text-left">
+        <div className="space-y-3">
+          <Link href="/dashboard" className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center justify-center md:justify-start gap-2">
+            <ArrowLeft className="w-3.5 h-3.5" /> Mina grupper
           </Link>
-          <h1 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">{group.name}</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 text-lg max-w-2xl">{group.description}</p>
+          <h1 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none">{group.name}</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-xl max-w-2xl mx-auto md:mx-0">{group.description}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-row justify-center md:justify-end gap-3">
            {isAdmin && (
-            <Link href={`/dashboard/groups/${groupId}/admin`} className="flex items-center gap-2 px-5 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm">
+            <Link href={`/dashboard/groups/${groupId}/admin`} className="flex items-center gap-2 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-sm">
               ⚙️ Admin
             </Link>
           )}
-          <Link href={`/dashboard/groups/${groupId}/members`} className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20">
-            <Users className="w-5 h-5" />
+          <Link href={`/dashboard/groups/${groupId}/members`} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20 text-sm">
+            <Users className="w-4 h-4" />
             Medlemmar
           </Link>
         </div>
@@ -111,101 +111,111 @@ export default async function GroupDetailPage({
 
       {/* Prize Pool Summary */}
       <section className="space-y-6">
-        <div className="flex items-center gap-2">
-          <Coins className="w-6 h-6 text-amber-500" />
-          <h2 className="text-2xl font-black text-zinc-900 dark:text-white">Prispott & Belöningar</h2>
+        <div className="flex items-center justify-center md:justify-start gap-2">
+          <Coins className="w-5 h-5 text-amber-500" />
+          <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between">
-            <span className="text-sm font-bold uppercase tracking-widest opacity-80">Total Prispott</span>
-            <div className="mt-4">
-              <div className="text-4xl font-black">{formatMoney(totalPrizePool)}</div>
-              <p className="text-xs font-bold mt-1 opacity-70">Baserat på {paidMembersCount} betalande</p>
+          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-[32px] shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between min-h-[160px]">
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Prispott</span>
+            <div className="mt-auto">
+              <div className="text-4xl font-black leading-none">{formatMoney(totalPrizePool)}</div>
+              <p className="text-[10px] font-bold mt-2 opacity-60 uppercase tracking-wide">Baserat på {paidMembersCount} betalande</p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border-2 border-amber-200 dark:border-amber-900/30 p-6 rounded-3xl relative overflow-hidden shadow-sm">
-             <div className="absolute top-0 right-0 p-3 opacity-10">
-               <Trophy className="w-16 h-16 text-amber-500" />
+          <div className="bg-white dark:bg-zinc-900 border-2 border-amber-100 dark:border-amber-900/20 p-6 rounded-[32px] relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[160px]">
+             <div className="absolute top-0 right-0 p-4 opacity-5">
+               <Trophy className="w-12 h-12 text-amber-500" />
              </div>
              <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">1:a Pris (60%)</span>
-             <div className="text-3xl font-black text-zinc-900 dark:text-white mt-3">{formatMoney(prizes.first)}</div>
-             <p className="text-xs text-zinc-500 mt-1">Guldmedaljören</p>
-          </div>
-
-          <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 p-6 rounded-3xl relative overflow-hidden shadow-sm">
-             <div className="absolute top-0 right-0 p-3 opacity-5">
-               <Medal className="w-16 h-16 text-zinc-400" />
+             <div className="mt-auto">
+               <div className="text-3xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.first)}</div>
+               <p className="text-[10px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Guldmedaljören</p>
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">2:a Pris (25%)</span>
-             <div className="text-2xl font-black text-zinc-900 dark:text-white mt-3">{formatMoney(prizes.second)}</div>
-             <p className="text-xs text-zinc-500 mt-1">Silvermedaljören</p>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border-2 border-orange-200 dark:border-orange-900/30 p-6 rounded-3xl relative overflow-hidden shadow-sm bg-gradient-to-br from-white to-orange-50/30 dark:from-zinc-900 dark:to-orange-900/5">
-             <div className="absolute top-0 right-0 p-3 opacity-10">
-               <Medal className="w-16 h-16 text-orange-600" />
+          <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 p-6 rounded-[32px] relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[160px]">
+             <div className="absolute top-0 right-0 p-4 opacity-5">
+               <Medal className="w-12 h-12 text-zinc-400" />
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">2:a Pris (25%)</span>
+             <div className="mt-auto">
+               <div className="text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.second)}</div>
+               <p className="text-[10px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Silvermedaljören</p>
+             </div>
+          </div>
+
+          <div className="bg-white dark:bg-zinc-900 border-2 border-orange-100 dark:border-orange-900/20 p-6 rounded-[32px] relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[160px] bg-gradient-to-br from-white to-orange-50/20 dark:from-zinc-900 dark:to-orange-900/5">
+             <div className="absolute top-0 right-0 p-4 opacity-5">
+               <Medal className="w-12 h-12 text-orange-600" />
              </div>
              <span className="text-[10px] font-black uppercase tracking-widest text-orange-700 dark:text-orange-400">3:e Pris (10%)</span>
-             <div className="text-2xl font-black text-zinc-900 dark:text-white mt-3">{formatMoney(prizes.third)}</div>
-             <p className="text-xs text-zinc-500 mt-1">Bronsmedaljören</p>
+             <div className="mt-auto">
+               <div className="text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.third)}</div>
+               <p className="text-[10px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Bronsmedaljören</p>
+             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900/50 w-fit px-3 py-1 rounded-full border border-zinc-200 dark:border-zinc-800">
-           🛡️ {formatMoney(prizes.reserved)} (5%) reserverat för admin/plattformskostnader
+        <div className="flex items-center justify-center md:justify-start">
+          <div className="flex items-center gap-2 text-[9px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800">
+             🛡️ {formatMoney(prizes.reserved)} (5%) reserverat för admin
+          </div>
         </div>
       </section>
 
       {/* Main Grid: Games & Leaderboard */}
-      <div className="grid lg:grid-cols-3 gap-10">
+      <div className="grid lg:grid-cols-3 gap-10 md:gap-16">
         
         {/* Left Side: Active Games */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-zinc-900 dark:text-white">Aktiva Spel</h2>
-          </div>
-          
-          <div className="space-y-4">
-            {games && games.length > 0 ? (
-              games.map(game => (
-                <Link 
-                  key={game.id} 
-                  href={`/dashboard/groups/${groupId}/games/${game.id}`} 
-                  className="group block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-black text-zinc-900 dark:text-white group-hover:text-indigo-600 transition-colors">{game.name}</h3>
-                      <p className="text-sm font-bold text-zinc-400 mt-1 uppercase tracking-wider">{game.tournament_type}</p>
+        <div className="lg:col-span-1 space-y-8">
+          <div className="space-y-6">
+            <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Aktiva Spel</h2>
+            <div className="space-y-4">
+              {games && games.length > 0 ? (
+                games.map(game => (
+                  <Link 
+                    key={game.id} 
+                    href={`/dashboard/groups/${groupId}/games/${game.id}`} 
+                    className="group block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[32px] hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <h3 className="text-xl font-black text-zinc-900 dark:text-white group-hover:text-indigo-600 transition-colors truncate">{game.name}</h3>
+                        <p className="text-[10px] font-black text-zinc-400 mt-1 uppercase tracking-widest">{game.tournament_type}</p>
+                      </div>
+                      <Target className="w-5 h-5 text-zinc-200 group-hover:text-indigo-500 transition-colors shrink-0" />
                     </div>
-                    <Target className="w-6 h-6 text-zinc-200 group-hover:text-indigo-200 transition-colors" />
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl p-10 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                <p className="text-zinc-500 font-bold">Inga spel än.</p>
-              </div>
-            )}
+                  </Link>
+                ))
+              ) : (
+                <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-[32px] p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                  <p className="text-zinc-500 font-bold text-sm">Inga spel än.</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Group Info Widget */}
-          <div className="bg-zinc-900 dark:bg-zinc-950 p-8 rounded-[40px] text-white space-y-6 shadow-2xl">
-             <h3 className="text-xl font-black">Gruppinfo</h3>
-             <div className="space-y-4">
+          <div className="bg-zinc-950 p-8 rounded-[40px] text-white space-y-8 shadow-2xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-8 opacity-5">
+               <Users className="w-24 h-24" />
+             </div>
+             <h3 className="text-xl font-black uppercase tracking-tight relative z-10">Gruppinfo</h3>
+             <div className="space-y-6 relative z-10">
                <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                 <span className="text-zinc-400 font-bold text-sm uppercase tracking-widest">Insats</span>
+                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest">Insats</span>
                  <span className="text-xl font-black">{group.entry_fee} {group.currency}</span>
                </div>
                <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                 <span className="text-zinc-400 font-bold text-sm uppercase tracking-widest">Deltagare</span>
+                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest">Deltagare</span>
                  <span className="text-xl font-black">{members.length}</span>
                </div>
                <div className="flex justify-between items-center">
-                 <span className="text-zinc-400 font-bold text-sm uppercase tracking-widest">Din Roll</span>
-                 <span className="text-sm font-black bg-indigo-500 px-3 py-1 rounded-full">{userMember?.role?.toUpperCase()}</span>
+                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest">Din Roll</span>
+                 <span className="text-[10px] font-black bg-indigo-600 px-3 py-1 rounded-full uppercase tracking-widest">{userMember?.role}</span>
                </div>
              </div>
           </div>
@@ -214,20 +224,20 @@ export default async function GroupDetailPage({
         {/* Right Side: Consolidated Leaderboard */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center gap-2">
-            <Medal className="w-6 h-6 text-indigo-500" />
-            <h2 className="text-2xl font-black text-zinc-900 dark:text-white">Gruppens Leaderboard</h2>
+            <Medal className="w-5 h-5 text-indigo-500" />
+            <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Leaderboard</h2>
           </div>
 
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[40px] overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
                   <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-                    <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Plac</th>
-                    <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Deltagare</th>
-                    <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">Matcher</th>
-                    <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">Slutspel</th>
-                    <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Totalt</th>
+                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">#</th>
+                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Deltagare</th>
+                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">M</th>
+                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">S</th>
+                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Totalt</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -238,45 +248,45 @@ export default async function GroupDetailPage({
                     return (
                       <tr 
                         key={entry.user_id} 
-                        className={`transition-colors ${isMe ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
+                        className={`transition-colors ${isMe ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
                       >
-                        <td className="py-5 px-6">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm ${
+                        <td className="py-5 px-4 md:px-6">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-[10px] ${
                             entry.rank === 1 ? 'bg-amber-400 text-white shadow-lg shadow-amber-400/20' :
                             entry.rank === 2 ? 'bg-zinc-400 text-white shadow-lg shadow-zinc-400/20' :
                             entry.rank === 3 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' :
-                            'text-zinc-400'
+                            'text-zinc-400 border border-zinc-100 dark:border-zinc-800'
                           }`}>
                             {entry.rank}
                           </div>
                         </td>
-                        <td className="py-5 px-6">
+                        <td className="py-5 px-4 md:px-6">
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-white shrink-0 ${
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-white shrink-0 text-sm ${
                               entry.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-orange-500' :
                               isMe ? 'bg-gradient-to-br from-indigo-500 to-purple-600' :
-                              'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'
+                              'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
                             }`}>
                               {entry.display_name[0].toUpperCase()}
                             </div>
-                            <div>
-                              <div className="font-black text-zinc-900 dark:text-white flex items-center gap-2">
-                                {entry.display_name}
-                                {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded">Du</span>}
+                            <div className="min-w-0">
+                              <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-2 text-sm">
+                                <span className="truncate">{entry.display_name}</span>
+                                {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className={`w-1.5 h-1.5 rounded-full ${entry.is_paid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">
-                                  {entry.is_paid ? 'Betalat' : 'Ej betalat'}
+                                <span className={`w-1 h-1 rounded-full ${entry.is_paid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                  {entry.is_paid ? 'Paid' : 'Unpaid'}
                                 </span>
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="py-5 px-6 text-center font-bold text-zinc-600 dark:text-zinc-400">{entry.match_points}</td>
-                        <td className="py-5 px-6 text-center font-bold text-zinc-600 dark:text-zinc-400">{entry.knockout_points}</td>
-                        <td className="py-5 px-6 text-right">
-                          <span className={`text-2xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
+                        <td className="py-5 px-4 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.match_points}</td>
+                        <td className="py-5 px-4 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.knockout_points}</td>
+                        <td className="py-5 px-4 md:px-6 text-right">
+                          <span className={`text-xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
                             {entry.total_points}
                           </span>
                         </td>
@@ -288,8 +298,8 @@ export default async function GroupDetailPage({
             </div>
             
             {leaderboard.length === 0 && (
-              <div className="p-12 text-center text-zinc-400 font-bold italic">
-                Ingen data att visa ännu.
+              <div className="p-16 text-center text-zinc-400 font-black text-sm italic uppercase tracking-widest">
+                Ingen data ännu.
               </div>
             )}
           </div>
@@ -297,5 +307,13 @@ export default async function GroupDetailPage({
 
       </div>
     </div>
+  )
+}
+
+function ArrowLeft(props: any) {
+  return (
+    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    </svg>
   )
 }
