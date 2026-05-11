@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { updatePaymentStatus } from './actions'
-import { SendNotificationForm } from '@/components/SendNotificationForm'
 
 export default async function GroupAdminPage({
   params,
@@ -34,12 +33,9 @@ export default async function GroupAdminPage({
 
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-12">
-      <div className="flex justify-between items-center mb-8">
-        <Link href={`/dashboard/groups/${groupId}`} className="text-sm font-semibold text-zinc-600 hover:text-indigo-600 transition-colors">
-          &larr; Tillbaka till Gruppen
-        </Link>
-        <SendNotificationForm groupId={groupId} />
-      </div>
+      <Link href={`/dashboard/groups/${groupId}`} className="text-sm font-semibold text-indigo-600 mb-8 inline-block hover:underline">
+        &larr; Tillbaka till Gruppen
+      </Link>
 
       <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white mb-8">Gruppadmin</h1>
 

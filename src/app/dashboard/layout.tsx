@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { logout } from '@/app/(auth)/login/actions'
 import Link from 'next/link'
 import { Home, Users, PlusCircle, LogOut, Bell } from 'lucide-react'
+import { PushNotificationManager } from '@/components/PushNotificationManager'
 
 export default async function DashboardLayout({
   children,
@@ -66,6 +67,8 @@ export default async function DashboardLayout({
       <main className="flex-1 w-full max-w-6xl mx-auto md:p-6 lg:p-10">
         {children}
       </main>
+
+      <PushNotificationManager />
 
       {/* Mobile Bottom Navigation Bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 pb-[env(safe-area-inset-bottom)] z-50">
