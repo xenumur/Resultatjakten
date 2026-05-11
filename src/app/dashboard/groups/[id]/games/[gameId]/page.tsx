@@ -72,15 +72,18 @@ export default async function GameDetailPage({
           <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white mb-2">{game.name}</h1>
           <p className="text-zinc-500 dark:text-zinc-400">Turnering: {game.tournament_type}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`} className="px-5 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
             Leaderboard
           </Link>
-          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/predictions`} className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/predictions`} className="px-5 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white font-semibold rounded-lg hover:border-indigo-500 transition shadow-sm flex items-center gap-2">
             Tippa Matcher
           </Link>
+          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/knockout`} className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+            🏆 Slutspelstips
+          </Link>
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin`} className="px-5 py-2 border-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20 text-amber-700 dark:text-amber-500 font-bold rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition flex items-center gap-2">
-            👑 Admin: Mata in resultat
+            👑 Admin
           </Link>
         </div>
       </div>
