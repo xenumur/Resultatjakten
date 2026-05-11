@@ -102,10 +102,19 @@ export async function getNotifications() {
 
   if (!user) return []
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('notifications')
-    .select('*, profiles(display_name), groups(name)')
+    .select(`
+      *,
+      profiles:sender_id(display_name),
+      groups:group_id(name)
+    `)
     .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching notifications:', error)
+    return []
+  }
 
   return data || []
 }
@@ -116,28 +125,33 @@ export async function getUnreadCount() {
 
   if (!user) return 0
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('last_read_notifications_at')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (!profile) return 0
+  if (profileError || !profile) return 0
 
   // Hämta grupper som användaren är med i
-  const { data: memberGroups } = await supabase
+  const { data: memberGroups, error: memberError } = await supabase
     .from('group_members')
     .select('group_id')
     .eq('user_id', user.id)
 
-  if (!memberGroups || memberGroups.length === 0) return 0
+  if (memberError || !memberGroups || memberGroups.length === 0) return 0
   const groupIds = memberGroups.map(mg => mg.group_id)
 
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .in('group_id', groupIds)
     .gt('created_at', profile.last_read_notifications_at)
+
+  if (countError) {
+    console.error('Error counting unread notifications:', countError)
+    return 0
+  }
 
   return count || 0
 }

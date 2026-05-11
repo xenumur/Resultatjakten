@@ -1,17 +1,16 @@
-import { getNotifications, markNotificationsAsRead } from './actions'
+import { getNotifications } from './actions'
 import { Bell, Calendar, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import Link from 'next/link'
+import { MarkAsRead } from '@/components/MarkAsRead'
 
 export default async function NotificationsPage() {
   const notifications = await getNotifications()
   
-  // Markera alla som lästa när man besöker sidan
-  await markNotificationsAsRead()
-
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-12">
+      <MarkAsRead />
       <div className="flex items-center gap-3 mb-10">
         <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl">
           <Bell className="w-8 h-8" />
