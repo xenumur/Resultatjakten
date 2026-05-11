@@ -121,10 +121,6 @@ export default async function GroupDetailPage({
             <Users className="w-4 h-4" />
             Medlemmar
           </Link>
-          <Link href={`/dashboard/groups/${groupId}/bonus`} className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-amber-500 text-white rounded-xl sm:rounded-2xl font-black hover:bg-amber-600 transition shadow-lg shadow-amber-500/20 text-[10px] sm:text-xs">
-            <Trophy className="w-4 h-4" />
-            Bonus
-          </Link>
         </div>
       </div>
 
@@ -193,6 +189,20 @@ export default async function GroupDetailPage({
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Aktiva Spel</h2>
             <div className="space-y-4">
+              {/* Bonus Questions Card */}
+              <Link 
+                href={`/dashboard/groups/${groupId}/bonus`} 
+                className="group block bg-gradient-to-br from-amber-500/5 to-amber-600/10 dark:from-amber-900/10 dark:to-amber-800/5 border border-amber-200 dark:border-amber-900/30 p-5 md:p-6 rounded-3xl hover:border-amber-400 transition-all shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <h3 className="text-lg md:text-xl font-black text-amber-900 dark:text-amber-400 group-hover:text-amber-600 transition-colors truncate">Bonusfrågor</h3>
+                    <p className="text-[10px] font-black text-amber-600/60 dark:text-amber-500/50 mt-1 uppercase tracking-widest">Specialutmaningar</p>
+                  </div>
+                  <Trophy className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform shrink-0" />
+                </div>
+              </Link>
+
               {games && games.length > 0 ? (
                 games.map(game => (
                   <Link 
@@ -209,9 +219,11 @@ export default async function GroupDetailPage({
                     </div>
                   </Link>
                 ))
-              ) : (
+              ) : null}
+
+              {(!games || games.length === 0) && (
                 <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                  <p className="text-zinc-500 font-bold text-sm">Inga spel än.</p>
+                  <p className="text-zinc-500 font-bold text-sm italic">Fler spel kommer snart...</p>
                 </div>
               )}
             </div>
