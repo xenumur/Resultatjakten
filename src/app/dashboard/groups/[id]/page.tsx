@@ -20,8 +20,16 @@ export default async function GroupDetailPage({
     supabase.from('group_members').select('*, profiles:user_id(display_name, email)').eq('group_id', groupId),
     supabase.from('predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('knockout_predictions').select('user_id, points_awarded').eq('group_id', groupId),
-    supabase.from('games').select('*').eq('group_id', groupId)
+    supabase.from('games').select('*').eq('group_id', groupId),
+    supabase.from('bonus_answers').select('user_id, points_awarded').filter('bonus_questions.group_id', 'eq', groupId)
   ])
+  
+  // Note: The filter above might need a join or a separate query if Supabase client doesn't support nested filtering this way easily in one call.
+  // Let's refine it to be safer:
+  const { data: bonusAnswers } = await supabase
+    .from('bonus_answers')
+    .select('user_id, points_awarded, bonus_questions!inner(group_id)')
+    .eq('bonus_questions.group_id', groupId)
 
   if (!group || !members) {
     return <div className="p-8 text-center text-red-500">Kunde inte hitta gruppen.</div>
@@ -41,7 +49,7 @@ export default async function GroupDetailPage({
   }
 
   // --- Consolidated Leaderboard Logic ---
-  const userScores: Record<string, { display_name: string; match_points: number; knockout_points: number; total_points: number; is_paid: boolean }> = {}
+  const userScores: Record<string, { display_name: string; match_points: number; knockout_points: number; bonus_points: number; total_points: number; is_paid: boolean }> = {}
   
   for (const m of members) {
     const p = m.profiles as any
@@ -49,6 +57,7 @@ export default async function GroupDetailPage({
       display_name: p?.display_name || p?.email || 'Okänd',
       match_points: 0,
       knockout_points: 0,
+      bonus_points: 0,
       total_points: 0,
       is_paid: m.payment_status === 'paid'
     }
@@ -66,11 +75,17 @@ export default async function GroupDetailPage({
     }
   }
 
+  for (const a of bonusAnswers || []) {
+    if (userScores[a.user_id]) {
+      userScores[a.user_id].bonus_points += (a.points_awarded || 0)
+    }
+  }
+
   const leaderboard = Object.entries(userScores)
     .map(([user_id, data]) => ({
       user_id,
       ...data,
-      total_points: data.match_points + data.knockout_points
+      total_points: data.match_points + data.knockout_points + data.bonus_points
     }))
     .sort((a, b) => b.total_points - a.total_points)
 
@@ -105,6 +120,10 @@ export default async function GroupDetailPage({
           <Link href={`/dashboard/groups/${groupId}/members`} className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-indigo-600 text-white rounded-xl sm:rounded-2xl font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20 text-[10px] sm:text-xs">
             <Users className="w-4 h-4" />
             Medlemmar
+          </Link>
+          <Link href={`/dashboard/groups/${groupId}/bonus`} className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-amber-500 text-white rounded-xl sm:rounded-2xl font-black hover:bg-amber-600 transition shadow-lg shadow-amber-500/20 text-[10px] sm:text-xs">
+            <Trophy className="w-4 h-4" />
+            Bonus
           </Link>
         </div>
       </div>
@@ -237,6 +256,7 @@ export default async function GroupDetailPage({
                     <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Deltagare</th>
                     <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">M</th>
                     <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">S</th>
+                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center text-amber-500">B</th>
                     <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Totalt</th>
                   </tr>
                 </thead>
@@ -285,6 +305,7 @@ export default async function GroupDetailPage({
                         </td>
                         <td className="py-5 px-4 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.match_points}</td>
                         <td className="py-5 px-4 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.knockout_points}</td>
+                        <td className="py-5 px-4 md:px-6 text-center font-bold text-amber-600 dark:text-amber-400 text-xs">{entry.bonus_points}</td>
                         <td className="py-5 px-4 md:px-6 text-right">
                           <span className={`text-xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
                             {entry.total_points}
