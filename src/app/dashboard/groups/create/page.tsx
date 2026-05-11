@@ -1,3 +1,5 @@
+'use client'
+
 import { createGroup } from './actions'
 import Link from 'next/link'
 import { useActionState, useEffect } from 'react'
@@ -5,11 +7,13 @@ import { toast } from 'sonner'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { useRouter } from 'next/navigation'
 
-const initialState = { error: '', redirect: '' }
+const initialState = { error: '', redirect: '', success: false } as any
 
 export default function CreateGroupPage() {
   const router = useRouter()
-  const [state, formAction] = useActionState(createGroup, initialState)
+  const [state, formAction] = useActionState(async (prevState: any, formData: FormData) => {
+    return await createGroup(prevState, formData)
+  }, initialState)
 
   useEffect(() => {
     if (state?.redirect) {

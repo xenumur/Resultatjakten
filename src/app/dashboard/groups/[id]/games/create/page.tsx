@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { createGame } from './actions'
 import { useActionState, useEffect, useState } from 'react'
+import { SubmitButton } from '@/components/ui/SubmitButton'
 
-const initialState = { error: '' }
+const initialState = { error: '' } as any
 
 export default function CreateGamePage({
   params,
@@ -18,7 +19,9 @@ export default function CreateGamePage({
   }, [params])
 
   const createGameWithGroup = createGame.bind(null, groupId)
-  const [state, formAction, isPending] = useActionState(createGameWithGroup, initialState)
+  const [state, formAction] = useActionState(async (prevState: any, formData: FormData) => {
+    return await createGameWithGroup(prevState, formData)
+  }, initialState)
 
   if (!groupId) return null
 
@@ -68,9 +71,9 @@ export default function CreateGamePage({
 
           <input type="hidden" name="providerId" value="open_football" />
           
-          <button disabled={isPending} type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md disabled:opacity-50">
-            {isPending ? 'Laddar ner matcher...' : 'Skapa spel & Importera matcher'}
-          </button>
+          <SubmitButton className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md" loadingText="Laddar ner matcher...">
+            Skapa spel & Importera matcher
+          </SubmitButton>
         </form>
       </div>
     </div>
