@@ -86,23 +86,23 @@ export default async function GroupDetailPage({
   const formatMoney = (amount: number) => `${amount} ${group.currency}`
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 md:px-10 md:py-12 space-y-10 md:space-y-16">
+    <div className="max-w-6xl mx-auto px-4 py-8 md:px-10 md:py-12 space-y-10 md:space-y-16 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 text-center md:text-left">
-        <div className="space-y-3">
+        <div className="space-y-3 min-w-0">
           <Link href="/dashboard" className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center justify-center md:justify-start gap-2">
             <ArrowLeft className="w-3.5 h-3.5" /> Mina grupper
           </Link>
-          <h1 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none">{group.name}</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-xl max-w-2xl mx-auto md:mx-0">{group.description}</p>
+          <h1 className="text-3xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter leading-tight break-words">{group.name}</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-xl max-w-2xl mx-auto md:mx-0 break-words">{group.description}</p>
         </div>
-        <div className="flex flex-row justify-center md:justify-end gap-3">
+        <div className="flex flex-row justify-center md:justify-end gap-2 sm:gap-3 shrink-0">
            {isAdmin && (
-            <Link href={`/dashboard/groups/${groupId}/admin`} className="flex items-center gap-2 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-sm">
+            <Link href={`/dashboard/groups/${groupId}/admin`} className="flex items-center gap-2 px-3 sm:px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-[10px] sm:text-xs">
               ⚙️ Admin
             </Link>
           )}
-          <Link href={`/dashboard/groups/${groupId}/members`} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20 text-sm">
+          <Link href={`/dashboard/groups/${groupId}/members`} className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-indigo-600 text-white rounded-xl sm:rounded-2xl font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20 text-[10px] sm:text-xs">
             <Users className="w-4 h-4" />
             Medlemmar
           </Link>
@@ -112,56 +112,56 @@ export default async function GroupDetailPage({
       {/* Prize Pool Summary */}
       <section className="space-y-6">
         <div className="flex items-center justify-center md:justify-start gap-2">
-          <Coins className="w-5 h-5 text-amber-500" />
-          <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
+          <Coins className="w-5 h-5 text-amber-500 shrink-0" />
+          <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-[32px] shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between min-h-[160px]">
+          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
             <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Prispott</span>
             <div className="mt-auto">
-              <div className="text-4xl font-black leading-none">{formatMoney(totalPrizePool)}</div>
-              <p className="text-[10px] font-bold mt-2 opacity-60 uppercase tracking-wide">Baserat på {paidMembersCount} betalande</p>
+              <div className="text-3xl md:text-4xl font-black leading-none">{formatMoney(totalPrizePool)}</div>
+              <p className="text-[9px] font-bold mt-2 opacity-60 uppercase tracking-wide">Baserat på {paidMembersCount} betalande</p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border-2 border-amber-100 dark:border-amber-900/20 p-6 rounded-[32px] relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[160px]">
+          <div className="bg-white dark:bg-zinc-900 border-2 border-amber-100 dark:border-amber-900/20 p-6 rounded-3xl relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
              <div className="absolute top-0 right-0 p-4 opacity-5">
-               <Trophy className="w-12 h-12 text-amber-500" />
+               <Trophy className="w-10 h-10 md:w-12 md:h-12 text-amber-500" />
              </div>
              <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">1:a Pris (60%)</span>
              <div className="mt-auto">
-               <div className="text-3xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.first)}</div>
-               <p className="text-[10px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Guldmedaljören</p>
+               <div className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.first)}</div>
+               <p className="text-[9px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Guldmedaljören</p>
              </div>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 p-6 rounded-[32px] relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[160px]">
+          <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 p-6 rounded-3xl relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
              <div className="absolute top-0 right-0 p-4 opacity-5">
-               <Medal className="w-12 h-12 text-zinc-400" />
+               <Medal className="w-10 h-10 md:w-12 md:h-12 text-zinc-400" />
              </div>
              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">2:a Pris (25%)</span>
              <div className="mt-auto">
-               <div className="text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.second)}</div>
-               <p className="text-[10px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Silvermedaljören</p>
+               <div className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.second)}</div>
+               <p className="text-[9px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Silvermedaljören</p>
              </div>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border-2 border-orange-100 dark:border-orange-900/20 p-6 rounded-[32px] relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[160px] bg-gradient-to-br from-white to-orange-50/20 dark:from-zinc-900 dark:to-orange-900/5">
+          <div className="bg-white dark:bg-zinc-900 border-2 border-orange-100 dark:border-orange-900/20 p-6 rounded-3xl relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px] bg-gradient-to-br from-white to-orange-50/20 dark:from-zinc-900 dark:to-orange-900/5">
              <div className="absolute top-0 right-0 p-4 opacity-5">
-               <Medal className="w-12 h-12 text-orange-600" />
+               <Medal className="w-10 h-10 md:w-12 md:h-12 text-orange-600" />
              </div>
              <span className="text-[10px] font-black uppercase tracking-widest text-orange-700 dark:text-orange-400">3:e Pris (10%)</span>
              <div className="mt-auto">
-               <div className="text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.third)}</div>
-               <p className="text-[10px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Bronsmedaljören</p>
+               <div className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.third)}</div>
+               <p className="text-[9px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Bronsmedaljören</p>
              </div>
           </div>
         </div>
 
         <div className="flex items-center justify-center md:justify-start">
-          <div className="flex items-center gap-2 text-[9px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800">
-             🛡️ {formatMoney(prizes.reserved)} (5%) reserverat för admin
+          <div className="text-center md:text-left flex items-center gap-2 text-[9px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800 max-w-full overflow-hidden">
+             <span className="shrink-0">🛡️</span> <span className="truncate">{formatMoney(prizes.reserved)} (5%) reserverat för admin</span>
           </div>
         </div>
       </section>
@@ -170,7 +170,7 @@ export default async function GroupDetailPage({
       <div className="grid lg:grid-cols-3 gap-10 md:gap-16">
         
         {/* Left Side: Active Games */}
-        <div className="lg:col-span-1 space-y-8">
+        <div className="lg:col-span-1 space-y-8 min-w-0">
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Aktiva Spel</h2>
             <div className="space-y-4">
@@ -179,11 +179,11 @@ export default async function GroupDetailPage({
                   <Link 
                     key={game.id} 
                     href={`/dashboard/groups/${groupId}/games/${game.id}`} 
-                    className="group block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[32px] hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
+                    className="group block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-5 md:p-6 rounded-3xl hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="min-w-0">
-                        <h3 className="text-xl font-black text-zinc-900 dark:text-white group-hover:text-indigo-600 transition-colors truncate">{game.name}</h3>
+                        <h3 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white group-hover:text-indigo-600 transition-colors truncate">{game.name}</h3>
                         <p className="text-[10px] font-black text-zinc-400 mt-1 uppercase tracking-widest">{game.tournament_type}</p>
                       </div>
                       <Target className="w-5 h-5 text-zinc-200 group-hover:text-indigo-500 transition-colors shrink-0" />
@@ -191,7 +191,7 @@ export default async function GroupDetailPage({
                   </Link>
                 ))
               ) : (
-                <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-[32px] p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
                   <p className="text-zinc-500 font-bold text-sm">Inga spel än.</p>
                 </div>
               )}
@@ -199,38 +199,38 @@ export default async function GroupDetailPage({
           </div>
 
           {/* Group Info Widget */}
-          <div className="bg-zinc-950 p-8 rounded-[40px] text-white space-y-8 shadow-2xl relative overflow-hidden">
+          <div className="bg-zinc-950 p-6 md:p-8 rounded-[32px] md:rounded-[40px] text-white space-y-8 shadow-2xl relative overflow-hidden">
              <div className="absolute top-0 right-0 p-8 opacity-5">
                <Users className="w-24 h-24" />
              </div>
              <h3 className="text-xl font-black uppercase tracking-tight relative z-10">Gruppinfo</h3>
              <div className="space-y-6 relative z-10">
-               <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest">Insats</span>
-                 <span className="text-xl font-black">{group.entry_fee} {group.currency}</span>
+               <div className="flex justify-between items-center pb-4 border-b border-white/10 gap-4">
+                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
+                 <span className="text-lg md:text-xl font-black truncate">{group.entry_fee} {group.currency}</span>
                </div>
-               <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest">Deltagare</span>
-                 <span className="text-xl font-black">{members.length}</span>
+               <div className="flex justify-between items-center pb-4 border-b border-white/10 gap-4">
+                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
+                 <span className="text-lg md:text-xl font-black">{members.length}</span>
                </div>
-               <div className="flex justify-between items-center">
-                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest">Din Roll</span>
-                 <span className="text-[10px] font-black bg-indigo-600 px-3 py-1 rounded-full uppercase tracking-widest">{userMember?.role}</span>
+               <div className="flex justify-between items-center gap-4">
+                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Din Roll</span>
+                 <span className="text-[10px] font-black bg-indigo-600 px-3 py-1 rounded-full uppercase tracking-widest truncate">{userMember?.role}</span>
                </div>
              </div>
           </div>
         </div>
 
         {/* Right Side: Consolidated Leaderboard */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           <div className="flex items-center gap-2">
-            <Medal className="w-5 h-5 text-indigo-500" />
+            <Medal className="w-5 h-5 text-indigo-500 shrink-0" />
             <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Leaderboard</h2>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[40px] overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[500px]">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left border-collapse min-w-[450px] md:min-w-[500px]">
                 <thead>
                   <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
                     <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">#</th>
@@ -271,12 +271,12 @@ export default async function GroupDetailPage({
                             </div>
                             <div className="min-w-0">
                               <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-2 text-sm">
-                                <span className="truncate">{entry.display_name}</span>
+                                <span className="truncate max-w-[100px] sm:max-w-none">{entry.display_name}</span>
                                 {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className={`w-1 h-1 rounded-full ${entry.is_paid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-                                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                <span className={`w-1 h-1 rounded-full shrink-0 ${entry.is_paid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest truncate">
                                   {entry.is_paid ? 'Paid' : 'Unpaid'}
                                 </span>
                               </div>
@@ -307,6 +307,14 @@ export default async function GroupDetailPage({
 
       </div>
     </div>
+  )
+}
+
+function ArrowLeft(props: any) {
+  return (
+    <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    </svg>
   )
 }
 
