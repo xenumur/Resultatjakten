@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Users, Plus, Trophy, ChevronRight, LayoutGrid } from 'lucide-react'
+import { Users, Plus, Trophy, ChevronRight, LayoutGrid, Info } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -125,12 +125,12 @@ export default async function DashboardPage() {
             <span className="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Profil</span>
           </Link>
 
-          <button className="group flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-[28px] border border-zinc-100 dark:border-zinc-800 hover:border-red-400 transition-all shadow-sm hover:shadow-md active:scale-95">
-            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <ChevronRight className="w-5 h-5 rotate-90" />
+          <Link href="/dashboard/introduction" className="group flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-[28px] border border-zinc-100 dark:border-zinc-800 hover:border-amber-400 transition-all shadow-sm hover:shadow-md active:scale-95">
+            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Info className="w-5 h-5" />
             </div>
-            <span className="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Hjälp</span>
-          </button>
+            <span className="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300 group-hover:text-amber-600 transition-colors">Introduktion</span>
+          </Link>
         </div>
       </div>
     </div>
