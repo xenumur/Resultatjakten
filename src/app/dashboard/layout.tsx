@@ -31,8 +31,11 @@ export default async function DashboardLayout({
       
       {/* Desktop Header */}
       <header className="hidden md:flex bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-8 py-4 justify-between items-center sticky top-0 z-50">
-        <Link href="/dashboard" className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500">
-          Resultatjakten
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <img src="/logo.png" alt="Resultatjakten" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
+          <span className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500 hidden lg:block">
+            Resultatjakten
+          </span>
         </Link>
         <div className="flex items-center gap-6">
           <Link href="/dashboard/notifications" className="relative p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">
@@ -59,8 +62,9 @@ export default async function DashboardLayout({
 
       {/* Mobile Header (Top) */}
       <header className="md:hidden flex bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-4 pt-[max(env(safe-area-inset-top),16px)] pb-3 justify-between items-center sticky top-0 z-50 shadow-sm">
-        <Link href="/dashboard" className="text-xl font-black tracking-tight text-indigo-500">
-          Resultatjakten
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <img src="/logo.png" alt="Resultatjakten" className="w-8 h-8 object-contain rounded-lg" />
+          <span className="text-lg font-black tracking-tight text-zinc-900 dark:text-white">RJ</span>
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/dashboard/notifications" className="relative p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">

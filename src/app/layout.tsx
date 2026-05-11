@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   title: "Resultatjakten | Tips för Fotboll",
   description: "Tippa fotbollsturneringar med vänner. Skapa privata grupper och klättra på leaderboarden.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
