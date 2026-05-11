@@ -1,6 +1,6 @@
 export const countryToFlag = (countryName: string): string => {
   const flags: { [key: string]: string } = {
-    // Europa
+    // Europa (fortsättning)
     'Sweden': '🇸🇪',
     'Sverige': '🇸🇪',
     'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
@@ -52,8 +52,16 @@ export const countryToFlag = (countryName: string): string => {
     'Albanien': '🇦🇱',
     'Georgia': '🇬🇪',
     'Georgien': '🇬🇪',
+    'Bosnia and Herzegovina': '🇧🇦',
+    'Bosnia': '🇧🇦',
+    'Bosnien och Hercegovina': '🇧🇦',
+    'Bosnien': '🇧🇦',
+    'Iceland': '🇮🇸',
+    'Island': '🇮🇸',
+    'Greece': '🇬🇷',
+    'Grekland': '🇬🇷',
 
-    // Sydamerika
+    // Sydamerika (fortsättning)
     'Brazil': '🇧🇷',
     'Brasilien': '🇧🇷',
     'Argentina': '🇦🇷',
@@ -62,8 +70,11 @@ export const countryToFlag = (countryName: string): string => {
     'Chile': '🇨🇱',
     'Ecuador': '🇪🇨',
     'Peru': '🇵🇪',
+    'Paraguay': '🇵🇾',
+    'Bolivia': '🇧🇴',
+    'Venezuela': '🇻🇪',
 
-    // Nord/Centralamerika
+    // Nord/Centralamerika & Karibien
     'USA': '🇺🇸',
     'Mexico': '🇲🇽',
     'Mexiko': '🇲🇽',
@@ -71,8 +82,12 @@ export const countryToFlag = (countryName: string): string => {
     'Kanada': '🇨🇦',
     'Costa Rica': '🇨🇷',
     'Panama': '🇵🇦',
+    'Haiti': '🇭🇹',
+    'Jamaica': '🇯🇲',
+    'Cuba': '🇨🇺',
+    'Kuba': '🇨🇺',
 
-    // Afrika
+    // Afrika (fortsättning)
     'South Africa': '🇿🇦',
     'Sydafrika': '🇿🇦',
     'Nigeria': '🇳🇬',
@@ -90,6 +105,12 @@ export const countryToFlag = (countryName: string): string => {
     'Algeriet': '🇩🇿',
     'Ivory Coast': '🇨🇮',
     'Elfenbenskusten': '🇨🇮',
+    'Cape Verde': '🇨🇻',
+    'Cap Verde': '🇨🇻',
+    'Kap Verde': '🇨🇻',
+    'Mali': '🇲🇱',
+    'Burkina Faso': '🇧🇫',
+    'Angola': '🇦🇴',
 
     // Asien & Oceanien
     'Japan': '🇯🇵',
