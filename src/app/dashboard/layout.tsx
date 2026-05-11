@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { logout } from '@/app/(auth)/login/actions'
+import { getUnreadCount } from '@/app/dashboard/notifications/actions'
 import Link from 'next/link'
 import { Home, Users, PlusCircle, LogOut, Bell } from 'lucide-react'
 import { PushNotificationManager } from '@/components/PushNotificationManager'
@@ -16,6 +17,8 @@ export default async function DashboardLayout({
   if (!user) {
     redirect('/login')
   }
+
+  const unreadCount = await getUnreadCount()
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -34,6 +37,11 @@ export default async function DashboardLayout({
         <div className="flex items-center gap-6">
           <Link href="/dashboard/notifications" className="relative p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">
             <Bell className="w-6 h-6" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-900">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </Link>
           <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-300 border-l border-zinc-200 dark:border-zinc-800 pl-6">
             {profile?.display_name || user.email}
@@ -52,8 +60,13 @@ export default async function DashboardLayout({
           Resultatjakten
         </Link>
         <div className="flex items-center gap-2">
-          <Link href="/dashboard/notifications" className="p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">
+          <Link href="/dashboard/notifications" className="relative p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">
             <Bell className="w-6 h-6" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-900">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </Link>
           <form action={logout}>
             <button className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors active:scale-90">
@@ -77,8 +90,13 @@ export default async function DashboardLayout({
             <Home className="w-6 h-6 mb-1" />
             <span className="text-[10px] font-bold">Hem</span>
           </Link>
-          <Link href="/dashboard/notifications" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
+          <Link href="/dashboard/notifications" className="relative flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
             <Bell className="w-6 h-6 mb-1" />
+            {unreadCount > 0 && (
+              <span className="absolute top-2 right-[25%] w-4 h-4 bg-red-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-900">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
             <span className="text-[10px] font-bold">Inkorg</span>
           </Link>
           <Link href="/dashboard/groups/create" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">

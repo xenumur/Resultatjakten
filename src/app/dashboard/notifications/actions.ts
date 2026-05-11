@@ -109,3 +109,49 @@ export async function getNotifications() {
 
   return data || []
 }
+
+export async function getUnreadCount() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return 0
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('last_read_notifications_at')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile) return 0
+
+  // Hämta grupper som användaren är med i
+  const { data: memberGroups } = await supabase
+    .from('group_members')
+    .select('group_id')
+    .eq('user_id', user.id)
+
+  if (!memberGroups || memberGroups.length === 0) return 0
+  const groupIds = memberGroups.map(mg => mg.group_id)
+
+  const { count } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .in('group_id', groupIds)
+    .gt('created_at', profile.last_read_notifications_at)
+
+  return count || 0
+}
+
+export async function markNotificationsAsRead() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return
+
+  await supabase
+    .from('profiles')
+    .update({ last_read_notifications_at: new Date().toISOString() })
+    .eq('id', user.id)
+
+  revalidatePath('/dashboard', 'layout')
+}
