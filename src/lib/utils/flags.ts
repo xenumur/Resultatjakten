@@ -132,7 +132,6 @@ export const countryToFlag = (countryName: string): string => {
     'Jordan': '🇯🇴',
     'Jordanien': '🇯🇴',
     'Uzbekistan': '🇺🇿',
-    'Uzbekistan': '🇺🇿',
     'China': '🇨🇳',
     'Kina': '🇨🇳',
     'Qatar': '🇶🇦',
