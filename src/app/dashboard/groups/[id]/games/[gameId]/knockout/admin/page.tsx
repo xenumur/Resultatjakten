@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Lock, Unlock, Save } from 'lucide-react'
+import { ArrowLeft, Save } from 'lucide-react'
 import { toggleKnockoutLock, saveActualTeams } from '../actions'
 import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
 import { countryToFlag } from '@/lib/utils/flags'
+import { ToggleLockForm, ActualTeamsForm } from './AdminForms'
 
 export default async function KnockoutAdminPage({
   params,
@@ -62,18 +63,7 @@ export default async function KnockoutAdminPage({
         </div>
 
         {/* Lock toggle */}
-        <form action={boundToggleLock}>
-          <button
-            type="submit"
-            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-sm transition-all active:scale-95 ${
-              isLocked
-                ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'
-            }`}
-          >
-            {isLocked ? <><Lock className="w-4 h-4" /> Låst – Klicka för att låsa upp</> : <><Unlock className="w-4 h-4" /> Öppet – Klicka för att låsa</>}
-          </button>
-        </form>
+        <ToggleLockForm action={boundToggleLock} isLocked={isLocked} />
       </div>
 
       {/* Status card */}
@@ -102,7 +92,7 @@ export default async function KnockoutAdminPage({
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Fyll i vilka lag som faktiskt kvalificerat sig. Poäng räknas om automatiskt när du sparar.</p>
         </div>
 
-        <form action={boundSaveActual}>
+        <ActualTeamsForm action={boundSaveActual}>
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {KNOCKOUT_ROUNDS.map(round => {
               const currentActual = actualByRound.get(round.key) ?? []
@@ -151,7 +141,7 @@ export default async function KnockoutAdminPage({
               Spara faktiska lag & beräkna poäng
             </button>
           </div>
-        </form>
+        </ActualTeamsForm>
       </div>
     </div>
   )
