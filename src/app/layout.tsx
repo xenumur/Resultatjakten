@@ -24,6 +24,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+import { Toaster } from 'sonner'
+
 export default function RootLayout({
   children,
 }: {
@@ -36,6 +38,7 @@ export default function RootLayout({
     >
       <body className="min-h-[100dvh] flex flex-col text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 selection:bg-indigo-500/30">
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

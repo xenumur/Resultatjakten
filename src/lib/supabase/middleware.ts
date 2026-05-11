@@ -27,12 +27,26 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
+  // IMPORTANT: Do not remove this getUser() call. It refreshes the session.
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname;
   
+  // Om användaren är inloggad och försöker gå till login, skicka till dashboard
+  if (user && (path === '/login' || path === '/')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    // VIKTIGT: Skapa redirect-responsen men KOPIERA cookies från supabaseResponse
+    const redirectResponse = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    return redirectResponse
+  }
+
+  // Om användaren INTE är inloggad och försöker nå en skyddad sida
   if (
     !user &&
     !path.startsWith('/login') &&
