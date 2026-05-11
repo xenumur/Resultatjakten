@@ -96,7 +96,6 @@ export default async function GroupAdminPage({
                         <td className="p-5">
                           <span className={`px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-widest ${
                             member.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                            member.payment_status === 'waived' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                             'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                           }`}>
                             {member.payment_status}
@@ -111,7 +110,6 @@ export default async function GroupAdminPage({
                             >
                               <option value="pending">Väntar</option>
                               <option value="paid">Betald</option>
-                              <option value="waived">Gratis</option>
                             </select>
                             <button type="submit" className="text-xs font-black bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2 rounded-xl hover:opacity-80 transition active:scale-95">
                               Spara

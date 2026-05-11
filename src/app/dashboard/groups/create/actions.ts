@@ -42,7 +42,7 @@ export async function createGroup(prevState: any, formData: FormData) {
       group_id: group.id,
       user_id: user.id,
       role: 'admin',
-      payment_status: 'waived'
+      payment_status: 'paid'
     })
 
   if (memberError) {
