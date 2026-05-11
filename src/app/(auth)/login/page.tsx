@@ -14,8 +14,8 @@ export default async function LoginPage({
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-4">
       <div className="max-w-md w-full p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-100 dark:border-zinc-800">
         <div className="text-center mb-8 flex flex-col items-center">
-          <img src="/logo.png" alt="Resultatjakten" className="w-20 h-20 mb-4 rounded-2xl shadow-lg" />
-          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">Resultatjakten</h1>
+          <img src="/logo.png" alt="Scoriq" className="w-20 h-20 mb-4 rounded-2xl shadow-lg" />
+          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">Scoriq</h1>
           <p className="text-zinc-500 dark:text-zinc-400 mt-2">
             {isSignup ? 'Skapa ett konto för att börja tippa' : 'Logga in för att tippa och spela med vänner'}
           </p>

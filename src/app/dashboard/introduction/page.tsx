@@ -13,9 +13,9 @@ export default function IntroductionPage() {
         <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[40px] p-8 md:p-12 text-white shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32 blur-3xl" />
           <div className="relative z-10">
-            <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">VM 2026 – Resultatjakten ⚽🌍</h1>
+            <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">VM 2026 – Scoriq ⚽🌍</h1>
             <p className="text-indigo-100 text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
-              Välkommen till historiens största världsmästerskap. Här är allt du behöver veta för att bemästra Resultatjakten!
+              Välkommen till historiens största världsmästerskap. Här är allt du behöver veta för att bemästra Scoriq!
             </p>
           </div>
         </div>
@@ -62,7 +62,7 @@ export default function IntroductionPage() {
             <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
               <Info className="w-5 h-5" />
             </div>
-            <h2 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Instruktioner – Så fungerar Resultatjakten</h2>
+            <h2 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Instruktioner – Så fungerar Scoriq</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
