@@ -27,7 +27,7 @@ export default async function GradePage({
     .from('bonus_answers')
     .select(`
       *,
-      profiles:user_id (
+      profiles (
         display_name
       )
     `)
