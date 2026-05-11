@@ -43,9 +43,12 @@ export default async function DashboardLayout({
               </span>
             )}
           </Link>
-          <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-300 border-l border-zinc-200 dark:border-zinc-800 pl-6">
+          <Link 
+            href="/dashboard/profile" 
+            className="text-sm font-semibold text-zinc-600 dark:text-zinc-300 border-l border-zinc-200 dark:border-zinc-800 pl-6 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
             {profile?.display_name || user.email}
-          </span>
+          </Link>
           <form action={logout}>
             <button className="text-sm font-bold bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 px-5 py-2.5 rounded-full transition-transform active:scale-95 flex items-center gap-2">
               <LogOut className="w-4 h-4" /> Logga ut
@@ -67,6 +70,11 @@ export default async function DashboardLayout({
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
+          </Link>
+          <Link href="/dashboard/profile" className="p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors active:scale-90">
+            <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black text-[10px] text-zinc-500">
+              {profile?.display_name?.[0]?.toUpperCase() || 'U'}
+            </div>
           </Link>
           <form action={logout}>
             <button className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors active:scale-90">

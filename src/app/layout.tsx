@@ -25,6 +25,7 @@ export const viewport: Viewport = {
 };
 
 import { Toaster } from 'sonner'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 export default function RootLayout({
   children,
@@ -34,11 +35,19 @@ export default function RootLayout({
   return (
     <html
       lang="sv"
-      className={`${inter.variable} font-sans antialiased bg-zinc-950`}
+      className={`${inter.variable} font-sans antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-[100dvh] flex flex-col text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 selection:bg-indigo-500/30">
-        {children}
-        <Toaster position="bottom-center" richColors />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster position="bottom-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

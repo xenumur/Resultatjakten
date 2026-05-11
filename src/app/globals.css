@@ -7,11 +7,9 @@
   --safe-top: env(safe-area-inset-top);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #09090b;
+  --foreground: #ededed;
 }
 
 body {
