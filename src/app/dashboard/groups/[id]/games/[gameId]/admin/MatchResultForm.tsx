@@ -27,9 +27,8 @@ export function MatchResultForm({ action, matchId, homeScore, awayScore, status 
 
   return (
     <>
-      <form action={formAction} id={`form-${matchId}`} className="hidden" />
-      
       <td className="p-4">
+        <form action={formAction} id={`form-${matchId}`} className="hidden" />
         <div className="flex gap-2 items-center">
           <input 
             form={`form-${matchId}`}
