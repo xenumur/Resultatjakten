@@ -37,7 +37,7 @@ export default async function DashboardPage() {
       
       {/* Personalized Header Section */}
       <div className="pt-6 md:pt-4">
-        <h1 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white mb-3 tracking-tighter uppercase italic">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight">
           Välkommen, <span className="text-indigo-600 dark:text-indigo-400">{displayName}</span>
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-lg font-medium">Här är dina aktiva grupper och snabbval.</p>
