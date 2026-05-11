@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useActionState, useEffect } from 'react'
-import { sendNotification } from '../notifications/actions'
+import { sendNotification } from '@/app/dashboard/notifications/actions'
 import { toast } from 'sonner'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { Bell } from 'lucide-react'
