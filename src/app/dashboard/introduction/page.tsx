@@ -64,8 +64,6 @@ export default function IntroductionPage() {
             </div>
             <h2 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Instruktioner – Så fungerar Skorio</h2>
           </div>
-ner – Så fungerar Scoriq</h2>
-          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-6">
