@@ -97,6 +97,11 @@ export default async function GroupDetailPage({
                 <span className="text-zinc-500 dark:text-zinc-400">Din roll</span>
                 <span className="font-semibold capitalize text-indigo-600">{userMember?.role}</span>
               </li>
+              <li className="pt-2">
+                <Link href={`/dashboard/groups/${groupId}/members`} className="text-indigo-600 hover:underline font-medium">
+                  Se alla deltagare &rarr;
+                </Link>
+              </li>
             </ul>
             {isAdmin && (
               <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">

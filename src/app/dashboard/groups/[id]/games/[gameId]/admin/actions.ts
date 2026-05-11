@@ -53,6 +53,22 @@ export async function calculateScores(groupId: string, gameId: string, _formData
     return
   }
 
+  // Verify that the current user is an admin of the group
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || member.role !== 'admin') {
+    console.error('Ej behörig att beräkna poäng.')
+    return
+  }
+
   for (const match of matches) {
     const matchPredictions = predictions.filter(p => p.match_id === match.id)
     const isFinished = match.status === 'finished'
