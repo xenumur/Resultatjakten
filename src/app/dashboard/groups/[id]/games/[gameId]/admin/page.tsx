@@ -67,11 +67,6 @@ export default async function GameAdminPage({
             label="Synka med API" 
             icon={<RefreshCw className="w-4 h-4" />} 
           />
-          <AdminActionButton 
-            action={bindedCalculateScores} 
-            label="Beräkna poäng" 
-            variant="primary" 
-          />
         </div>
       </div>
 

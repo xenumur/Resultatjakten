@@ -41,6 +41,9 @@ export async function bulkUpdateMatchResults(
         })
         .eq('id', matchId)
     }
+    
+    // Automatisk omräkning av poäng efter bulk-uppdatering
+    await calculateScores(groupId, gameId)
   } catch (err: any) {
     return { success: false, error: 'Kunde inte spara: ' + err.message }
   }
@@ -70,6 +73,9 @@ export async function updateMatchResult(
       is_manual_override: true
     })
     .eq('id', matchId)
+
+  // Automatisk omräkning av poäng efter individuell uppdatering
+  await calculateScores(groupId, gameId)
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
   return { success: true, message: 'Resultatet har uppdaterats.' }
