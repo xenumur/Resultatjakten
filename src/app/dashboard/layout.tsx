@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { logout } from '@/app/(auth)/login/actions'
 import Link from 'next/link'
-import { Home, Users, PlusCircle, LogOut } from 'lucide-react'
+import { Home, Users, PlusCircle, LogOut, Bell } from 'lucide-react'
 
 export default async function DashboardLayout({
   children,
@@ -31,7 +31,10 @@ export default async function DashboardLayout({
           Resultatjakten
         </Link>
         <div className="flex items-center gap-6">
-          <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+          <Link href="/dashboard/notifications" className="relative p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">
+            <Bell className="w-6 h-6" />
+          </Link>
+          <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-300 border-l border-zinc-200 dark:border-zinc-800 pl-6">
             {profile?.display_name || user.email}
           </span>
           <form action={logout}>
@@ -47,11 +50,16 @@ export default async function DashboardLayout({
         <Link href="/dashboard" className="text-xl font-black tracking-tight text-indigo-500">
           Resultatjakten
         </Link>
-        <form action={logout}>
-          <button className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors active:scale-90">
-            <LogOut className="w-6 h-6" />
-          </button>
-        </form>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/notifications" className="p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">
+            <Bell className="w-6 h-6" />
+          </Link>
+          <form action={logout}>
+            <button className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors active:scale-90">
+              <LogOut className="w-6 h-6" />
+            </button>
+          </form>
+        </div>
       </header>
 
       {/* Main Content Area */}
@@ -66,9 +74,13 @@ export default async function DashboardLayout({
             <Home className="w-6 h-6 mb-1" />
             <span className="text-[10px] font-bold">Hem</span>
           </Link>
+          <Link href="/dashboard/notifications" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
+            <Bell className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-bold">Inkorg</span>
+          </Link>
           <Link href="/dashboard/groups/create" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
             <PlusCircle className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Ny Grupp</span>
+            <span className="text-[10px] font-bold">Ny</span>
           </Link>
           <Link href="/dashboard/groups/join" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
             <Users className="w-6 h-6 mb-1" />
