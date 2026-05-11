@@ -23,16 +23,20 @@ export default async function GradePage({
     .eq('id', questionId)
     .single()
 
-  const { data: answers } = await supabase
+  const { data: answers, error } = await supabase
     .from('bonus_answers')
     .select(`
       *,
-      profiles (
+      profiles:user_id (
         display_name
       )
     `)
     .eq('question_id', questionId)
     .order('submitted_at', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching answers:', error)
+  }
 
   if (!question) redirect(`/dashboard/groups/${groupId}/bonus/admin`)
 
