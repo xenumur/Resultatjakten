@@ -1,5 +1,6 @@
 import { joinGroup } from './actions'
 import Link from 'next/link'
+import { JoinGroupForm } from './JoinGroupForm'
 
 export default function JoinGroupPage() {
   return (
@@ -14,23 +15,7 @@ export default function JoinGroupPage() {
           Fyll i koden du fått av administratören för att ansluta.
         </p>
 
-        <form className="space-y-6" action={joinGroup}>
-          <div>
-            <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-              Inbjudningskod
-            </label>
-            <input 
-              name="joinCode" 
-              required 
-              placeholder="T.ex. AB12CD"
-              className="w-full uppercase px-4 py-3 text-lg font-mono tracking-widest rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
-            />
-          </div>
-          
-          <button type="submit" className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-md">
-            Gå med i gruppen
-          </button>
-        </form>
+        <JoinGroupForm action={joinGroup} />
       </div>
     </div>
   )

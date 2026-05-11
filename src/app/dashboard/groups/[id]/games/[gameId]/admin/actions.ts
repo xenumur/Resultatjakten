@@ -27,6 +27,7 @@ export async function updateMatchResult(
     .eq('id', matchId)
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+  return { success: true, message: 'Resultatet har uppdaterats.' }
 }
 
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
@@ -104,6 +105,7 @@ export async function calculateScores(groupId: string, gameId: string, _formData
   }
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`)
+  return { success: true, message: 'Poängen har räknats om för alla deltagare!' }
 }
 
 import { getProvider } from '@/lib/providers'
@@ -186,8 +188,10 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
     }
     
     revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+    return { success: true, message: `Matcherna har synkats med ${sourceProvider}!` }
   } catch (err: any) {
     console.error('Sync error:', err)
+    return { error: 'Synkning misslyckades: ' + err.message }
   }
 }
 

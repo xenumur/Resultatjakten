@@ -6,6 +6,8 @@ import { format } from 'date-fns'
 import { updateMatchResult, calculateScores, syncMatchesWithProvider, acceptApiResult, deleteMatch } from './actions'
 import { AlertTriangle, RefreshCw, Check, ArrowLeft, Lock, ArrowRight } from 'lucide-react'
 import { DeleteMatchButton } from './DeleteMatchButton'
+import { AdminActionButton } from './AdminActionButtons'
+import { MatchResultForm } from './MatchResultForm'
 
 export default async function GameAdminPage({
   params,
@@ -37,6 +39,7 @@ export default async function GameAdminPage({
     .order('kickoff_time', { ascending: true })
 
   const bindedCalculateScores = calculateScores.bind(null, groupId, gameId)
+  const bindedSync = syncMatchesWithProvider.bind(null, groupId, gameId)
 
   return (
     <div className="max-w-5xl mx-auto p-6 md:p-12">
@@ -55,17 +58,16 @@ export default async function GameAdminPage({
             <Lock className="w-4 h-4" />
             Låsningar
           </Link>
-          <form action={syncMatchesWithProvider.bind(null, groupId, gameId)}>
-            <button type="submit" className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-5 py-2 rounded-lg font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 shadow-sm transition flex items-center gap-2">
-              <RefreshCw className="w-4 h-4" />
-              Synka med API
-            </button>
-          </form>
-          <form action={bindedCalculateScores}>
-            <button type="submit" className="bg-emerald-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-emerald-700 shadow-sm transition">
-              Beräkna poäng
-            </button>
-          </form>
+          <AdminActionButton 
+            action={bindedSync} 
+            label="Synka med API" 
+            icon={<RefreshCw className="w-4 h-4" />} 
+          />
+          <AdminActionButton 
+            action={bindedCalculateScores} 
+            label="Beräkna poäng" 
+            variant="primary" 
+          />
         </div>
       </div>
 
@@ -77,14 +79,13 @@ export default async function GameAdminPage({
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Datum</th>
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Resultat</th>
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Status</th>
-              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400 text-right">Spara</th>
+              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400 text-right">Åtgärd</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {matches?.map(match => {
               const bindedUpdate = updateMatchResult.bind(null, groupId, gameId, match.id)
               
-              // Konflikt: API har ett annat resultat eller status än vad som är registrerat
               const hasScoreConflict = match.provider_home_score !== null && (
                 match.final_home_score !== match.provider_home_score ||
                 match.final_away_score !== match.provider_away_score
@@ -110,35 +111,17 @@ export default async function GameAdminPage({
                     <td className="p-4 text-zinc-500 dark:text-zinc-400 text-sm">
                       {format(new Date(match.kickoff_time), 'yyyy-MM-dd HH:mm')}
                     </td>
-                    <td className="p-4">
-                      <form action={bindedUpdate} id={`form-${match.id}`} className="flex gap-2 items-center">
-                        <input 
-                          type="number" 
-                          name="homeScore" 
-                          defaultValue={match.final_home_score ?? ''} 
-                          className="w-12 h-10 text-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none"
-                        />
-                        -
-                        <input 
-                          type="number" 
-                          name="awayScore" 
-                          defaultValue={match.final_away_score ?? ''} 
-                          className="w-12 h-10 text-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none"
-                        />
-                      </form>
-                    </td>
-                    <td className="p-4">
-                      <select form={`form-${match.id}`} name="status" defaultValue={match.status} className="text-sm px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none">
-                        <option value="upcoming">Kommande</option>
-                        <option value="live">Live</option>
-                        <option value="finished">Avslutad</option>
-                      </select>
-                    </td>
+                    
+                    <MatchResultForm 
+                      action={bindedUpdate}
+                      matchId={match.id}
+                      homeScore={match.final_home_score}
+                      awayScore={match.final_away_score}
+                      status={match.status}
+                    />
+
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button form={`form-${match.id}`} type="submit" className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition">
-                          Spara
-                        </button>
                         <form action={deleteMatch.bind(null, groupId, gameId, match.id)}>
                           <DeleteMatchButton />
                         </form>

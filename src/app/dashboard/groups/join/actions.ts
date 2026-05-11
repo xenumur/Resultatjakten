@@ -21,8 +21,7 @@ export async function joinGroup(formData: FormData) {
     .single()
 
   if (groupError || !group) {
-    // I en riktig app skulle vi använda useFormState för att visa detta
-    return;
+    return { error: 'Koden är ogiltig. Kontrollera att du skrivit rätt.' }
   }
 
   const { error: memberError } = await supabase
@@ -36,12 +35,11 @@ export async function joinGroup(formData: FormData) {
 
   if (memberError) {
     if (memberError.code === '23505') { // Unique violation, redan medlem
-      revalidatePath('/dashboard', 'layout')
-      redirect(`/dashboard/groups/${group.id}`)
+      return { success: true, redirect: `/dashboard/groups/${group.id}` }
     }
-    return;
+    return { error: 'Gick inte att gå med: ' + memberError.message }
   }
 
   revalidatePath('/dashboard', 'layout')
-  redirect(`/dashboard/groups/${group.id}`)
+  return { success: true, redirect: `/dashboard/groups/${group.id}` }
 }

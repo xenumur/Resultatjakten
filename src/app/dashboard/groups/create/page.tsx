@@ -1,13 +1,28 @@
-'use client'
-
 import { createGroup } from './actions'
 import Link from 'next/link'
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
+import { SubmitButton } from '@/components/ui/SubmitButton'
+import { useRouter } from 'next/navigation'
 
-const initialState = { error: '' }
+const initialState = { error: '', redirect: '' }
 
 export default function CreateGroupPage() {
-  const [state, formAction, isPending] = useActionState(createGroup, initialState)
+  const router = useRouter()
+  const [state, formAction] = useActionState(createGroup, initialState)
+
+  useEffect(() => {
+    if (state?.redirect) {
+      toast.success('Gruppen har skapats!', {
+        description: 'Bjud in dina vänner nu.'
+      })
+      router.push(state.redirect)
+    } else if (state?.error) {
+      toast.error('Kunde inte skapa grupp', {
+        description: state.error
+      })
+    }
+  }, [state, router])
 
   return (
     <div className="max-w-2xl mx-auto p-6 md:p-12">
@@ -20,12 +35,6 @@ export default function CreateGroupPage() {
         <p className="text-zinc-500 dark:text-zinc-400 mb-8">
           Du blir automatiskt admin för gruppen och kan därefter bjuda in vänner.
         </p>
-
-        {state?.error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 font-medium">
-            {state.error}
-          </div>
-        )}
 
         <form className="space-y-6" action={formAction}>
           <div>
@@ -63,9 +72,9 @@ export default function CreateGroupPage() {
             />
           </div>
           
-          <button disabled={isPending} type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md disabled:opacity-50">
-            {isPending ? 'Skapar...' : 'Skapa grupp'}
-          </button>
+          <SubmitButton className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md">
+            Skapa grupp
+          </SubmitButton>
         </form>
       </div>
     </div>

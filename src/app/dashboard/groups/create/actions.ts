@@ -50,5 +50,5 @@ export async function createGroup(prevState: any, formData: FormData) {
   }
 
   revalidatePath('/dashboard', 'layout')
-  redirect(`/dashboard/groups/${group.id}`)
+  return { success: true, redirect: `/dashboard/groups/${group.id}` }
 }

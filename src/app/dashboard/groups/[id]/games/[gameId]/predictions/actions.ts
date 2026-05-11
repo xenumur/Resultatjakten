@@ -149,11 +149,9 @@ export async function saveAllPredictions(
     const { error } = await supabase
       .from('predictions')
       .upsert(predictionsToUpsert, { onConflict: 'user_id, match_id' })
-
-    if (error) {
-      console.error(error)
-    }
+    if (error) return { error: 'Kunde inte spara tips: ' + error.message }
   }
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/predictions`)
+  return { success: true, message: `${predictionsToUpsert.length} tips har sparats!` }
 }
