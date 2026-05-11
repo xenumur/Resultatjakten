@@ -1,6 +1,6 @@
 'use client'
 
-import { gradeBonusAnswer } from '../../actions'
+import { gradeBonusAnswer } from '../../../actions'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
