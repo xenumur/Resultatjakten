@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unload unload_date="2026-04-15 08:45:32">
+<sys_script_include action="INSERT_OR_UPDATE">
+<access>public</access>
+<active>true</active>
+<api_name>global.CanonicalRepo</api_name>
+<caller_access/>
+<client_callable>true</client_callable>
+<description/>
+<mobile_callable>false</mobile_callable>
+<name>CanonicalRepo</name>
+<sandbox_callable>true</sandbox_callable>
+<script><![CDATA[var CanonicalRepo = Class.create();
+CanonicalRepo.prototype = {
+    initialize: function() {
+        this.repoURL = gs.getProperty("glide.cmdb.canonical.url");
+        this.user = gs.getProperty("instance_id");
+        this.password = this._getPassword();
+        this.jobname = gs.getProperty("glide.cmdb.canonical.jobname");
+        this.upload = gs.getProperty("glide.cmdb.canonical.upload", "true");
+        this.download = gs.getProperty("glide.cmdb.canonical.download", "true");
+        this.log = gs.getProperty("glide.cmdb.canonical.log", "true");
+        this.getFullRepo = false;
+    },
+
+    // Need to maintiain this method to keep backwards compatible
+    syncDataWithRepository: function() {
+        this.syncDataWithRepositoryFromClientRegistry();
+    },
+
+    syncDataWithRepositoryByTable: function(table) {
+        if (!this._shouldDownload()) {
+            this.tracker.fail(gs.getMessage("Normalization Sync is disabled"));
+            return;
+        }
+
+        // Check the client registry
+        var gr = new GlideRecord("cds_client_registry");
+        gr.addQuery("table", table);
+        gr.query();
+        while (gr.next()) {
+            var lastUpdatedOn = "";
+            var clientSchedule = this._getScheduleRecord(gr.getValue("sys_id"));
+            if (clientSchedule.next()) {
+                lastUpdatedOn = clientSchedule.getValue("last_updated_on");
+            }
+
+            this.handleTableDownload(gr, lastUpdatedOn);
+        }
+    },
+
+
+    _getPassword: function() {
+        var password = gs.getProperty("sn_data_services.credential");
+        return GlideStringUtil.notNil(password) ? password : gs.getProperty("sn_apprepo.credential");
+    },
+
+    _getScheduleRecord: function(tableSysId) {
+        var clientSchedule = new GlideRecord("cds_client_schedule");
+        clientSchedule.addQuery("table", tableSysId);
+  clientSchedule.addActiveQuery();
+        clientSchedule.query();
+        this._log("Schedule Record Count: " + clientSchedule.getRowCount() + " for table: " + tableSysId);
+        return clientSchedule;
+    },
+
+    _updateSyncTime: function(tableSysId) {
+        var clientSchedule = this._getScheduleRecord(tableSysId);
+        if (clientSchedule.next()) {
+            clientSchedule.setValue("last_updated_on", new GlideDateTime());
+            clientSchedule.update();
+        }
+    },
+
+    _getClientScheduleRecords: function() {
+        var clientTables = [];
+        var clientSchedule = new GlideRecord("cds_client_schedule");
+  clientSchedule.addActiveQuery();
+        clientSchedule.orderBy("order");
+        clientSchedule.query();
+        while (clientSchedule.next()) {
+            var clientRecord = {};
+            clientRecord.table = clientSchedule.getValue("table");
+            clientRecord.last_updated_on = clientSchedule.getValue("last_updated_on");
+            this._log("Table: " + clientRecord.table + " last_updated_on: " + clientRecord.last_updated_on);
+            clientTables.push(clientRecord);
+        }
+
+        return clientTables;
+    },
+
+    _getRegistryRecordBySysId: function(tableSysId) {
+        var gr = new GlideRecord("cds_client_registry");
+        gr.addQuery("sys_id", tableSysId);
+        gr.query();
+        return gr;
+    },
+
+    syncDataWithRepositoryFromClientRegistry: function() {
+        this.tracker = SNC.GlideExecutionTracker.getLastRunning();
+        if (!this._shouldDownload()) {
+            this.tracker.fail(gs.getMessage("Normalization Sync is disabled"));
+            return;
+        }
+
+        this.tracker.setMaxProgressValue(0);
+        this.tracker.run();
+
+        // : at the start of this message because SimpleProgressRendererUi16 cut's off text before the first :
+        this.tracker.updateDetailMessage(gs.getMessage(":Attempting to download data from central repository"));
+        gs.log("Attempting to download data from: " + this.repoURL);
+
+        // Query the client schedule table 
+        var clientTables = this._getClientScheduleRecords();
+
+        // if all of the tables have an empty last_updated_on field, this is the first download
+        var isFirstDownload = true;
+        for (var i = 0; i < clientTables.length; i++) {
+            isFirstDownload = isFirstDownload && JSUtil.nil(clientTables[i].last_updated_on);
+            if (!isFirstDownload)
+              break;
+        }
+
+        var progressBarMax = GlideProperties.getInt("glide.data_services_canonicalization.canonical_repo.dummy_max_records", 1000000);
+
+        this._log("Client Tables: " + clientTables);
+
+        if (isFirstDownload) {
+            // Get Total Rows to be downloaded
+            var dataRowCount = 0;
+            for (var i = 0; i < clientTables.length; i++) {
+                this._log("Trying to get registry record for table: " + clientTables[i].table);
+                var registryRecord = this._getRegistryRecordBySysId(clientTables[i].table);
+                while (registryRecord.next()) {
+                    dataRowCount += Number(this.downloadData(registryRecord, clientTables[i].last_updated_on, true));
+                }
+            }
+            progressBarMax = dataRowCount;
+        }
+        gs.log("Setting progress bar max value to: " + progressBarMax);
+        // set the max row count
+        this.tracker.setMaxProgressValue(progressBarMax);
+
+        // Iterate over all the tables
+        for (var i = 0; i < clientTables.length; i++) {
+            // Check the client registry
+            var gr = this._getRegistryRecordBySysId(clientTables[i].table);
+            while (gr.next()) {
+                this.handleTableDownload(gr, clientTables[i].last_updated_on);
+            }
+        }
+        this.tracker.success("Completed downloading data from the central repository!");
+    },
+
+    handleTableDownload: function(clientRegistryRecord, lastUpdatedOn) {
+        var gr = clientRegistryRecord;
+        gs.log("Attempting to download data from " + gr.getValue("table"));
+
+        var dataRowCount = this.downloadData(gr, lastUpdatedOn);
+        if (dataRowCount === undefined) {
+            gs.log("Error occured while downloading data for table: " + gr.getValue("table") + " from server table: " + gr.getValue("server_table"));
+        } else {
+            if (dataRowCount === 0) {
+                this.tracker.updateDetailMessage(gs.getMessage("No new data to download for table: " + gr.getValue("table")));
+                gs.log("No new data to download for client table: " + gr.getValue("table") + " from server table: " + gr.getValue("server_table"));
+            } else {
+                this._updateSyncTime(gr.getValue("sys_id"));
+                this.tracker.updateDetailMessage(gs.getMessage("Finished downloading data for table: " + gr.getValue("table")));
+                gs.log(gs.getMessage("Finished downloading data for table: " + gr.getValue("table")));
+            }
+        }
+    },
+
+    getFullRepository: function(getFullRepo) {
+        this.getFullRepo = getFullRepo;
+    },
+
+    downloadData: function(clientRegistryRecord, lastUpdatedOn, isJustRetrievingServerCount) {
+        if (!this._shouldDownload()) {
+            this.tracker.fail(gs.getMessage("Normalization Sync is disabled"));
+            return;
+        }
+
+        return this._retrieveData(clientRegistryRecord.getValue("table"), clientRegistryRecord.getValue("server_table"), clientRegistryRecord.getValue("server_filter_criteria"),
+                encodeURIComponent(clientRegistryRecord.getValue("fields")), clientRegistryRecord.getValue("client_server_column_map"), lastUpdatedOn, this._insertOrUpdate, isJustRetrievingServerCount);
+    },
+
+    _buildJSON: function(data) {
+        var json = "";
+        try {
+            var msgBody = {};
+            msgBody.data = data;
+            json = new JSON().encode(msgBody);
+        } catch (ex) {
+            json = null;
+        }
+
+        return json;
+    },
+
+    _retrieveData: function(table, serverTable, filterCriteria, fields, mappings, lastUpdatedOn, processor, isJustRetrievingServerCount) {
+        var sysparmQuery = "";
+        var sysparmNoCount = "&sysparm_no_count=true";
+
+        gs.log("Last Updated On: " + lastUpdatedOn);
+        if (lastUpdatedOn !== undefined && lastUpdatedOn != null && lastUpdatedOn !== "") {
+            lastUpdatedOn = encodeURIComponent(">=" + lastUpdatedOn);
+            sysparmQuery = "sys_updated_on" + lastUpdatedOn + "%5EORDERBYsys_updated_on&";
+        }
+        if (filterCriteria != undefined && filterCriteria != null && filterCriteria != "") {
+            filterCriteria = encodeURIComponent(filterCriteria) + "&";
+            sysparmQuery += filterCriteria;
+        }
+
+        if (sysparmQuery != "") {
+            sysparmQuery = "sysparm_query=" + sysparmQuery;
+        }
+
+        var done = false;
+        var offset = 0;
+        var limit = 5000;
+        var total = 0;
+
+        while (!done) {
+
+            // if querying for total count, set limit to 1 as response body is not used
+            limit = isJustRetrievingServerCount ? 1 : limit;
+
+            var query = "?" + sysparmQuery + "sysparm_fields=" + fields + "&sysparm_limit=" + limit + "&sysparm_offset=" + offset;
+
+            if (!isJustRetrievingServerCount)
+                query += sysparmNoCount;
+
+            var url = this.repoURL;
+            var endpoint = url + "api/now/table/" + serverTable + query;
+            gs.log("Endpoint is : " + endpoint);
+            var request = this._buildRequest(endpoint, "GET");
+            try {
+                if (!isJustRetrievingServerCount)
+                    this.tracker.updateDetailMessage(gs.getMessage("Retrieving data from repository"));
+                var response = request.execute();
+                if (response.getStatusCode() != 200) {
+                    this.tracker.fail(gs.getMessage("Failed retrieving data from repository ") + response.getStatusCode());
+                    gs.log("Failed retrieving data from repository. " + response.getStatusCode());
+                    gs.log(response.getErrorMessage());
+                    return;
+                }
+                if (isJustRetrievingServerCount) {
+                    var serverCount = response.getHeader("X-Total-Count");
+                    if (isNaN(serverCount) || serverCount === null || serverCount === undefined)
+                        throw "Could not get total count from the response header";
+                    return serverCount;
+                }
+
+                var parser = new JSONParser();
+                var result = parser.parse(response.getBody()).result;
+
+                total += result.length;
+                var totalInt = Math.floor(total) + "";
+                if (isNaN(totalInt) || totalInt === null || totalInt === undefined)
+                    throw "Could not compute the total items from the response";
+
+                this.tracker.updateDetailMessage(gs.getMessage("Processing {0} for {1}", [totalInt, table]));
+                var jsonMappings = null;
+                try {
+                    jsonMappings = JSON.parse(mappings);
+                } catch (exception) {}
+
+                for (var i in result) {
+                    processor(result[i], table, jsonMappings);
+                }
+
+                if (result.length == 0)
+                    done = true;
+                else
+                    offset += limit;
+
+                this.tracker.incrementProgressValue(result.length);
+                this.tracker.updateDetailMessage(gs.getMessage("Processed {0} for {1}", [totalInt, table]));
+                gs.log("Processed " + total + " for " + table);
+            } catch (ex) {
+                done = true;
+                this.tracker.fail(gs.getMessage("Error retrieving data from repository. ") + ex);
+                gs.log("Error retrieving data from repository " + ex);
+                return;
+            }
+        }
+        return total;
+    },
+
+    _insertOrUpdate: function(serverRecord, clientTable, mappings) {
+        var setClientColumn = function(gr, serverRecord, serverColumnName, clientColumn) {
+            if (typeof serverRecord[serverColumnName] === 'object') {
+                gr.setValue(clientColumn, serverRecord[serverColumnName]["value"]);
+            } else {
+                gr.setValue(clientColumn, serverRecord[serverColumnName]);
+            }
+        };
+
+        var table = new GlideRecord(clientTable);
+        if (table.isValid()) {
+            var gr = new GlideRecord(clientTable);
+            gr.addQuery("sys_id", serverRecord.sys_id);
+            gr.query();
+            var newRecord = !gr.next();
+            if (newRecord) {
+                gr.initialize();
+                gr.setNewGuidValue(serverRecord.sys_id);
+            } else {
+                //Do not touch it if they have updated it only a case for cds_name
+                if (gr.customer_override == true)
+                    return;
+            }
+
+            var serverClientMappings = {}; // stores server to client mappings
+            for (var key in mappings) {
+                serverClientMappings[mappings[key]] = key;
+            }
+            var serverFields = Object.keys(serverRecord); // stores server column names
+            var fields = gr.getFields();
+            var clientFields = []; // stores client column names
+            for (var i = 0; i < fields.size(); i++) {
+                clientFields.push(fields.get(i).getName());
+            }
+            for (i = 0; i < serverFields.length; i++) {
+                //need to check whether if there is mapping record
+                var serverColumnName = serverFields[i];
+                var clientColumnName = serverClientMappings[serverColumnName];
+                if (clientColumnName !== undefined) {
+                    //found a mapping
+                    setClientColumn(gr, serverRecord, serverColumnName, clientColumnName);
+                } else {
+                    if (clientFields.indexOf(serverColumnName) === -1) {
+                        continue;
+                    }
+                    clientColumnName = serverColumnName;
+                    setClientColumn(gr, serverRecord, serverColumnName, clientColumnName);
+                }
+            }
+            gr.setWorkflow(false);
+            gr.setUseEngines(false);
+            gr.setEngineParameter("responders_active", false); //switch off recorder watcher
+            if (newRecord)
+                gr.insert();
+            else
+                gr.update();
+        }
+    },
+
+    _buildRequest: function(endpoint, methodType) {
+        var auth = "sn_data_services.Dataservices" + " " + this.user + " " + this.password;
+
+        var request = new sn_ws.RESTMessageV2();
+        request.setEndpoint(endpoint);
+        request.setHttpMethod(methodType);
+        request.setRequestHeader("Accept", "application/json");
+        request.setRequestHeader("Authorization", auth);
+        request.setRequestHeader("Accept-Encoding", "gzip");
+        return request;
+    },
+
+    /**
+     * Returns a random integer between min (inclusive) and max (inclusive)
+     * Using Math.round() will give you a non-uniform distribution!
+     */
+    _getRandomInt: function(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+
+    _isUploadEnabled: function() {
+        var serverUrl = this.repoURL;
+        var endpoint = serverUrl + "/api/sn_data_services/cds_server_staging_upload/enable_upload";
+        var request = this._buildRequest(endpoint, "POST");
+        var data = {
+            "enable_upload": gs.getProperty("glide.cmdb.canonical.upload.enable", "false")
+        };
+        request.setRequestBody(this._buildJSON(data));
+        var response = request.execute();
+        if (response.getStatusCode() != 200) {
+            gs.warn("Error getting upload enable from canonical repository. " + response.getStatusCode());
+            return false;
+        }
+        var resp = new JSON().decode(response.getBody());
+        var result = resp.result;
+        return result.access_allowed;
+    },
+
+    _shouldUpload: function() {
+        if (this.upload === "false") {
+            gs.log("Canonicalization upload is disabled");
+            return false;
+        }
+        var enabled = this._isUploadEnabled();
+        if (!enabled)
+            gs.log("Not sufficient permissions to upload data to the Cannonical Repo");
+
+        return enabled;
+    },
+
+    _shouldDownload: function() {
+        if (this.download === "false") {
+            gs.log("Canonicalization download is disabled");
+            return false;
+        }
+
+        return true;
+    },
+
+    _log: function(message) {
+        if (this.log === "false") {
+            return;
+        }
+
+        gs.log("CanonicalRepo: " + message);
+    },
+
+    // ***** POST READY CHANGES BACK TO SERVER ***** 
+    postReadyChanges: function() {
+        if (!this._shouldUpload())
+            return;
+
+        var tables = this._getTables();
+        for (var i = 0; i < tables.length; i++) {
+            var registryRecord = this._getRegistryRecord(tables[i]);
+            if (registryRecord == null)
+                continue;
+
+            this._processUploads(tables[i], registryRecord);
+        }
+    },
+
+    _getTables: function() {
+        var tables = [];
+        var gr = new GlideAggregate("cds_client_staging");
+        gr.addQuery("state", "ready");
+        gr.groupBy("source_table");
+        gr.query();
+        while (gr.next()) {
+            tables.push(gr.getValue("source_table"));
+        }
+
+        return tables;
+    },
+
+    _getRegistryRecord: function(table) {
+        var gr = new GlideRecord("cds_server_registry");
+        if (!gr.isValid()) {
+            return null;
+        }
+
+        gr.addQuery("table", table);
+        gr.query();
+        if (!gr.next()) {
+            gs.log("Could not find the corresponding registry record for table: " + table);
+            return null;
+        }
+
+        this._log("Looking up registry record for " + table + " SysId: " + gr.getValue("sys_id"));
+        return gr;
+    },
+
+    _processUploads: function(source_table, registryRecord) {
+        var start = 0;
+        var end = 100;
+        var done = false;
+        while (!done) {
+            var changes = this._getStagingRecords(start, end, source_table);
+            if (end > changes.getRowCount())
+                done = true;
+
+            var data = [];
+            data = this._packageData(changes);
+
+            var json = this._buildJSON(data);
+            //If malformed or nothing to send, return
+            if (gs.nil(json) || data.length == 0)
+                return;
+
+            gs.print("JSON DATA is : " + json);
+            this._postChangesToRepo(json, registryRecord.getValue("server_endpoint"));
+        }
+    },
+
+    _getStagingRecords: function(start, end, source_table) {
+        var changes = new GlideRecord("cds_client_staging");
+        changes.orderBy("sys_updated_on");
+        changes.addQuery("state", "ready");
+        changes.addQuery("source_table", source_table);
+        changes.chooseWindow(start, end, true);
+        changes.query();
+
+        this._log("_getStagingRecords: Changes are: " + changes.getRowCount() + " , SourceTable: " + source_table);
+        return changes;
+    },
+
+    _packageData: function(changes) {
+        var data = [];
+        while (changes.next()) {
+            var d = this._updateClientRecord(changes);
+            data.push(d);
+        }
+
+        return data;
+    },
+
+    _updateClientRecord: function(changes) {
+        var d = {};
+        d.target_server_table = "cds_server_staging";
+        d.discovered_name = changes.getValue("discovered_name");
+        d.discovered_name_hash = CanonicalUtil.getHash(changes.getValue("discovered_name"));
+        d.frequency = changes.getValue("frequency");
+        d.field = changes.getValue("field");
+        d.table = changes.getValue("table");
+        d.source_field = changes.getValue("source_field");
+        d.source_table = changes.getValue("source_table");
+        changes.state = 'processed';
+        changes.update();
+        return d;
+    },
+
+    _postChangesToRepo: function(json, serverUrl) {
+        if (serverUrl === undefined)
+            serverUrl = this.repoURL;
+        var endpoint = serverUrl + "/api/sn_data_services/cds_server_staging_upload";
+        var request = this._buildRequest(endpoint, "POST");
+        request.setRequestBody(json);
+        var response = request.execute();
+        if (response.getStatusCode() != 200) {
+            gs.warn("Error sending to canonical repository. " + response.getStatusCode());
+            gs.warn(response.getErrorMessage());
+        }
+
+        return response.getStatusCode();
+    },
+
+    type: 'CanonicalRepo'
+};]]></script>
+<sys_class_name>sys_script_include</sys_class_name>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2015-12-30 14:24:03</sys_created_on>
+<sys_id>8e685c1747a01200c17e19fbac9a7106</sys_id>
+<sys_mod_count>125</sys_mod_count>
+<sys_name>CanonicalRepo</sys_name>
+<sys_package display_value="Normalization Data Services Client" source="com.glide.data_services_canonicalization.client">01db9cb659ef2210f5fc92154d3f2997</sys_package>
+<sys_policy/>
+<sys_scope display_value="Global">global</sys_scope>
+<sys_update_name>sys_script_include_8e685c1747a01200c17e19fbac9a7106</sys_update_name>
+<sys_updated_by>bharathi.vatsavai@snc</sys_updated_by>
+<sys_updated_on>2023-10-10 21:11:10</sys_updated_on>
+</sys_script_include>
+<sn_kmf_record_signature action="INSERT_OR_UPDATE">
+<certificate_alias display_value="code_signing_key_washington_pki_publiccodesignver">5936923db4e57190f87716af5f9a673e</certificate_alias>
+<document_id>8e685c1747a01200c17e19fbac9a7106</document_id>
+<field_list>active,client_callable,sys_policy,script</field_list>
+<is_attachment>false</is_attachment>
+<jurisdiction_alias>SN_Authored</jurisdiction_alias>
+<purpose display_value="">wild_card_purpose</purpose>
+<signature>Ad8FBAcvv2WsKKsQawOn2P66XDBUxP9S1yEsPoXJh0tmIpvGaClZquf6CgAcEz9j7liVAVmn3DegY5J8+PZJTP1dfA1viHMe93K5DuSqWP1+cfY/aZP0XPmv2W3VK6NOkDQqP1LCS67NuBurXmfEwrr/lmadsZTOr42BUd8nRNpKQQloIk0VxVWamvHa19/Umj+pGaAameN2iG75ZLfMAnnqS46V7FfFT/exYGmP/MG31otDt84eHdf0tJbFYRw1jJ6i2ZGC+T8rrXzgE/kM1N+29pfJL+KClE7N/IEXgKKrNJeRaHT5nvPGgvRn6CYkvlIc4BN51HogakBVWi+qERysHEucSmSASoLOqZvnSbfIjf5KxVP50w1QdP7m47Pk5zt4Uq1aF7etNN3kdZ5hxXTxgmrwpyLu30ijxnzWAoxDOCM48ARSozCKTlB6la70NGHF/L/dd/xQCQiI7Bv8UawSgzqMyMU7XbpX/Y7K7mON8xrnzu3pNu9PLkQdVgS/ZwWAFp19H8fR4u3kGB5Qv7s4BSl6YbRQ8a5KgvN6XbqVr2pjl8axqPGihES80mboRdEV/HTUTX2ynk/kCpbTCll6jBXXQJYnL4B1iW8Pkcz3K35aXD2qjxcSh5fwWLuNHdDG+pCobooiIEkl3Ce8TPMVGU1+TfsbcymjyaHa2Zs=</signature>
+<signature_algorithm>SHA512withRSA</signature_algorithm>
+<signature_timestamp>{"econtent_type":"com.snc.core.codesigning.timestamp.agents.response.CodeSigningTimeStampResponse","econtent":{"status":{"code":"GRANTED","infomation":"The time stamp is successfully granted.","failure_message":""},"timestamp_token":{"econtent_type":"com.snc.core.codesigning.timestamp.agents.response.TimeStampToken","econtent":{"encapsulated_content":{"econtent_type":"com.snc.core.codesigning.timestamp.agents.response.TimeStampContent","econtent":{"version":"v1","serial_number":"20250403085554","message_imprint":{"econtent_type":"com.snc.core.codesigning.timestamp.agents.request.SignatureHashMessageImprint","econtent":{"message_digest":[125,-24,-87,3,-124,65,-45,-57,93,-43,-116,-42,123,-5,76,-47,34,-72,25,-122,29,-84,-3,-75,56,92,-76,-74,-91,55,-15,-6],"hash_algorithm":"SHA3-256"}},"time_stamp":"20250403085554Z","time_accuracy":"040000Z"}},"signer_infos":[{"signature":[-81,-48,-47,-89,108,-43,-20,-12,69,91,-27,-8,-116,121,48,34,-70,-28,29,75,-59,80,27,122,62,-120,111,16,-22,-15,49,103,48,106,11,-80,-105,-22,-69,-2,8,40,33,-12,-67,-40,3,-82,62,41,12,-122,32,-64,-88,-34,-117,-15,-93,-74,53,96,-44,58,116,102,-47,25,-91,-31,-124,5,-19,60,56,34,-12,-126,-97,-4,99,-36,-113,25,27,-18,-93,39,34,63,-84,-7,34,-4,-95,-56,-123,-3,-58,-21,28,31,-43,75,-63,-12,-89,73,12,110,126,-104,-38,3,121,28,88,-115,37,-52,-44,64,87,38,87,-3,-106,-37,122,77,-84,-83,-45,108,-84,-77,-126,-77,-19,-99,115,72,36,-56,-40,-66,-73,-26,-122,79,-18,31,0,-65,-1,82,48,-22,-61,58,86,-86,53,122,96,-2,103,-61,5,-7,-96,-76,52,-106,37,-109,44,17,120,-10,-31,-12,-15,-25,-17,8,38,-126,-89,69,16,-127,-38,-28,96,113,104,-65,99,-14,-57,77,-59,90,-70,115,-88,-26,125,45,106,-87,53,61,-86,42,-67,-25,79,-24,15,75,-68,-86,-99,-94,84,-60,-44,102,65,84,58,0,-104,-102,-53,51,95,-69,68,122,2,-38,-93,-3,-89,109,-50,-58,-8,-42,51,-94,-39,35,-114,-86,-121,-44,-33,55,86,-4,-30,-126,58,98,-72,77,-97,-114,-6,-45,127,-90,-107,-114,99,102,106,-63,-39,-105,-16,-65,-36,2,62,23,49,92,-121,-8,-72,-65,-27,98,92,92,77,75,-95,-70,-25,-15,55,-31,-17,74,3,-83,117,-5,-110,61,106,-62,-125,101,-120,27,-85,99,-79,-74,-29,-91,42,119,16,16,98,54,-34,-123,-124,-72,-39,45,-49,-121,12,62,-90,-89,59,-93,-63,92,-12,-14,54,107,31,-62,37,-103,-58,-128,57,-93,-7,-95,8,-86,19,-39,-64,-61,77,-118,-17,51,-72,-40,-41,-121,12,10,43,-45,54,-125,80,-128,7,56,63,98,-111,82,37,-19,-77,-57,65,56,40,-109,44,-124,6,-33,6,-79,53,109,-66,1,87,-37,-76,96,74,-23,-98,16,-79,0,-100,11,-22,-50,21,-91,115,-48,37,73,44,76,-124,-119,84,-60,124,-34,25,-26,72,110,18,121,86,70,-17,69,-43,-88,54,61,72,-4,15,-59,-120,-69,-89,123,-106,-17,-122,51,-31,-26,58,-70,72,-22,76,13,94,25,-79,-109,-114,127,-101,-33,49,-91,-34,-103,85,-22,-6,0,-92,-110,-92,-47,-80,4,-68,-87,99,-67,60,82,-90,57,-108,-128,88,124,-8,-26,-102,7,-86,-114],"signature_algorithm_identifier":"SHA512withRSA","certificate_identifier":"code_signing_key_washington_pki_publiccodesignver"}]}}}}</signature_timestamp>
+<sys_class_name>sn_kmf_record_signature</sys_class_name>
+<sys_created_by>u01pan-t1</sys_created_by>
+<sys_created_on>2025-08-27 11:44:14</sys_created_on>
+<sys_id>20cff7b27cd7488da53ca7e162b0b859</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_name/>
+<sys_package display_value="Normalization Data Services Client" source="com.glide.data_services_canonicalization.client">01db9cb659ef2210f5fc92154d3f2997</sys_package>
+<sys_policy>protected</sys_policy>
+<sys_scope display_value="Global">global</sys_scope>
+<sys_update_name>sn_kmf_record_signature_20cff7b27cd7488da53ca7e162b0b859</sys_update_name>
+<sys_updated_by>u01pan-t1</sys_updated_by>
+<sys_updated_on>2025-08-27 11:44:14</sys_updated_on>
+<table_name>sys_script_include</table_name>
+<validation_params>{"fVersion":"2.0.0"}</validation_params>
+</sn_kmf_record_signature>
+</unload>
+ 
