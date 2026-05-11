@@ -125,7 +125,7 @@ export default async function GroupDetailPage({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border-2 border-amber-200 dark:border-amber-900/30 p-6 rounded-3xl relative overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border-2 border-amber-200 dark:border-amber-900/30 p-6 rounded-3xl relative overflow-hidden shadow-sm">
              <div className="absolute top-0 right-0 p-3 opacity-10">
                <Trophy className="w-16 h-16 text-amber-500" />
              </div>
@@ -134,14 +134,20 @@ export default async function GroupDetailPage({
              <p className="text-xs text-zinc-500 mt-1">Guldmedaljören</p>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl">
-             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">2:a Pris (25%)</span>
+          <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 p-6 rounded-3xl relative overflow-hidden shadow-sm">
+             <div className="absolute top-0 right-0 p-3 opacity-5">
+               <Medal className="w-16 h-16 text-zinc-400" />
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">2:a Pris (25%)</span>
              <div className="text-2xl font-black text-zinc-900 dark:text-white mt-3">{formatMoney(prizes.second)}</div>
              <p className="text-xs text-zinc-500 mt-1">Silvermedaljören</p>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl">
-             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">3:e Pris (10%)</span>
+          <div className="bg-white dark:bg-zinc-900 border-2 border-orange-200 dark:border-orange-900/30 p-6 rounded-3xl relative overflow-hidden shadow-sm bg-gradient-to-br from-white to-orange-50/30 dark:from-zinc-900 dark:to-orange-900/5">
+             <div className="absolute top-0 right-0 p-3 opacity-10">
+               <Medal className="w-16 h-16 text-orange-600" />
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest text-orange-700 dark:text-orange-400">3:e Pris (10%)</span>
              <div className="text-2xl font-black text-zinc-900 dark:text-white mt-3">{formatMoney(prizes.third)}</div>
              <p className="text-xs text-zinc-500 mt-1">Bronsmedaljören</p>
           </div>
