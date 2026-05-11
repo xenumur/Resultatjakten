@@ -81,55 +81,76 @@ export class OpenFootballProvider implements TournamentProvider {
         const h = item.team1;
         const a = item.team2;
         
-        // Exempel på mappning från artikeln
-        const svtMatches = [
-          'Kanada - Bosnien och Hercegovina',
-          'Brasilien - Marocko',
-          'Haiti - Skottland',
-          'Sverige - Tunisien',
-          'Spanien - Kap Verde',
-          'Belgien - Egypten',
-          'Frankrike - Senegal',
-          'USA - Australien',
-          'Skottland - Marocko',
-          'Tunisien - Japan',
-          'Argentina - Österrike',
-          'Frankrike - Irak',
-          'Norge - Senegal',
-          'Portugal - Uzbekistan',
-          'England - Ghana',
-          'Sydafrika - Sydkorea',
-          'Tjeckien - Mexiko',
-          'Curacao - Elfenbenskusten',
-          'Ecuador - Tyskland',
-          'Tunisien - Nederländerna',
-          'Japan - Sverige',
-          'Panama - England',
-          'Kroatien - Ghana'
+        // Normalisera namn för jämförelse (ta bort accenter, små bokstäver)
+        const normalize = (name: string) => {
+          if (!name) return '';
+          return name.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Ta bort accenter (t.ex. ç -> c)
+            .replace(/[^a-z0-9]/g, '');    // Ta bort specialtecken och mellanslag
+        };
+
+        // Mappning från SVT (översatt till engelska för att matcha API-datan)
+        const svtMatchesEn = [
+          ['Canada', 'Bosnia and Herzegovina'],
+          ['Brazil', 'Morocco'],
+          ['Haiti', 'Scotland'],
+          ['Sweden', 'Tunisia'],
+          ['Spain', 'Cape Verde'],
+          ['Belgium', 'Egypt'],
+          ['France', 'Senegal'],
+          ['USA', 'Australia'],
+          ['United States', 'Australia'],
+          ['Scotland', 'Morocco'],
+          ['Tunisia', 'Japan'],
+          ['Argentina', 'Austria'],
+          ['France', 'Iraq'],
+          ['Norway', 'Senegal'],
+          ['Portugal', 'Uzbekistan'],
+          ['England', 'Ghana'],
+          ['South Africa', 'South Korea'],
+          ['Czech Republic', 'Mexico'],
+          ['Curacao', 'Ivory Coast'],
+          ['Curacao', 'Cote d\'Ivoire'],
+          ['Ecuador', 'Germany'],
+          ['Tunisia', 'Netherlands'],
+          ['Japan', 'Sweden'],
+          ['Panama', 'England'],
+          ['Croatia', 'Ghana']
         ];
         
-        const matchKey = `${h} - ${a}`;
-        if (svtMatches.includes(matchKey)) {
+        const normH = normalize(h);
+        const normA = normalize(a);
+        
+        const isSvt = svtMatchesEn.some(([sh, sa]) => 
+          normalize(sh) === normH && normalize(sa) === normA
+        );
+
+        if (isSvt) {
           broadcaster = 'SVT';
         } else {
-          // De flesta andra är TV4 enligt artikeln ("TV4 visar fler matcher")
-          // Vi sätter TV4 som default för de vi vet visas där, eller lämnar null om osäkert.
-          const tv4Matches = [
-             'Mexiko - Sydafrika', 'Sydkorea - Tjeckien', 'USA - Paraguay', 'Qatar - Schweiz', 
-             'Australien - Turkiet', 'Tyskland - Curacao', 'Nederländerna - Japan', 
-             'Elfbenskusten - Ecuador', 'Saudiarabien - Uruguay', 'Iran - Nya Zeeland',
-             'Irak - Norge', 'Argentina - Algeriet', 'Österrike - Jordanien',
-             'Portugal - DR Kongo', 'England - Kroatien', 'Ghana - Panama', 'Uzbekistan - Colombia',
-             'Tjeckien - Sydafrika', 'Schweiz - Bosnien och Hercegovina', 'Kanada - Qatar', 'Mexiko - Sydkorea',
-             'Brasilien - Haiti', 'Turkiet - Paraguay', 'Nederländerna - Sverige', 'Tyskland - Elfbenskusten',
-             'Ecuador - Curaçao', 'Spanien - Saudiarabien', 'Belgien - Iran', 'Uruguay - Kap Verde', 'Nya Zeeland - Egypten',
-             'Jordanien - Algeriet', 'Panama - Kroatien', 'Colombia - DR Kongo', 'Schweiz - Kanada', 'Bosnien och Hercegovina - Qatar',
-             'Marocko - Haiti', 'Skottland - Brasilien', 'Turkiet - USA', 'Paraguay - Australien',
-             'Norge - Frankrike', 'Senegal - Irak', 'Kap Verde - Saudiarabien', 'Uruguay - Spanien',
-             'Nya Zeeland - Belgien', 'Egypten - Iran', 'Demokratiska republiken Kongo - Uzbekistan',
-             'Colombia - Portugal', 'Algeriet - Österrike', 'Jordanien - Argentina'
+          // De flesta andra är TV4 enligt SVT-artikeln
+          const tv4MatchesEn = [
+             ['Mexico', 'South Africa'], ['South Korea', 'Czech Republic'], ['USA', 'Paraguay'], ['United States', 'Paraguay'],
+             ['Qatar', 'Switzerland'], ['Australia', 'Turkey'], ['Germany', 'Curacao'], ['Netherlands', 'Japan'], 
+             ['Ivory Coast', 'Ecurador'], ['Cote d\'Ivoire', 'Ecuador'], ['Saudi Arabia', 'Uruguay'], ['Iran', 'New Zealand'],
+             ['Iraq', 'Norway'], ['Argentina', 'Algeria'], ['Austria', 'Jordan'],
+             ['Portugal', 'DR Congo'], ['England', 'Croatia'], ['Ghana', 'Panama'], ['Uzbekistan', 'Colombia'],
+             ['Czech Republic', 'South Africa'], ['Switzerland', 'Bosnia and Herzegovina'], ['Canada', 'Qatar'], ['Mexico', 'South Korea'],
+             ['Brazil', 'Haiti'], ['Turkey', 'Paraguay'], ['Netherlands', 'Sweden'], ['Germany', 'Ivory Coast'], ['Germany', 'Cote d\'Ivoire'],
+             ['Ecuador', 'Curacao'], ['Spain', 'Saudi Arabia'], ['Belgium', 'Iran'], ['Uruguay', 'Cape Verde'], ['New Zealand', 'Egypt'],
+             ['Jordan', 'Algeria'], ['Panama', 'Croatia'], ['Colombia', 'DR Congo'], ['Switzerland', 'Canada'], ['Bosnia and Herzegovina', 'Qatar'],
+             ['Morocco', 'Haiti'], ['Scotland', 'Brazil'], ['Turkey', 'USA'], ['Turkey', 'United States'], ['Paraguay', 'Australia'],
+             ['Norway', 'France'], ['Senegal', 'Iraq'], ['Cape Verde', 'Saudi Arabia'], ['Uruguay', 'Spain'],
+             ['New Zealand', 'Belgium'], ['Egypt', 'Iran'], ['DR Congo', 'Uzbekistan'],
+             ['Colombia', 'Portugal'], ['Algeria', 'Austria'], ['Jordan', 'Argentina']
           ];
-          if (tv4Matches.includes(matchKey)) {
+          
+          const isTv4 = tv4MatchesEn.some(([th, ta]) => 
+            normalize(th) === normH && normalize(ta) === normA
+          );
+
+          if (isTv4) {
             broadcaster = 'TV4';
           }
         }
