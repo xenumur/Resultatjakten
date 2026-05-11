@@ -69,7 +69,14 @@ export function PushNotificationManager() {
             </div>
             <div>
               <h4 className="font-bold text-zinc-900 dark:text-white">Missa inget!</h4>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Få notiser om matchstart och resultat direkt i mobilen.</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Få notiser om matchstart och resultat direkt i mobilen.
+                {/iPad|iPhone|iPod/.test(navigator.userAgent) && (
+                  <span className="block mt-1 text-indigo-500 font-bold">
+                    Tips: Klicka på "Dela" och välj "Lägg till på hemskärmen" först.
+                  </span>
+                )}
+              </p>
             </div>
           </div>
           

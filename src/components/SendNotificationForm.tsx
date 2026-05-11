@@ -13,6 +13,20 @@ interface SendNotificationFormProps {
 export function SendNotificationForm({ groupId }: SendNotificationFormProps) {
   const [isOpen, setIsOpen] = useState(false)
   
+  const [subCount, setSubCount] = useState<number | null>(null)
+  
+  useEffect(() => {
+    // Hämta antal prenumeranter för denna grupp
+    async function fetchSubCount() {
+      const response = await fetch(`/api/push/count?groupId=${groupId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setSubCount(data.count)
+      }
+    }
+    if (isOpen) fetchSubCount()
+  }, [isOpen, groupId])
+
   const [state, formAction] = useActionState(async (prevState: any, formData: FormData) => {
     const title = formData.get('title') as string
     const content = formData.get('content') as string
@@ -68,6 +82,13 @@ export function SendNotificationForm({ groupId }: SendNotificationFormProps) {
               className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-2 focus:ring-indigo-500 outline-none transition"
             />
           </div>
+          
+          {subCount !== null && (
+            <div className="text-xs font-semibold text-zinc-500 bg-zinc-100 dark:bg-zinc-800/50 p-3 rounded-xl flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${subCount > 0 ? 'bg-emerald-500' : 'bg-zinc-400'}`}></div>
+              {subCount} {subCount === 1 ? 'deltagare' : 'deltagare'} har aktiverat push-notiser i denna grupp.
+            </div>
+          )}
           
           <div className="flex gap-3 pt-2">
             <button 
