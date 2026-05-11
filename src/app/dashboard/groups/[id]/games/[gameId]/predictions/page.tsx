@@ -182,9 +182,21 @@ export default async function PredictionsPage({
           </div>
         ))}
 
-        <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 flex justify-center pb-safe">
-          <button type="submit" className="w-full max-w-sm flex items-center justify-center gap-3 bg-indigo-600 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-base md:text-lg hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-xl shadow-indigo-600/20">
-            <Save className="w-5 h-5 md:w-6 md:h-6" />
+        {/* Flytande spara-knapp för mobilen (uppe till höger, bredvid logout) */}
+        <div className="md:hidden fixed top-[env(safe-area-inset-top,0px)] right-14 h-[60px] flex items-center z-[60]">
+          <button 
+            type="submit" 
+            className="flex items-center justify-center bg-indigo-600 text-white p-3 rounded-full shadow-lg shadow-indigo-600/30 active:scale-90 transition-all border-2 border-white dark:border-zinc-900"
+            title="Spara Alla Tips"
+          >
+            <Save className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Spara-knapp för desktop (längst ner) */}
+        <div className="hidden md:flex fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 justify-center">
+          <button type="submit" className="w-full max-w-sm flex items-center justify-center gap-3 bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-xl shadow-indigo-600/20">
+            <Save className="w-6 h-6" />
             Spara Alla Tips
           </button>
         </div>
