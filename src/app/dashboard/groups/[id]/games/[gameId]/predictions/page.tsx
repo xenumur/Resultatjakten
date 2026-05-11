@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { saveAllPredictions } from './actions'
 import { ArrowLeft, Lock, Unlock, CheckCircle2, Save } from 'lucide-react'
 import { PredictionsForm } from './PredictionsForm'
+import { countryToFlag } from '@/lib/utils/flags'
 
 export default async function PredictionsPage({
   params,
@@ -120,7 +121,10 @@ export default async function PredictionsPage({
                               {!allTeams.includes(match.home_team) && <option value={match.home_team}>{match.home_team}</option>}
                             </select>
                           ) : (
-                            <span className="font-extrabold text-sm md:text-xl mb-2 md:mb-4 text-center tracking-tight text-zinc-900 dark:text-white truncate w-full">{match.home_team}</span>
+                            <span className="font-extrabold text-sm md:text-xl mb-2 md:mb-4 text-center tracking-tight text-zinc-900 dark:text-white truncate w-full flex flex-col items-center gap-1">
+                              <span className="text-2xl md:text-4xl">{countryToFlag(match.home_team)}</span>
+                              {match.home_team}
+                            </span>
                           )}
                           <input 
                             type="number" 
@@ -147,7 +151,10 @@ export default async function PredictionsPage({
                               {!allTeams.includes(match.away_team) && <option value={match.away_team}>{match.away_team}</option>}
                             </select>
                           ) : (
-                            <span className="font-extrabold text-sm md:text-xl mb-2 md:mb-4 text-center tracking-tight text-zinc-900 dark:text-white truncate w-full">{match.away_team}</span>
+                            <span className="font-extrabold text-sm md:text-xl mb-2 md:mb-4 text-center tracking-tight text-zinc-900 dark:text-white truncate w-full flex flex-col items-center gap-1">
+                              <span className="text-2xl md:text-4xl">{countryToFlag(match.away_team)}</span>
+                              {match.away_team}
+                            </span>
                           )}
                           <input 
                             type="number" 

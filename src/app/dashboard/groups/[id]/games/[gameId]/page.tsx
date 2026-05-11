@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { countryToFlag } from '@/lib/utils/flags'
 
 export default async function GameDetailPage({
   params,
@@ -99,9 +100,15 @@ export default async function GameDetailPage({
                         {format(new Date(match.kickoff_time), 'yyyy-MM-dd HH:mm')} {match.venue && `• ${match.venue}`}
                       </p>
                       <div className="flex items-center justify-center md:justify-start gap-3 md:gap-4 text-base md:text-lg font-bold">
-                        <span className="w-24 md:w-32 text-right">{match.home_team}</span>
+                        <span className="w-28 md:w-40 text-right flex items-center justify-end gap-2">
+                          {match.home_team}
+                          <span className="text-xl md:text-2xl shrink-0">{countryToFlag(match.home_team)}</span>
+                        </span>
                         <span className="px-2 md:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md text-zinc-500 text-xs md:text-sm shrink-0">vs</span>
-                        <span className="w-24 md:w-32 text-left">{match.away_team}</span>
+                        <span className="w-28 md:w-40 text-left flex items-center justify-start gap-2">
+                          <span className="text-xl md:text-2xl shrink-0">{countryToFlag(match.away_team)}</span>
+                          {match.away_team}
+                        </span>
                       </div>
                       {prediction && (
                         <div className="mt-3 inline-block bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-4 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-indigo-100 dark:border-indigo-800/50">
