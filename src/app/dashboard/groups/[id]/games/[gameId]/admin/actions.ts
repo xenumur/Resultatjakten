@@ -214,14 +214,26 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
     })
 
     for (const liveMatch of liveMatches) {
-      const existingMatch = dbMatches.find(m =>
-        m.external_match_id === liveMatch.external_match_id ||
-        (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team)
+      const isKnockout = liveMatch.stage && (
+        liveMatch.stage.toLowerCase().includes('round') || 
+        liveMatch.stage.toLowerCase().includes('final') || 
+        liveMatch.stage.toLowerCase().includes('quarter') || 
+        liveMatch.stage.toLowerCase().includes('semi') ||
+        liveMatch.stage.toLowerCase().includes('play-off')
       )
 
+      const existingMatch = dbMatches.find(m => {
+        // Om det är slutspel (Round of 32+), matcha primärt på api_match_num om det finns
+        if (isKnockout && liveMatch.api_match_num && m.api_match_num === liveMatch.api_match_num) {
+          return true
+        }
+        
+        // Fallback på external_match_id eller team names
+        return m.external_match_id === liveMatch.external_match_id ||
+               (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team)
+      })
+
       if (existingMatch) {
-        // Synk sparar ALLTID bara i provider_*-kolumnerna.
-        // Det är alltid admins beslut att tillämpa försämringen.
         await supabase
           .from('matches')
           .update({
@@ -232,10 +244,10 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
             provider_status: liveMatch.status,
             provider_home_team: liveMatch.home_team,
             provider_away_team: liveMatch.away_team,
+            api_match_num: liveMatch.api_match_num // Uppdatera num om det saknades
           })
           .eq('id', existingMatch.id)
       } else {
-        // Ny match – lägg in den med provider-data som startvärde
         await supabase
           .from('matches')
           .insert({
@@ -256,6 +268,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
             provider_status: liveMatch.status,
             provider_home_team: liveMatch.home_team,
             provider_away_team: liveMatch.away_team,
+            api_match_num: liveMatch.api_match_num
           })
       }
     }

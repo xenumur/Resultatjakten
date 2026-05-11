@@ -57,7 +57,8 @@ export async function createGame(groupId: string, prevState: any, formData: Form
         group_name: m.group_name,
         venue: m.venue,
         status: m.status,
-        source_provider: providerId
+        source_provider: providerId,
+        api_match_num: m.api_match_num
       }))
 
       const { error: matchesError } = await supabase

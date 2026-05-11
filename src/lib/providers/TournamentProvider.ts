@@ -9,6 +9,7 @@ export interface MatchData {
   status: 'upcoming' | 'live' | 'finished';
   final_home_score?: number;
   final_away_score?: number;
+  api_match_num?: number;
 }
 
 export interface TournamentProvider {

@@ -86,6 +86,7 @@ export class OpenFootballProvider implements TournamentProvider {
         status: status as 'upcoming' | 'live' | 'finished',
         final_home_score: homeScore,
         final_away_score: awayScore,
+        api_match_num: item.num,
       };
     });
   }
