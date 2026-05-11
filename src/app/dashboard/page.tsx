@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Users, Plus, Trophy, ChevronRight, LayoutGrid, UserGroupIcon } from 'lucide-react'
+import { Users, Plus, Trophy, ChevronRight, LayoutGrid } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
