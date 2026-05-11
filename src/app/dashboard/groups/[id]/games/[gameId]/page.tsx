@@ -38,6 +38,15 @@ export default async function GameDetailPage({
     .eq('id', gameId)
     .single()
 
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  const isAdmin = member?.role === 'admin'
+
   if (error || !game) {
     return <div className="p-12 text-center">Spelet hittades inte.</div>
   }
@@ -85,9 +94,11 @@ export default async function GameDetailPage({
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/knockout`} className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
             🏆 Slutspelstips
           </Link>
-          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin`} className="px-5 py-2 border-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20 text-amber-700 dark:text-amber-500 font-bold rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition flex items-center gap-2">
-            👑 Admin
-          </Link>
+          {isAdmin && (
+            <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin`} className="px-5 py-2 border-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20 text-amber-700 dark:text-amber-500 font-bold rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition flex items-center gap-2">
+              👑 Admin
+            </Link>
+          )}
         </div>
       </div>
 
