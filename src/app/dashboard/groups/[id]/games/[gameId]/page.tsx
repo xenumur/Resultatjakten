@@ -93,29 +93,29 @@ export default async function GameDetailPage({
                 {groupMatches.map((match: any) => {
                   const prediction = predictionMap.get(match.id);
                   return (
-                  <li key={match.id} className="p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-1">
+                  <li key={match.id} className="p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-6">
+                    <div className="flex flex-col items-center md:items-start w-full md:w-auto">
+                      <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-2">
                         {format(new Date(match.kickoff_time), 'yyyy-MM-dd HH:mm')} {match.venue && `• ${match.venue}`}
                       </p>
-                      <div className="flex items-center gap-4 text-lg font-bold">
-                        <span className="w-32 text-right">{match.home_team}</span>
-                        <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md text-zinc-500 text-sm">vs</span>
-                        <span className="w-32">{match.away_team}</span>
+                      <div className="flex items-center justify-center md:justify-start gap-3 md:gap-4 text-base md:text-lg font-bold">
+                        <span className="w-24 md:w-32 text-right">{match.home_team}</span>
+                        <span className="px-2 md:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md text-zinc-500 text-xs md:text-sm shrink-0">vs</span>
+                        <span className="w-24 md:w-32 text-left">{match.away_team}</span>
                       </div>
                       {prediction && (
-                        <div className="mt-3 inline-block bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-3 py-1 rounded-lg text-sm font-bold border border-indigo-100 dark:border-indigo-800/50">
+                        <div className="mt-3 inline-block bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-4 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-indigo-100 dark:border-indigo-800/50">
                           Ditt tips: {prediction.predicted_home_score} - {prediction.predicted_away_score}
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center shrink-0">
                       {match.status === 'upcoming' ? (
-                         <span className="px-3 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-bold rounded-full uppercase tracking-wider">Kommande</span>
+                         <span className="px-4 py-1.5 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-[10px] md:text-xs font-black rounded-full uppercase tracking-widest">Kommande</span>
                       ) : match.status === 'live' ? (
-                         <span className="px-3 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold rounded-full uppercase tracking-wider animate-pulse">Live</span>
+                         <span className="px-4 py-1.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] md:text-xs font-black rounded-full uppercase tracking-widest animate-pulse">Live</span>
                       ) : (
-                         <div className="text-center font-bold text-xl bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-xl">
+                         <div className="text-center font-black text-xl md:text-2xl bg-zinc-100 dark:bg-zinc-800 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm min-w-[100px]">
                            {match.final_home_score} - {match.final_away_score}
                          </div>
                       )}
