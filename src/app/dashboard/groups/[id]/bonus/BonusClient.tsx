@@ -33,7 +33,7 @@ export default function BonusClient({
           <p className="text-zinc-400 font-bold max-w-xl text-lg">Svara på specialfrågor och samla extrapoäng till din gruppplacering!</p>
           <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
             <Link href={`/dashboard/groups/${groupId}/bonus/leaderboard`} className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition">
-              <Trophy className="w-4 h-4" /> Bonus Ställning
+              <Trophy className="w-4 h-4" /> Leaderboard
             </Link>
             {isAdmin && (
               <Link href={`/dashboard/groups/${groupId}/bonus/admin`} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition">

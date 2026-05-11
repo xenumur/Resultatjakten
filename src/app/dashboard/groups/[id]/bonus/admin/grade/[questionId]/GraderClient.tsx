@@ -27,10 +27,10 @@ export default function GraderClient({ question, answers, groupId }: { question:
               <div className="flex-1 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black text-zinc-500">
-                    {ans.profiles.display_name[0].toUpperCase()}
+                    {(ans.profiles?.display_name || 'U')[0].toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-black text-zinc-900 dark:text-white uppercase tracking-tight">{ans.profiles.display_name}</div>
+                    <div className="font-black text-zinc-900 dark:text-white uppercase tracking-tight">{ans.profiles?.display_name || 'Okänd deltagare'}</div>
                     <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Inskickat {new Date(ans.submitted_at).toLocaleString('sv-SE')}</div>
                   </div>
                 </div>

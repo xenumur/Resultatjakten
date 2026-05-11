@@ -25,7 +25,12 @@ export default async function GradePage({
 
   const { data: answers } = await supabase
     .from('bonus_answers')
-    .select('*, profiles:user_id(display_name)')
+    .select(`
+      *,
+      profiles:user_id (
+        display_name
+      )
+    `)
     .eq('question_id', questionId)
     .order('submitted_at', { ascending: true })
 

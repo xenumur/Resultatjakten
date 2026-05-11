@@ -66,7 +66,7 @@ export default async function BonusLeaderboardPage({
       <div className="space-y-8">
         <div className="text-center space-y-4">
           <Trophy className="w-16 h-16 text-indigo-600 mx-auto" />
-          <h1 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">Bonus-ställning</h1>
+          <h1 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">Leaderboard</h1>
           <p className="text-zinc-500 font-bold">Vem har bäst koll på bonusfrågorna?</p>
         </div>
 
