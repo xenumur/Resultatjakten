@@ -187,7 +187,17 @@ export default async function GroupDetailPage({
         {/* Left Side: Active Games */}
         <div className="lg:col-span-1 space-y-8 min-w-0">
           <div className="space-y-6">
-            <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Aktiva Spel</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Aktiva Spel</h2>
+              {isAdmin && (
+                <Link 
+                  href={`/dashboard/groups/${groupId}/games/create`}
+                  className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-indigo-500 hover:text-white transition-all active:scale-95"
+                >
+                  + Lägg till spel
+                </Link>
+              )}
+            </div>
             <div className="space-y-4">
               {/* Bonus Questions Card */}
               <Link 
