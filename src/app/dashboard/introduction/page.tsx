@@ -144,11 +144,13 @@ export default function IntroductionPage() {
                       </p>
                     </div>
                     <div className="bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                      <p className="text-[10px] font-bold text-zinc-400 mb-1">Slutspel</p>
-                      <p className="text-xs font-black text-zinc-900 dark:text-white flex justify-between">
-                        <span>Vinnare Semi</span>
-                        <span className="text-indigo-600">Argentina</span>
-                      </p>
+                      <p className="text-[10px] font-bold text-zinc-400 mb-1">Slutspelstips</p>
+                      <div className="space-y-1">
+                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight">Semifinalister:</p>
+                        <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 leading-tight">
+                          Argentina, Brasilien, Portugal, Spanien
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
