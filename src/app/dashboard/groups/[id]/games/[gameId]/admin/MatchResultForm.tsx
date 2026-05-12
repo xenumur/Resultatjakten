@@ -30,6 +30,7 @@ export function MatchResultForm({
     stage.toLowerCase().includes('final') || 
     stage.toLowerCase().includes('quarter') || 
     stage.toLowerCase().includes('semi') ||
+    stage.toLowerCase().includes('third place') ||
     stage.toLowerCase().includes('play-off')
   );
 
