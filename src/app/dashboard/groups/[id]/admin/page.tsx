@@ -44,14 +44,14 @@ export default async function GroupAdminPage({
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-10">
-        {/* Left: General Settings */}
-        <div className="lg:col-span-1 space-y-6">
+      <div className="flex flex-col gap-12">
+        {/* Top: General Settings */}
+        <div className="space-y-6">
           <div className="flex items-center gap-2 mb-2">
             <Settings className="w-5 h-5 text-indigo-500" />
             <h2 className="text-xl font-black text-zinc-900 dark:text-white">Gruppinställningar</h2>
           </div>
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-8 rounded-[32px] shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[40px] shadow-sm">
             <GroupSettingsForm 
               groupId={groupId} 
               action={boundUpdateSettings} 
@@ -67,8 +67,8 @@ export default async function GroupAdminPage({
           <DeleteGroupButton groupId={groupId} />
         </div>
 
-        {/* Right: Members & Payments */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Bottom: Members & Payments */}
+        <div className="space-y-6">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-5 h-5 text-indigo-500" />
             <h2 className="text-xl font-black text-zinc-900 dark:text-white">Medlemmar & Betalningar</h2>
