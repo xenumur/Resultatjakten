@@ -73,9 +73,6 @@ export default async function GameDetailPage({
           <p className="text-zinc-500 dark:text-zinc-400">Turnering: {game.tournament_type}</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`} className="px-5 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-            Leaderboard
-          </Link>
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/standings`} className="px-5 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-semibold rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition flex items-center gap-2">
             📊 Tabell
           </Link>
