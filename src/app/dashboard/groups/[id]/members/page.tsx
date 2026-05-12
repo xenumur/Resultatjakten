@@ -49,18 +49,20 @@ export default async function GroupMembersPage({
           <h1 className="text-4xl font-extrabold text-zinc-900 dark:text-white mb-3 tracking-tight">Deltagare</h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-lg">Administratörer kan hantera roller och behörigheter.</p>
           
-          <div className="mt-6 flex items-center gap-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm max-w-fit">
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-1">Inbjudningskod</span>
-              <span className="text-2xl font-mono font-bold text-indigo-600 dark:text-indigo-400 tracking-widest">
-                {group?.join_code}
-              </span>
+          {isAdmin && (
+            <div className="mt-6 flex items-center gap-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm max-w-fit">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-1">Inbjudningskod</span>
+                <span className="text-2xl font-mono font-bold text-indigo-600 dark:text-indigo-400 tracking-widest">
+                  {group?.join_code}
+                </span>
+              </div>
+              <div className="w-px h-10 bg-zinc-100 dark:bg-zinc-800 mx-2"></div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 max-w-[150px] leading-relaxed">
+                Dela koden för att bjuda in fler till gruppen.
+              </div>
             </div>
-            <div className="w-px h-10 bg-zinc-100 dark:bg-zinc-800 mx-2"></div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 max-w-[150px] leading-relaxed">
-              Dela koden för att bjuda in fler till gruppen.
-            </div>
-          </div>
+          )}
         </div>
         <div className="flex flex-col items-start md:items-end gap-3 self-start md:self-auto">
           {isAdmin && <SendNotificationForm groupId={groupId} />}
