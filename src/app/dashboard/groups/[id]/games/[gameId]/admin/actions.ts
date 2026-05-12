@@ -334,14 +334,21 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           return true
         }
 
-        // 4. Knockout fallback: Match by stage + date (very reliable for finals/semis)
+        // 4. Knockout placeholder matching (e.g., "1H" vs "2J")
+        // If the DB still has placeholders, and they match the API's placeholders
         if (isKnockout && m.stage?.toLowerCase() === liveMatch.stage?.toLowerCase()) {
-          const dbDate = new Date(m.kickoff_time).toISOString().split('T')[0]
-          const liveDate = new Date(liveMatch.kickoff_time).toISOString().split('T')[0]
+          if (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team) {
+            return true
+          }
+        }
+
+        // 5. Knockout fallback: Match by stage + exact kickoff time
+        if (isKnockout && m.stage?.toLowerCase() === liveMatch.stage?.toLowerCase()) {
+          const dbTime = new Date(m.kickoff_time).getTime()
+          const liveTime = new Date(liveMatch.kickoff_time).getTime()
           
-          if (dbDate === liveDate) {
-            // For Semi-finals/Finals, date is usually unique enough to match
-            // especially if we also check the time if possible.
+          // Use a small buffer (5 mins) in case of slight parsing differences
+          if (Math.abs(dbTime - liveTime) < 5 * 60 * 1000) {
             return true
           }
         }
