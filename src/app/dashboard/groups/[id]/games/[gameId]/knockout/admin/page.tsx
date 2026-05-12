@@ -38,7 +38,7 @@ export default async function KnockoutAdminPage({
 
   const allTeams = Array.from(
     new Set((matches ?? []).flatMap(m => [m.home_team, m.away_team]))
-  ).filter(t => t && !t.includes('Winner') && !t.includes('Loser') && !t.includes('Match')).sort()
+  ).filter(t => t && countryToFlag(t) !== '').sort()
 
   const actualByRound = new Map<string, string[]>()
   for (const at of actualTeams ?? []) {
@@ -108,16 +108,12 @@ export default async function KnockoutAdminPage({
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {Array.from({ length: round.teamCount }).map((_, i) => (
-                      <div key={i} className="relative">
-                        {currentActual[i] && (
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base pointer-events-none z-10">
-                            {countryToFlag(currentActual[i])}
-                          </span>
-                        )}
+                      <div key={i} className="flex flex-col gap-1">
+                        <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Plats {i + 1}</label>
                         <select
                           name={`actual_${round.key}_${i}`}
                           defaultValue={currentActual[i] ?? ''}
-                          className={`w-full text-sm font-semibold py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 transition ${currentActual[i] ? 'pl-8' : 'pl-3'} pr-2`}
+                          className="w-full text-sm font-semibold py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 transition pr-8"
                         >
                           <option value="">— välj lag —</option>
                           {allTeams.map(team => (
