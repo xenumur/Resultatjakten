@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Trophy, Lock } from 'lucide-react'
+import { ArrowLeft, Lock } from 'lucide-react'
 import { KnockoutPredictionForm } from './KnockoutForm'
 import { saveKnockoutPredictions, ensureKnockoutSettings } from './actions'
 import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
@@ -118,13 +118,6 @@ export default async function KnockoutPage({
               <span className="text-3xl font-black">{totalPoints}</span>
             </div>
           )}
-          <Link
-            href={`/dashboard/groups/${groupId}/games/${gameId}/knockout/leaderboard`}
-            className="flex items-center gap-2 px-5 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
-          >
-            <Trophy className="w-4 h-4" />
-            Leaderboard
-          </Link>
           {isAdmin && (
             <Link
               href={`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`}
