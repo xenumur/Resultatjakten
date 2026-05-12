@@ -21,7 +21,7 @@ export interface ScoringRules {
 export const DEFAULT_RULES: ScoringRules = {
   correct_team_score: 2, // 2 poäng per lag man gissat rätt antal mål på
   correct_outcome: 3,    // 3 poäng för rätt vinnare (eller oavgjort)
-  correct_team_guess: 2, // 2 poäng per rätt gissat lag (för slutspel)
+  correct_team_guess: 0, // Separerat: Poäng för rätt lag ges nu enbart via Slutspelstips-brickorna
 };
 
 export function calculatePoints(
