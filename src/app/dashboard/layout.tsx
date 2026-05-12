@@ -5,6 +5,7 @@ import { getUnreadCount } from '@/app/dashboard/notifications/actions'
 import Link from 'next/link'
 import { Home, Users, PlusCircle, LogOut, Bell } from 'lucide-react'
 import { PushNotificationManager } from '@/components/PushNotificationManager'
+import { MobileHeader } from '@/components/MobileHeader'
 
 export default async function DashboardLayout({
   children,
@@ -27,7 +28,7 @@ export default async function DashboardLayout({
     .single()
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
+    <div className="min-h-[100dvh] flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
       
       {/* Desktop Header */}
       <header className="hidden md:flex bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-8 py-4 justify-between items-center sticky top-0 z-50">
@@ -61,32 +62,11 @@ export default async function DashboardLayout({
       </header>
 
       {/* Mobile Header (Top) */}
-      <header className="md:hidden flex bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-4 pt-[max(env(safe-area-inset-top),16px)] pb-3 justify-between items-center sticky top-0 z-50 shadow-sm">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <img src="/logo.png" alt="Skorio" className="w-8 h-8 object-contain rounded-lg" />
-          <span className="text-lg font-black tracking-tight text-zinc-900 dark:text-white">Skorio</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link href="/dashboard/notifications" className="relative p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors">
-            <Bell className="w-6 h-6" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-900">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </Link>
-          <Link href="/dashboard/profile" className="p-2 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors active:scale-90">
-            <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black text-[10px] text-zinc-500">
-              {profile?.display_name?.[0]?.toUpperCase() || 'U'}
-            </div>
-          </Link>
-          <form action={logout}>
-            <button className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors active:scale-90">
-              <LogOut className="w-6 h-6" />
-            </button>
-          </form>
-        </div>
-      </header>
+      <MobileHeader 
+        unreadCount={unreadCount} 
+        profileName={profile?.display_name || user.email || 'Användare'} 
+        logoutAction={logout}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 w-full max-w-6xl mx-auto md:p-6 lg:p-10">
@@ -94,33 +74,6 @@ export default async function DashboardLayout({
       </main>
 
       <PushNotificationManager />
-
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border-t border-zinc-200 dark:border-zinc-800 pb-[env(safe-area-inset-bottom)] z-50">
-        <div className="flex justify-around items-center h-[64px]">
-          <Link href="/dashboard" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
-            <Home className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Hem</span>
-          </Link>
-          <Link href="/dashboard/notifications" className="relative flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
-            <Bell className="w-6 h-6 mb-1" />
-            {unreadCount > 0 && (
-              <span className="absolute top-2 right-[25%] w-4 h-4 bg-red-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-900">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-            <span className="text-[10px] font-bold">Inkorg</span>
-          </Link>
-          <Link href="/dashboard/groups/create" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
-            <PlusCircle className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Ny</span>
-          </Link>
-          <Link href="/dashboard/groups/join" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 active:scale-90 transition-transform">
-            <Users className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Gå Med</span>
-          </Link>
-        </div>
-      </nav>
     </div>
   )
 }
