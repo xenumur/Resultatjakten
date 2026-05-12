@@ -182,7 +182,6 @@ export async function calculateScores(groupId: string, gameId: string, _formData
 async function recalculateAllKnockoutScores(gameId: string, matches: any[], supabase: any) {
   // Map DB stage names to our internal keys
   const stageMap: Record<string, string> = {
-    'Round of 32': 'round_of_32',
     'Round of 16': 'round_of_16',
     'Quarter-final': 'quarter_final',
     'Semi-final': 'semi_final',
