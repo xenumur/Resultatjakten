@@ -29,7 +29,7 @@ export default async function LeaderboardPage({
     { data: bonusAnswers }
   ] = await Promise.all([
     supabase.from('predictions').select('user_id, points_awarded').eq('game_id', gameId).not('points_awarded', 'is', null),
-    supabase.from('knockout_predictions').select('user_id, points_awarded').eq('game_id', gameId).not('points_awarded', 'is', null),
+    supabase.from('knockout_predictions').select('user_id, points_awarded').eq('game_id', gameId).eq('group_id', groupId).not('points_awarded', 'is', null),
     supabase.from('bonus_answers').select('user_id, points_awarded').match({ 'bonus_questions.game_id': gameId }).select('user_id, points_awarded, bonus_questions!inner(game_id)')
   ])
 
