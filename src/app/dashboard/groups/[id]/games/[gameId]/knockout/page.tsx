@@ -136,42 +136,38 @@ export default async function KnockoutPage({
         </div>
       </div>
 
-      {/* Points guide */}
+      {/* Minimalist Scoring & Progress Bar */}
       <div className="mb-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {KNOCKOUT_ROUNDS.map(r => (
-          <div key={r.key} className="flex flex-col items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 text-center">
-            <span className="text-xl mb-1">{r.emoji}</span>
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">{r.label}</span>
-            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{KNOCKOUT_ROUND_POINTS[r.key]}p</span>
-            <span className="text-[10px] text-zinc-400">per lag</span>
-          </div>
-        ))}
-      </div>
+        {KNOCKOUT_ROUNDS.map(r => {
+          const myRoundPicks = (myPicks ?? []).filter(p => p.round === r.key)
+          const correct = myRoundPicks.filter(p => {
+            const actual = actualByRound.get(r.key)
+            return actual?.has(p.team_name.toLowerCase().trim())
+          }).length
+          const total = r.teamCount
+          const pointsPerTeam = KNOCKOUT_ROUND_POINTS[r.key]
 
-      {/* Results summary if scoring has started */}
-      {hasResults && myPicks && myPicks.length > 0 && (
-        <div className="mb-8 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800 rounded-3xl p-6">
-          <h2 className="font-black text-lg text-indigo-900 dark:text-indigo-200 mb-4">📊 Din poängöversikt</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {KNOCKOUT_ROUNDS.map(r => {
-              const myRoundPicks = (myPicks ?? []).filter(p => p.round === r.key)
-              const correct = myRoundPicks.filter(p => {
-                const actual = actualByRound.get(r.key)
-                return actual?.has(p.team_name.toLowerCase().trim())
-              }).length
-              const total = r.teamCount
-              return (
-                <div key={r.key} className="bg-white/70 dark:bg-zinc-900/50 rounded-xl p-3 text-center">
-                  <span className="text-lg">{r.emoji}</span>
-                  <div className="text-xs font-bold text-zinc-600 dark:text-zinc-400 mt-1">{r.label}</div>
-                  <div className="text-xl font-black text-indigo-600 dark:text-indigo-400">{correct}/{total}</div>
-                  <div className="text-xs text-zinc-500">rätt</div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+          return (
+            <div 
+              key={r.key} 
+              className="flex flex-col items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 text-center shadow-sm"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">{r.emoji}</span>
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">{r.label}</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-black text-zinc-900 dark:text-white">
+                  {hasResults ? `${correct}/${total}` : `-/${total}`}
+                </span>
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                  ({pointsPerTeam}p)
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
 
       {/* Picked teams review (when locked) */}
       {isLocked && myPicks && myPicks.length > 0 && (
