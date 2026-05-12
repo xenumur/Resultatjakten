@@ -159,7 +159,7 @@ export default async function KnockoutPage({
                 const actual = actualByRound.get(r.key)
                 return actual?.has(p.team_name.toLowerCase().trim())
               }).length
-              const total = myRoundPicks.length
+              const total = r.teamCount
               return (
                 <div key={r.key} className="bg-white/70 dark:bg-zinc-900/50 rounded-xl p-3 text-center">
                   <span className="text-lg">{r.emoji}</span>
