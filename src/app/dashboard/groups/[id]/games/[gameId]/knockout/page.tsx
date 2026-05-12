@@ -137,7 +137,7 @@ export default async function KnockoutPage({
       </div>
 
       {/* Points guide */}
-      <div className="mb-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="mb-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {KNOCKOUT_ROUNDS.map(r => (
           <div key={r.key} className="flex flex-col items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 text-center">
             <span className="text-xl mb-1">{r.emoji}</span>
@@ -152,7 +152,7 @@ export default async function KnockoutPage({
       {hasResults && myPicks && myPicks.length > 0 && (
         <div className="mb-8 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800 rounded-3xl p-6">
           <h2 className="font-black text-lg text-indigo-900 dark:text-indigo-200 mb-4">📊 Din poängöversikt</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {KNOCKOUT_ROUNDS.map(r => {
               const myRoundPicks = (myPicks ?? []).filter(p => p.round === r.key)
               const correct = myRoundPicks.filter(p => {
