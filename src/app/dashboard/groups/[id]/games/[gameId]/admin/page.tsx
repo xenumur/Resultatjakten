@@ -85,11 +85,13 @@ export default async function GameAdminPage({
         </div>
       </div>
 
-      <TabBar
-        activeTab={activeTab}
-        upcomingCount={upcomingMatches.length}
-        playedCount={playedMatches.length}
-      />
+      <div className="mb-8">
+        <TabBar
+          activeTab={activeTab}
+          upcomingCount={upcomingMatches.length}
+          playedCount={playedMatches.length}
+        />
+      </div>
 
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm overflow-x-auto">
         {matches.length === 0 ? (

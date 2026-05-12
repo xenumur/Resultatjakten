@@ -26,7 +26,7 @@ export function TabBar({ activeTab, upcomingCount, playedCount }: TabBarProps) {
   ]
 
   return (
-    <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded-2xl w-fit mb-8">
+    <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded-2xl w-fit">
       {tabs.map(tab => (
         <button
           key={tab.key}

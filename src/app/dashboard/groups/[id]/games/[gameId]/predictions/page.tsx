@@ -3,10 +3,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatInTimeZone } from 'date-fns-tz'
 import { saveAllPredictions } from './actions'
-import { ArrowLeft, Lock, Unlock, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Lock, Unlock, CheckCircle2, Save } from 'lucide-react'
 import { PredictionsForm } from './PredictionsForm'
 import { countryToFlag } from '@/lib/utils/flags'
 import { TabBar } from '@/components/TabBar'
+import { SubmitButton } from '@/components/ui/SubmitButton'
 
 const TIMEZONE = 'Europe/Stockholm'
 
@@ -80,18 +81,27 @@ export default async function PredictionsPage({
         </div>
       </div>
 
-      <TabBar
-        activeTab={activeTab}
-        upcomingCount={upcomingMatches.length}
-        playedCount={playedMatches.length}
-      />
-
-      {matches.length === 0 ? (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-16 text-center text-zinc-400 font-bold italic">
-          {activeTab === 'upcoming' ? 'Inga kommande matcher att tippa.' : 'Inga spelade matcher ännu.'}
+      <PredictionsForm action={bindedSaveAll}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <TabBar
+            activeTab={activeTab}
+            upcomingCount={upcomingMatches.length}
+            playedCount={playedMatches.length}
+          />
+          <SubmitButton 
+            type="submit" 
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-600/20"
+          >
+            <Save className="w-5 h-5" />
+            Spara Tips
+          </SubmitButton>
         </div>
-      ) : (
-        <PredictionsForm action={bindedSaveAll}>
+
+        {matches.length === 0 ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-16 text-center text-zinc-400 font-bold italic">
+            {activeTab === 'upcoming' ? 'Inga kommande matcher att tippa.' : 'Inga spelade matcher ännu.'}
+          </div>
+        ) : (
           <div className="space-y-10">
             {Object.entries(matchesByGroup).map(([groupName, groupMatches]: [string, any]) => (
               <section key={groupName} className="space-y-4">
