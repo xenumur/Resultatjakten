@@ -14,32 +14,17 @@ export async function joinGroup(formData: FormData) {
 
   const joinCode = (formData.get('joinCode') as string).toUpperCase()
 
-  const { data: group, error: groupError } = await supabase
-    .from('groups')
-    .select('id')
-    .eq('join_code', joinCode)
-    .single()
+  const { data: groupId, error } = await supabase.rpc('join_group_by_code', {
+    code_param: joinCode
+  })
 
-  if (groupError || !group) {
-    return { error: 'Koden är ogiltig. Kontrollera att du skrivit rätt.' }
-  }
-
-  const { error: memberError } = await supabase
-    .from('group_members')
-    .insert({
-      group_id: group.id,
-      user_id: user.id,
-      role: 'participant',
-      payment_status: 'pending'
-    })
-
-  if (memberError) {
-    if (memberError.code === '23505') { // Unique violation, redan medlem
-      return { success: true, redirect: `/dashboard/groups/${group.id}` }
+  if (error || !groupId) {
+    if (error?.message === 'Invalid join code') {
+      return { error: 'Koden är ogiltig. Kontrollera att du skrivit rätt.' }
     }
-    return { error: 'Gick inte att gå med: ' + memberError.message }
+    return { error: 'Gick inte att gå med: ' + error?.message }
   }
 
   revalidatePath('/dashboard', 'layout')
-  return { success: true, redirect: `/dashboard/groups/${group.id}` }
+  return { success: true, redirect: `/dashboard/groups/${groupId}` }
 }

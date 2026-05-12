@@ -36,6 +36,11 @@ export default async function GroupDetailPage({
   }
 
   const userMember = members.find((m: any) => m.user_id === user.id)
+  
+  if (!userMember) {
+    redirect('/dashboard')
+  }
+
   const isAdmin = userMember?.role === 'admin'
 
   // --- Prize Pool Calculations ---
