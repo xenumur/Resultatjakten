@@ -319,6 +319,8 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
       )
 
       const existingMatch = dbMatches.find(m => {
+        const normalize = (s: string | null) => s?.trim().toLowerCase() || ''
+        
         // 1. Match by official API match number (most reliable)
         if (isKnockout && liveMatch.api_match_num && m.api_match_num === liveMatch.api_match_num) {
           return true
@@ -330,26 +332,42 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
         }
 
         // 3. Match by teams (works for group stage and already-resolved knockouts)
-        if (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team) {
+        if (normalize(m.home_team) === normalize(liveMatch.home_team) && 
+            normalize(m.away_team) === normalize(liveMatch.away_team)) {
           return true
         }
 
         // 4. Knockout placeholder matching (e.g., "1H" vs "2J")
-        // If the DB still has placeholders, and they match the API's placeholders
-        if (isKnockout && m.stage?.toLowerCase() === liveMatch.stage?.toLowerCase()) {
-          if (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team) {
+        // Stricter check: only match if both teams and stage match
+        if (isKnockout && normalize(m.stage) === normalize(liveMatch.stage)) {
+          if (normalize(m.home_team) === normalize(liveMatch.home_team) && 
+              normalize(m.away_team) === normalize(liveMatch.away_team)) {
             return true
           }
         }
 
-        // 5. Knockout fallback: Match by stage + exact kickoff time
-        if (isKnockout && m.stage?.toLowerCase() === liveMatch.stage?.toLowerCase()) {
+        // 5. Knockout fallback: Match by stage + exact kickoff time + one of the teams
+        // This is useful if the API has "Sweden" but DB still has "W97"
+        if (isKnockout && normalize(m.stage) === normalize(liveMatch.stage)) {
           const dbTime = new Date(m.kickoff_time).getTime()
           const liveTime = new Date(liveMatch.kickoff_time).getTime()
           
-          // Use a small buffer (5 mins) in case of slight parsing differences
-          if (Math.abs(dbTime - liveTime) < 5 * 60 * 1000) {
-            return true
+          if (Math.abs(dbTime - liveTime) < 60 * 1000) { // Within 1 minute
+            // Check if at least one placeholder matches the "W{num}" logic
+            const wHome = `w${liveMatch.api_match_num}`
+            const wAway = `w${liveMatch.api_match_num}`
+            if (normalize(m.home_team) === wHome || normalize(m.away_team) === wAway) {
+               return true
+            }
+
+            // Or if it's the only match at that exact time in that stage
+            const otherMatchesAtSameTime = dbMatches.filter(other => 
+              normalize(other.stage) === normalize(liveMatch.stage) && 
+              Math.abs(new Date(other.kickoff_time).getTime() - liveTime) < 60 * 1000
+            )
+            if (otherMatchesAtSameTime.length === 1) {
+              return true
+            }
           }
         }
 
