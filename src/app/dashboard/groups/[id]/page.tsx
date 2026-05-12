@@ -16,10 +16,10 @@ export default async function GroupDetailPage({
   if (!user) redirect('/login')
 
   const [
-    { data: group }, 
-    { data: members }, 
-    { data: matchPredictions }, 
-    { data: knockoutPredictions }, 
+    { data: group },
+    { data: members },
+    { data: matchPredictions },
+    { data: knockoutPredictions },
     { data: games },
     { data: bonusAnswers }
   ] = await Promise.all([
@@ -36,7 +36,7 @@ export default async function GroupDetailPage({
   }
 
   const userMember = members.find((m: any) => m.user_id === user.id)
-  
+
   if (!userMember) {
     redirect('/dashboard')
   }
@@ -55,7 +55,7 @@ export default async function GroupDetailPage({
 
   // --- Consolidated Leaderboard Logic ---
   const userScores: Record<string, { display_name: string; match_points: number; knockout_points: number; bonus_points: number; total_points: number; is_paid: boolean }> = {}
-  
+
   for (const m of members) {
     const p = m.profiles as any
     userScores[m.user_id] = {
@@ -117,7 +117,7 @@ export default async function GroupDetailPage({
           <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-xl max-w-2xl mx-auto md:mx-0 break-words">{group.description}</p>
         </div>
         <div className="flex flex-row justify-center md:justify-end gap-2 sm:gap-3 shrink-0">
-           {isAdmin && (
+          {isAdmin && (
             <Link href={`/dashboard/groups/${groupId}/admin`} className="flex items-center gap-2 px-3 sm:px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-[10px] sm:text-xs">
               ⚙️ Admin
             </Link>
@@ -135,7 +135,7 @@ export default async function GroupDetailPage({
           <Coins className="w-5 h-5 text-amber-500 shrink-0" />
           <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
             <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Prispott</span>
@@ -146,50 +146,50 @@ export default async function GroupDetailPage({
           </div>
 
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
-             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Prisfördelning</span>
-             <div className="space-y-3 mt-auto">
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <div className="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-amber-400/20">1</div>
-                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Guld (60%)</span>
-                 </div>
-                 <span className="font-black text-amber-600 dark:text-amber-400 text-base">{formatMoney(prizes.first)}</span>
-               </div>
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <div className="w-6 h-6 rounded-full bg-zinc-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-zinc-400/20">2</div>
-                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Silver (25%)</span>
-                 </div>
-                 <span className="font-black text-zinc-600 dark:text-zinc-400 text-base">{formatMoney(prizes.second)}</span>
-               </div>
-               <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-3">
-                   <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-orange-500/20">3</div>
-                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Brons (10%)</span>
-                 </div>
-                 <span className="font-black text-orange-600 dark:text-orange-400 text-base">{formatMoney(prizes.third)}</span>
-               </div>
-             </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Prisfördelning</span>
+            <div className="space-y-3 mt-auto">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-amber-400/20">1</div>
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Guld (60%)</span>
+                </div>
+                <span className="font-black text-amber-600 dark:text-amber-400 text-base">{formatMoney(prizes.first)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-zinc-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-zinc-400/20">2</div>
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Silver (25%)</span>
+                </div>
+                <span className="font-black text-zinc-600 dark:text-zinc-400 text-base">{formatMoney(prizes.second)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-orange-500/20">3</div>
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Brons (10%)</span>
+                </div>
+                <span className="font-black text-orange-600 dark:text-orange-400 text-base">{formatMoney(prizes.third)}</span>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="flex items-center justify-center md:justify-start">
           <div className="text-center md:text-left flex items-center gap-2 text-[9px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800 max-w-full overflow-hidden">
-             <span className="shrink-0">🛡️</span> <span className="truncate">{formatMoney(prizes.reserved)} (5%) reserverat för admin</span>
+            <span className="shrink-0">🛡️</span> <span className="truncate">{formatMoney(prizes.reserved)} (5%) reserverat för admin</span>
           </div>
         </div>
       </section>
 
       {/* Main Grid: Games & Leaderboard */}
       <div className="order-2 md:order-3 grid lg:grid-cols-3 gap-10 md:gap-16">
-        
+
         {/* Left Side: Active Games */}
         <div className="lg:col-span-1 space-y-8 min-w-0 order-2 lg:order-1">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Aktiva Spel</h2>
               {isAdmin && (
-                <Link 
+                <Link
                   href={`/dashboard/groups/${groupId}/games/create`}
                   className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-indigo-500 hover:text-white transition-all active:scale-95"
                 >
@@ -199,8 +199,8 @@ export default async function GroupDetailPage({
             </div>
             <div className="space-y-4">
               {/* Bonus Questions Card */}
-              <Link 
-                href={`/dashboard/groups/${groupId}/bonus`} 
+              <Link
+                href={`/dashboard/groups/${groupId}/bonus`}
                 className="group block bg-gradient-to-br from-amber-500/5 to-amber-600/10 dark:from-amber-900/10 dark:to-amber-800/5 border border-amber-200 dark:border-amber-900/30 p-5 md:p-6 rounded-3xl hover:border-amber-400 transition-all shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center justify-between gap-4">
@@ -214,9 +214,9 @@ export default async function GroupDetailPage({
 
               {games && games.length > 0 ? (
                 games.map(game => (
-                  <Link 
-                    key={game.id} 
-                    href={`/dashboard/groups/${groupId}/games/${game.id}`} 
+                  <Link
+                    key={game.id}
+                    href={`/dashboard/groups/${groupId}/games/${game.id}`}
                     className="group block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-5 md:p-6 rounded-3xl hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
                   >
                     <div className="flex items-center justify-between gap-4">
@@ -238,34 +238,7 @@ export default async function GroupDetailPage({
             </div>
           </div>
 
-          {/* Group Info Widget */}
-          <div className="bg-zinc-950 p-6 md:p-8 rounded-[32px] md:rounded-[40px] text-white space-y-8 shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-8 opacity-5">
-               <Users className="w-24 h-24" />
-             </div>
-             <h3 className="text-xl font-black uppercase tracking-tight relative z-10">Gruppinfo</h3>
-             <div className="space-y-6 relative z-10">
-               <div className="flex justify-between items-center pb-4 border-b border-white/10 gap-4">
-                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
-                 <span className="text-lg md:text-xl font-black truncate">{group.entry_fee} {group.currency}</span>
-               </div>
-               {group.payment_info && (
-                 <div className="flex justify-between items-center pb-4 border-b border-white/10 gap-4">
-                   <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Betalning till</span>
-                   <span className="text-lg md:text-xl font-black truncate">{group.payment_info}</span>
-                 </div>
-               )}
-               <div className="flex justify-between items-center pb-4 border-b border-white/10 gap-4">
-                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
-                 <span className="text-lg md:text-xl font-black">{members.length}</span>
-               </div>
-               <div className="flex justify-between items-center gap-4">
-                 <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Din Roll</span>
-                 <span className="text-[10px] font-black bg-indigo-600 px-3 py-1 rounded-full uppercase tracking-widest truncate">{userMember?.role}</span>
-               </div>
-             </div>
-          </div>
-        </div>
+
 
         {/* Right Side: Consolidated Leaderboard */}
         <div className="lg:col-span-2 space-y-6 min-w-0 order-1 lg:order-2">
@@ -291,29 +264,27 @@ export default async function GroupDetailPage({
                   {rankedLeaderboard.map((entry) => {
                     const isTop3 = entry.rank <= 3
                     const isMe = entry.user_id === user.id
-                    
+
                     return (
-                      <tr 
-                        key={entry.user_id} 
+                      <tr
+                        key={entry.user_id}
                         className={`transition-colors ${isMe ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
                       >
                         <td className="py-3 pl-4 pr-2 md:py-5 md:px-6">
-                          <div className={`mx-auto w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center font-black text-[10px] ${
-                            entry.rank === 1 ? 'bg-amber-400 text-white shadow-lg shadow-amber-400/20' :
-                            entry.rank === 2 ? 'bg-zinc-400 text-white shadow-lg shadow-zinc-400/20' :
-                            entry.rank === 3 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' :
-                            'text-zinc-400 border border-zinc-100 dark:border-zinc-800'
-                          }`}>
+                          <div className={`mx-auto w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center font-black text-[10px] ${entry.rank === 1 ? 'bg-amber-400 text-white shadow-lg shadow-amber-400/20' :
+                              entry.rank === 2 ? 'bg-zinc-400 text-white shadow-lg shadow-zinc-400/20' :
+                                entry.rank === 3 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' :
+                                  'text-zinc-400 border border-zinc-100 dark:border-zinc-800'
+                            }`}>
                             {entry.rank}
                           </div>
                         </td>
                         <td className="py-3 px-2 md:py-5 md:px-6">
                           <div className="flex items-center gap-2 md:gap-3">
-                            <div className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center font-black text-white shrink-0 text-sm ${
-                              entry.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-orange-500' :
-                              isMe ? 'bg-gradient-to-br from-indigo-500 to-purple-600' :
-                              'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
-                            }`}>
+                            <div className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center font-black text-white shrink-0 text-sm ${entry.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-orange-500' :
+                                isMe ? 'bg-gradient-to-br from-indigo-500 to-purple-600' :
+                                  'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                              }`}>
                               {entry.display_name[0].toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -344,7 +315,7 @@ export default async function GroupDetailPage({
                 </tbody>
               </table>
             </div>
-            
+
             {leaderboard.length === 0 && (
               <div className="p-16 text-center text-zinc-400 font-black text-sm italic uppercase tracking-widest">
                 Ingen data ännu.
@@ -354,6 +325,36 @@ export default async function GroupDetailPage({
         </div>
 
       </div>
+
+      {/* Group Info Widget */}
+      <section className="order-4">
+        <div className="bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-8 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Users className="w-24 h-24 text-indigo-500" />
+          </div>
+          <h3 className="text-xl font-black uppercase tracking-tight text-indigo-900 dark:text-indigo-100 relative z-10">Gruppinfo</h3>
+          <div className="space-y-6 relative z-10">
+            <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
+              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
+              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.entry_fee} {group.currency}</span>
+            </div>
+            {group.payment_info && (
+              <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
+                <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Swish till</span>
+                <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.payment_info}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
+              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
+              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white">{members.length}</span>
+            </div>
+            <div className="flex justify-between items-center gap-4">
+              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Din Roll</span>
+              <span className="text-[10px] font-black bg-indigo-600 text-white px-3 py-1 rounded-full uppercase tracking-widest truncate">{userMember?.role}</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
