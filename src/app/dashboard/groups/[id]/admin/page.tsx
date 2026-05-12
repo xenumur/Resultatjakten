@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { updatePaymentStatus, updateGroupSettings } from './actions'
 import { GroupSettingsForm } from './GroupSettingsForm'
+import { DeleteGroupButton } from './DeleteGroupButton'
 import { Settings, Users, ArrowLeft } from 'lucide-react'
 
 export default async function GroupAdminPage({
@@ -62,6 +63,7 @@ export default async function GroupAdminPage({
               }} 
             />
           </div>
+          <DeleteGroupButton groupId={groupId} />
         </div>
 
         {/* Right: Members & Payments */}
