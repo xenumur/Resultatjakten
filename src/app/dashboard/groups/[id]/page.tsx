@@ -282,15 +282,15 @@ export default async function GroupDetailPage({
 
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
             <div className="overflow-x-auto w-full">
-              <table className="w-full text-left border-collapse min-w-[450px] md:min-w-[500px]">
+              <table className="w-full text-left border-collapse min-w-full">
                 <thead>
                   <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">#</th>
-                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Deltagare</th>
-                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">M</th>
-                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">S</th>
-                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center text-amber-500">B</th>
-                    <th className="py-5 px-4 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Totalt</th>
+                    <th className="py-3 px-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">#</th>
+                    <th className="py-3 px-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Deltagare</th>
+                    <th className="py-3 px-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">M</th>
+                    <th className="py-3 px-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">S</th>
+                    <th className="py-3 px-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center text-amber-500">B</th>
+                    <th className="py-3 px-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Totalt</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -303,8 +303,8 @@ export default async function GroupDetailPage({
                         key={entry.user_id} 
                         className={`transition-colors ${isMe ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
                       >
-                        <td className="py-5 px-4 md:px-6">
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-[10px] ${
+                        <td className="py-3 px-2 md:py-5 md:px-6">
+                          <div className={`w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center font-black text-[10px] ${
                             entry.rank === 1 ? 'bg-amber-400 text-white shadow-lg shadow-amber-400/20' :
                             entry.rank === 2 ? 'bg-zinc-400 text-white shadow-lg shadow-zinc-400/20' :
                             entry.rank === 3 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' :
@@ -313,9 +313,9 @@ export default async function GroupDetailPage({
                             {entry.rank}
                           </div>
                         </td>
-                        <td className="py-5 px-4 md:px-6">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-white shrink-0 text-sm ${
+                        <td className="py-3 px-2 md:py-5 md:px-6">
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <div className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center font-black text-white shrink-0 text-sm ${
                               entry.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-orange-500' :
                               isMe ? 'bg-gradient-to-br from-indigo-500 to-purple-600' :
                               'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
@@ -323,11 +323,11 @@ export default async function GroupDetailPage({
                               {entry.display_name[0].toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-2 text-sm">
-                                <span className="truncate max-w-[100px] sm:max-w-none">{entry.display_name}</span>
+                              <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 md:gap-2 text-sm">
+                                <span className="truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none">{entry.display_name}</span>
                                 {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                               </div>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1 md:gap-1.5">
                                 <span className={`w-1 h-1 rounded-full shrink-0 ${entry.is_paid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
                                 <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest truncate">
                                   {entry.is_paid ? 'Paid' : 'Unpaid'}
@@ -336,11 +336,11 @@ export default async function GroupDetailPage({
                             </div>
                           </div>
                         </td>
-                        <td className="py-5 px-4 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.match_points}</td>
-                        <td className="py-5 px-4 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.knockout_points}</td>
-                        <td className="py-5 px-4 md:px-6 text-center font-bold text-amber-600 dark:text-amber-400 text-xs">{entry.bonus_points}</td>
-                        <td className="py-5 px-4 md:px-6 text-right">
-                          <span className={`text-xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
+                        <td className="py-3 px-2 md:py-5 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.match_points}</td>
+                        <td className="py-3 px-2 md:py-5 md:px-6 text-center font-bold text-zinc-500 text-xs">{entry.knockout_points}</td>
+                        <td className="py-3 px-2 md:py-5 md:px-6 text-center font-bold text-amber-600 dark:text-amber-400 text-xs">{entry.bonus_points}</td>
+                        <td className="py-3 px-2 md:py-5 md:px-6 text-right">
+                          <span className={`text-lg md:text-xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
                             {entry.total_points}
                           </span>
                         </td>
