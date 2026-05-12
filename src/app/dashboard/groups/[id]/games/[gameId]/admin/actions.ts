@@ -320,14 +320,26 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
       )
 
       const existingMatch = dbMatches.find(m => {
-        // Om det är slutspel (Round of 32+), matcha primärt på api_match_num om det finns
+        // 1. Try matching by api_match_num (best for knockouts)
         if (isKnockout && liveMatch.api_match_num && m.api_match_num === liveMatch.api_match_num) {
           return true
         }
         
-        // Fallback på external_match_id eller team names
-        return m.external_match_id === liveMatch.external_match_id ||
-               (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team)
+        // 2. Try matching by external_match_id
+        if (m.external_match_id === liveMatch.external_match_id) {
+          return true
+        }
+
+        // 3. Special handling for unique stages (Final, Third place)
+        const uniqueStages = ['final', 'match for third place']
+        if (isKnockout && m.stage && liveMatch.stage && 
+            uniqueStages.includes(m.stage.toLowerCase()) && 
+            m.stage.toLowerCase() === liveMatch.stage.toLowerCase()) {
+          return true
+        }
+        
+        // 4. Fallback to team names (best for group stage)
+        return (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team)
       })
 
       if (existingMatch) {
