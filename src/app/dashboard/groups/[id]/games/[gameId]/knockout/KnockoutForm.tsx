@@ -133,17 +133,12 @@ function RoundSection({
           <div key={i} className="flex flex-col gap-1">
             <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Lag {i + 1}</label>
             <div className="relative">
-              {picks[i] && (
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base pointer-events-none">
-                  {countryToFlag(picks[i])}
-                </span>
-              )}
               <select
                 name={`${round.key}_${i}`}
                 disabled={isLocked}
                 value={picks[i] ?? ''}
                 onChange={(e) => handleTeamChange(i, e.target.value)}
-                className={`w-full text-sm font-semibold py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-60 disabled:cursor-not-allowed ${picks[i] ? 'pl-8' : 'pl-3'} pr-2`}
+                className="w-full text-sm font-semibold py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-60 disabled:cursor-not-allowed pr-8"
               >
                 <option value="">— välj lag —</option>
                 {availableTeams.map(team => (
