@@ -35,7 +35,7 @@ export default async function KnockoutPage({
   // Get available teams from matches (unique, no placeholders)
   const allTeams = Array.from(
     new Set((matches ?? []).flatMap(m => [m.home_team, m.away_team]))
-  ).filter(t => t && !t.includes('Winner') && !t.includes('Loser') && !t.includes('Match')).sort()
+  ).filter(t => t && countryToFlag(t) !== '').sort()
 
   // Get this user's existing picks
   const { data: myPicks } = await supabase
