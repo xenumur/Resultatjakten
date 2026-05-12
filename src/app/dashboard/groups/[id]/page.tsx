@@ -250,6 +250,12 @@ export default async function GroupDetailPage({
                  <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
                  <span className="text-lg md:text-xl font-black truncate">{group.entry_fee} {group.currency}</span>
                </div>
+               {group.payment_info && (
+                 <div className="flex justify-between items-center pb-4 border-b border-white/10 gap-4">
+                   <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Betalning till</span>
+                   <span className="text-lg md:text-xl font-black truncate">{group.payment_info}</span>
+                 </div>
+               )}
                <div className="flex justify-between items-center pb-4 border-b border-white/10 gap-4">
                  <span className="text-zinc-500 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
                  <span className="text-lg md:text-xl font-black">{members.length}</span>

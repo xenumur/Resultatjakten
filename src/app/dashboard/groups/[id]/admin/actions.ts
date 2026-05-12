@@ -67,6 +67,7 @@ export async function updateGroupSettings(groupId: string, formData: FormData) {
   const description = formData.get('description') as string
   const entryFee = parseFloat(formData.get('entry_fee') as string)
   const currency = formData.get('currency') as string
+  const paymentInfo = formData.get('payment_info') as string
 
   if (!name || name.trim().length < 2) {
     return { error: 'Namnet måste vara minst 2 tecken.' }
@@ -78,7 +79,8 @@ export async function updateGroupSettings(groupId: string, formData: FormData) {
       name: name.trim(),
       description: description?.trim() || null,
       entry_fee: isNaN(entryFee) ? 0 : entryFee,
-      currency: currency?.trim() || 'SEK'
+      currency: currency?.trim() || 'SEK',
+      payment_info: paymentInfo?.trim() || null
     })
     .eq('id', groupId)
 

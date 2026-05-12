@@ -12,6 +12,7 @@ interface GroupSettingsFormProps {
     description: string | null
     entry_fee: number | null
     currency: string | null
+    payment_info: string | null
   }
 }
 
@@ -73,6 +74,18 @@ export function GroupSettingsForm({ groupId, action, initialData }: GroupSetting
               className="w-full px-4 py-3 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
             />
           </div>
+        </div>
+
+        <div className="grid gap-2">
+          <label htmlFor="payment_info" className="text-sm font-black uppercase tracking-widest text-zinc-400">Betalning till (t.ex. Swish-nummer)</label>
+          <input
+            id="payment_info"
+            name="payment_info"
+            type="text"
+            placeholder="Mottagare eller Swish-nummer..."
+            defaultValue={initialData.payment_info || ''}
+            className="w-full px-4 py-3 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+          />
         </div>
       </div>
 
