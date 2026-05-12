@@ -30,6 +30,8 @@ export const viewport: Viewport = {
 };
 
 import { PullToRefresh } from '@/components/PullToRefresh'
+import { Toaster } from 'sonner'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 export default function RootLayout({
   children,
