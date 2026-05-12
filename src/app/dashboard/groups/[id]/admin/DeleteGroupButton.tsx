@@ -15,15 +15,12 @@ export function DeleteGroupButton({ groupId }: { groupId: string }) {
     setIsDeleting(true)
     const result = await deleteGroup(groupId)
     
-    if (result.success) {
-      toast.success(result.message)
-      router.push('/dashboard')
-      router.refresh()
-    } else {
+    if (result && 'error' in result) {
       toast.error(result.error)
       setIsDeleting(false)
       setIsConfirming(false)
     }
+    // If it succeeds, the server action redirects automatically
   }
 
   if (!isConfirming) {

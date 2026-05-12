@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
 export async function updatePaymentStatus(groupId: string, userId: string, formData: FormData) {
   const supabase = await createClient()
@@ -115,6 +116,6 @@ export async function deleteGroup(groupId: string) {
 
   if (error) return { error: 'Kunde inte radera gruppen: ' + error.message }
 
-  // Redirect is handled by the component
-  return { success: true, message: 'Gruppen har raderats.' }
+  revalidatePath('/dashboard')
+  redirect('/dashboard')
 }
