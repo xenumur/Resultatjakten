@@ -304,9 +304,8 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
         m.stage.toLowerCase().includes('play-off')
       )
 
-      if (isKnockout && (isPlaceholder(m.home_team) || isPlaceholder(m.away_team))) {
-        return false
-      }
+      // We now allow knockout matches even with placeholders, 
+      // so the admin can see the schedule/bracket early.
       return true
     })
 
@@ -320,42 +319,64 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
       )
 
       const existingMatch = dbMatches.find(m => {
-        // 1. Try matching by api_match_num (best for knockouts)
+        // 1. Match by official API match number (most reliable)
         if (isKnockout && liveMatch.api_match_num && m.api_match_num === liveMatch.api_match_num) {
           return true
         }
-        
-        // 2. Try matching by external_match_id
+
+        // 2. Match by external ID
         if (m.external_match_id === liveMatch.external_match_id) {
           return true
         }
 
-        // 3. Special handling for unique stages (Final, Third place)
-        const uniqueStages = ['final', 'match for third place']
-        if (isKnockout && m.stage && liveMatch.stage && 
-            uniqueStages.includes(m.stage.toLowerCase()) && 
-            m.stage.toLowerCase() === liveMatch.stage.toLowerCase()) {
+        // 3. Match by teams (works for group stage and already-resolved knockouts)
+        if (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team) {
           return true
         }
-        
-        // 4. Fallback to team names (best for group stage)
-        return (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team)
+
+        // 4. Knockout fallback: Match by stage + date (very reliable for finals/semis)
+        if (isKnockout && m.stage?.toLowerCase() === liveMatch.stage?.toLowerCase()) {
+          const dbDate = new Date(m.kickoff_time).toISOString().split('T')[0]
+          const liveDate = new Date(liveMatch.kickoff_time).toISOString().split('T')[0]
+          
+          if (dbDate === liveDate) {
+            // For Semi-finals/Finals, date is usually unique enough to match
+            // especially if we also check the time if possible.
+            return true
+          }
+        }
+
+        return false
       })
 
       if (existingMatch) {
+        const updateData: any = {
+          kickoff_time: liveMatch.kickoff_time,
+          venue: liveMatch.venue,
+          provider_home_score: liveMatch.final_home_score,
+          provider_away_score: liveMatch.final_away_score,
+          provider_status: liveMatch.status,
+          provider_home_team: liveMatch.home_team,
+          provider_away_team: liveMatch.away_team,
+          api_match_num: liveMatch.api_match_num,
+          broadcaster: liveMatch.broadcaster
+        }
+
+        // IMPORTANT: If the match is not manually overridden, 
+        // and it's a knockout match that just got real teams, update the teams!
+        if (!existingMatch.is_manual_override) {
+          // If we had a placeholder but now have a real team, update it
+          if (isPlaceholder(existingMatch.home_team) && !isPlaceholder(liveMatch.home_team)) {
+            updateData.home_team = liveMatch.home_team
+          }
+          if (isPlaceholder(existingMatch.away_team) && !isPlaceholder(liveMatch.away_team)) {
+            updateData.away_team = liveMatch.away_team
+          }
+        }
+
         await supabase
           .from('matches')
-          .update({
-            kickoff_time: liveMatch.kickoff_time,
-            venue: liveMatch.venue,
-            provider_home_score: liveMatch.final_home_score,
-            provider_away_score: liveMatch.final_away_score,
-            provider_status: liveMatch.status,
-            provider_home_team: liveMatch.home_team,
-            provider_away_team: liveMatch.away_team,
-            api_match_num: liveMatch.api_match_num, // Uppdatera num om det saknades
-            broadcaster: liveMatch.broadcaster // Uppdatera broadcaster
-          })
+          .update(updateData)
           .eq('id', existingMatch.id)
       } else {
         await supabase
