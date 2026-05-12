@@ -118,25 +118,12 @@ export default async function PredictionsPage({
                       <div className="flex items-center justify-between gap-4 mb-6">
                         {/* Home Team */}
                         <div className="flex flex-col items-center flex-1 min-w-0">
-                          {match.group_name === null ? (
-                            <select 
-                              name={`homeTeam_${match.id}`}
-                              disabled={isLocked}
-                              defaultValue={prediction?.predicted_home_team || match.home_team}
-                              className="w-full mb-3 text-[10px] font-bold p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 truncate"
-                            >
-                              <option value="">Välj lag...</option>
-                              {allTeams.map(team => <option key={team} value={team}>{team}</option>)}
-                              {!allTeams.includes(match.home_team) && <option value={match.home_team}>{match.home_team}</option>}
-                            </select>
-                          ) : (
-                            <div className="flex flex-col items-center mb-3">
-                              <span className="text-2xl mb-1">{countryToFlag(match.home_team)}</span>
-                              <span className="text-xs font-black text-zinc-900 dark:text-white truncate text-center w-full uppercase tracking-tight">
-                                {match.home_team}
-                              </span>
-                            </div>
-                          )}
+                          <div className="flex flex-col items-center mb-3">
+                            <span className="text-2xl mb-1">{countryToFlag(match.home_team)}</span>
+                            <span className="text-xs font-black text-zinc-900 dark:text-white truncate text-center w-full uppercase tracking-tight">
+                              {match.home_team}
+                            </span>
+                          </div>
                           <input 
                             type="number" 
                             name={`homeScore_${match.id}`}
@@ -152,25 +139,12 @@ export default async function PredictionsPage({
 
                         {/* Away Team */}
                         <div className="flex flex-col items-center flex-1 min-w-0">
-                          {match.group_name === null ? (
-                            <select 
-                              name={`awayTeam_${match.id}`}
-                              disabled={isLocked}
-                              defaultValue={prediction?.predicted_away_team || match.away_team}
-                              className="w-full mb-3 text-[10px] font-bold p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 truncate"
-                            >
-                              <option value="">Välj lag...</option>
-                              {allTeams.map(team => <option key={team} value={team}>{team}</option>)}
-                              {!allTeams.includes(match.away_team) && <option value={match.away_team}>{match.away_team}</option>}
-                            </select>
-                          ) : (
-                            <div className="flex flex-col items-center mb-3">
-                              <span className="text-2xl mb-1">{countryToFlag(match.away_team)}</span>
-                              <span className="text-xs font-black text-zinc-900 dark:text-white truncate text-center w-full uppercase tracking-tight">
-                                {match.away_team}
-                              </span>
-                            </div>
-                          )}
+                          <div className="flex flex-col items-center mb-3">
+                            <span className="text-2xl mb-1">{countryToFlag(match.away_team)}</span>
+                            <span className="text-xs font-black text-zinc-900 dark:text-white truncate text-center w-full uppercase tracking-tight">
+                              {match.away_team}
+                            </span>
+                          </div>
                           <input 
                             type="number" 
                             name={`awayScore_${match.id}`}
