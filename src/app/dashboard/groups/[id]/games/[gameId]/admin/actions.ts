@@ -330,15 +330,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           return true
         }
 
-        // 3. Special handling for knockout placeholders (e.g., if DB has "W97" and API match is 97)
-        if (isKnockout && liveMatch.api_match_num) {
-          const wNum = `W${liveMatch.api_match_num}`
-          if (m.home_team === wNum || m.away_team === wNum) {
-            return true
-          }
-        }
-
-        // 4. Special handling for unique stages (Final, Third place)
+        // 3. Special handling for unique stages (Final, Third place)
         const uniqueStages = ['final', 'match for third place']
         if (isKnockout && m.stage && liveMatch.stage && 
             uniqueStages.includes(m.stage.toLowerCase()) && 
@@ -346,7 +338,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           return true
         }
         
-        // 5. Fallback to team names (best for group stage)
+        // 4. Fallback to team names (best for group stage)
         return (m.home_team === liveMatch.home_team && m.away_team === liveMatch.away_team)
       })
 
