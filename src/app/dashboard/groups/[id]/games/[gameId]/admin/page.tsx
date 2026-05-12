@@ -44,6 +44,11 @@ export default async function GameAdminPage({
   const bindedCalculateScores = calculateScores.bind(null, groupId, gameId)
   const bindedSync = syncMatchesWithProvider.bind(null, groupId, gameId)
 
+  const allTeams = Array.from(new Set(
+    matches?.flatMap(m => [m.home_team, m.away_team, m.provider_home_team, m.provider_away_team])
+      .filter(Boolean)
+  )).sort() as string[]
+
   return (
     <div className="max-w-5xl mx-auto p-6 md:p-12">
       <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="inline-flex items-center text-sm font-bold text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6 transition-colors">
@@ -116,6 +121,7 @@ export default async function GameAdminPage({
                       homeTeam={match.home_team}
                       awayTeam={match.away_team}
                       stage={match.stage}
+                      teams={allTeams}
                     />
 
                     <td className="p-4 text-right">

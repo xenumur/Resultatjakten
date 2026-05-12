@@ -12,6 +12,7 @@ interface MatchResultFormProps {
   homeTeam: string
   awayTeam: string
   stage: string | null
+  teams?: string[]
 }
 
 export function MatchResultForm({ 
@@ -21,7 +22,8 @@ export function MatchResultForm({
   status,
   homeTeam,
   awayTeam,
-  stage
+  stage,
+  teams = []
 }: MatchResultFormProps) {
   const isKnockout = stage && (
     stage.toLowerCase().includes('round') || 
@@ -35,26 +37,38 @@ export function MatchResultForm({
     <>
       <td className="p-4">
         {isKnockout ? (
-          <div className="flex flex-col gap-2 min-w-[150px]">
-            <input 
+          <div className="flex flex-col gap-2 min-w-[200px]">
+            <select 
               form="bulk-matches-form"
-              type="text" 
               name={`${matchId}_homeTeam`} 
               defaultValue={homeTeam} 
-              className="w-full px-2 py-1 text-sm rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Hemmalag"
-            />
-            <input 
+              className="w-full px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">Välj hemmalag...</option>
+              {teams.map(team => (
+                <option key={team} value={team}>{team}</option>
+              ))}
+              {!teams.includes(homeTeam) && homeTeam && (
+                <option value={homeTeam}>{homeTeam}</option>
+              )}
+            </select>
+            <select 
               form="bulk-matches-form"
-              type="text" 
               name={`${matchId}_awayTeam`} 
               defaultValue={awayTeam} 
-              className="w-full px-2 py-1 text-sm rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Bortalag"
-            />
+              className="w-full px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">Välj bortalag...</option>
+              {teams.map(team => (
+                <option key={team} value={team}>{team}</option>
+              ))}
+              {!teams.includes(awayTeam) && awayTeam && (
+                <option value={awayTeam}>{awayTeam}</option>
+              )}
+            </select>
           </div>
         ) : (
-          <div className="font-bold">{homeTeam} - {awayTeam}</div>
+          <div className="font-bold text-zinc-900 dark:text-zinc-100">{homeTeam} - {awayTeam}</div>
         )}
       </td>
       <td className="p-4">
@@ -81,7 +95,7 @@ export function MatchResultForm({
           form="bulk-matches-form"
           name={`${matchId}_status`} 
           defaultValue={status} 
-          className="text-sm px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500"
+          className="text-sm px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
         >
           <option value="upcoming">Kommande</option>
           <option value="live">Live</option>
