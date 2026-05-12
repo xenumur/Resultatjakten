@@ -90,35 +90,30 @@ export class OpenFootballProvider implements TournamentProvider {
             .replace(/[^a-z0-9]/g, '');    // Ta bort specialtecken och mellanslag
         };
 
-        // Mappning av SVT-matcher (översatt till engelska för att matcha API-datan)
+        // Fullständig och verifierad lista över SVT-matcher för VM 2026 (enligt SVT:s guide)
         const svtMatchesEn = [
-          ['Canada', 'Bosnia and Herzegovina'],
-          ['Brazil', 'Morocco'],
-          ['Haiti', 'Scotland'],
-          ['Sweden', 'Tunisia'],
-          ['Spain', 'Cape Verde'],
-          ['Belgium', 'Egypt'],
-          ['France', 'Senegal'],
-          ['USA', 'Australia'],
-          ['United States', 'Australia'],
-          ['Scotland', 'Morocco'],
-          ['Tunisia', 'Japan'],
-          ['Argentina', 'Austria'],
-          ['France', 'Iraq'],
-          ['Norway', 'Senegal'],
-          ['Portugal', 'Uzbekistan'],
-          ['England', 'Ghana'],
-          ['South Africa', 'South Korea'],
-          ['Czech Republic', 'Mexico'],
-          ['Curacao', 'Ivory Coast'],
-          ['Curacao', 'Cote d\'Ivoire'],
-          ['Ecuador', 'Germany'],
-          ['Tunisia', 'Netherlands'],
-          ['Japan', 'Sweden'],
-          ['Panama', 'England'],
+          ['Canada', 'Bosnia & Herzegovina'], ['Canada', 'Bosnia and Herzegovina'],
+          ['Brazil', 'Morocco'], ['Haiti', 'Scotland'],
+          ['Sweden', 'Tunisia'], ['Spain', 'Cape Verde'],
+          ['Belgium', 'Egypt'], ['France', 'Senegal'],
+          ['USA', 'Australia'], ['Scotland', 'Morocco'],
+          ['Tunisia', 'Japan'], ['Argentina', 'Austria'],
+          ['France', 'Iraq'], ['Norway', 'Senegal'],
+          ['Portugal', 'Uzbekistan'], ['England', 'Ghana'],
+          ['South Africa', 'South Korea'], ['Czech Republic', 'Mexico'],
+          ['Curaçao', 'Ivory Coast'], ['Curacao', 'Ivory Coast'],
+          ['Ecuador', 'Germany'], ['Tunisia', 'Netherlands'],
+          ['Japan', 'Sweden'], ['Panama', 'England'],
           ['Croatia', 'Ghana']
         ];
         
+        // SVT Knockout-platshållare
+        const svtKnockoutPlaceholders = [
+          '1E – 3A/B/C/D/F', '1F – 2C', '1L – 3E/H/I/J/K', '1H – 2J',
+          '1J – 2H', '1K – 3D/E/I/J/L', 'W74 – W77', 'W79 – W80',
+          'W85 – W87', 'W93 – W94', 'W95 – W96', 'W97 – W98', 'L101 – L102'
+        ];
+
         const normH = normalize(h);
         const normA = normalize(a);
         
@@ -133,7 +128,13 @@ export class OpenFootballProvider implements TournamentProvider {
           return (nsh === normH && nsa === normA) || (nsh === normA && nsa === normH);
         });
 
-        if (isSvt) {
+        // Kolla även knockout-platshållare
+        const isSvtKnockout = svtKnockoutPlaceholders.some(p => {
+          const [ph, pa] = p.split(/[–-]/).map(s => normalize(s.trim()));
+          return (ph === normH && pa === normA) || (ph === normA && pa === normH);
+        });
+
+        if (isSvt || isSvtKnockout) {
           broadcaster = 'SVT';
         }
       }

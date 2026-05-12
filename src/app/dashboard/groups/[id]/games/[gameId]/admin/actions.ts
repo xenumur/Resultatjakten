@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { fetchSvtBroadcasters } from '@/lib/utils/svtScraper'
 import { calculatePoints, DEFAULT_RULES } from '@/lib/scoring/engine'
 
 export async function bulkUpdateMatchResults(
@@ -407,8 +408,11 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           provider_status: liveMatch.status,
           provider_home_team: liveMatch.home_team,
           provider_away_team: liveMatch.away_team,
-          api_match_num: liveMatch.api_match_num,
-          broadcaster: liveMatch.broadcaster
+          api_match_num: liveMatch.api_match_num
+        }
+
+        if (liveMatch.broadcaster) {
+          updateData.broadcaster = liveMatch.broadcaster
         }
 
         // IMPORTANT: If the match is not manually overridden, 
@@ -453,9 +457,67 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           })
       }
     }
+
+    // 2. ALSO Sync TV Channels from SVT
+    try {
+      const svtData = await fetchSvtBroadcasters()
+      if (svtData) {
+        const { svtMatches, svtPlaceholders } = svtData
+        
+        // Swedish to English mapping for common teams
+        const teamMap: Record<string, string> = {
+          "Mexiko": "Mexico", "Sydafrika": "South Africa", "Sydkorea": "South Korea",
+          "Tjeckien": "Czech Republic", "Kanada": "Canada", "Bosnien och Hercegovina": "Bosnia & Herzegovina",
+          "USA": "USA", "Paraguay": "Paraguay", "Qatar": "Qatar", "Schweiz": "Switzerland",
+          "Brasilien": "Brazil", "Marocko": "Morocco", "Skottland": "Scotland", "Haiti": "Haiti",
+          "Australien": "Australia", "Turkiet": "Turkey", "Tyskland": "Germany", "Curacao": "Curaçao",
+          "Nederländerna": "Netherlands", "Japan": "Japan", "Elfenbenskusten": "Ivory Coast",
+          "Ecuador": "Ecuador", "Sverige": "Sweden", "Tunisien": "Tunisia", "Spanien": "Spain",
+          "Kap Verde": "Cape Verde", "Belgien": "Belgium", "Egypten": "Egypt", "Saudiarabien": "Saudi Arabia",
+          "Uruguay": "Uruguay", "Iran": "Iran", "Nya Zeeland": "New Zealand", "Frankrike": "France",
+          "Senegal": "Senegal", "Irak": "Iraq", "Norge": "Norway", "Argentina": "Argentina",
+          "Algeriet": "Algeria", "Österrike": "Austria", "Jordanien": "Jordan", "Portugal": "Portugal",
+          "DR Kongo": "DR Congo", "England": "England", "Kroatien": "Croatia", "Ghana": "Ghana",
+          "Panama": "Panama", "Uzbekistan": "Uzbekistan", "Colombia": "Colombia"
+        }
+
+        // First, reset all to TV4 for this game
+        await supabase.from('matches').update({ broadcaster: 'TV4' }).eq('game_id', gameId)
+
+        // Apply SVT updates for team matches
+        for (const [t1, t2] of svtMatches) {
+          const t1En = teamMap[t1] || t1
+          const t2En = teamMap[t2] || t2
+          
+          await supabase.from('matches')
+            .update({ broadcaster: 'SVT' })
+            .eq('game_id', gameId)
+            .or(`and(home_team.eq."${t1En}",away_team.eq."${t2En}"),and(home_team.eq."${t2En}",away_team.eq."${t1En}")`)
+          
+          // Also try Swedish names just in case they are in DB
+          if (t1En !== t1 || t2En !== t2) {
+            await supabase.from('matches')
+              .update({ broadcaster: 'SVT' })
+              .eq('game_id', gameId)
+              .or(`and(home_team.eq."${t1}",away_team.eq."${t2}"),and(home_team.eq."${t2}",away_team.eq."${t1}")`)
+          }
+        }
+
+        // Apply SVT updates for placeholders
+        for (const p of svtPlaceholders) {
+          const [ph, pa] = p.split(/[–-]/).map(s => s.trim())
+          await supabase.from('matches')
+            .update({ broadcaster: 'SVT' })
+            .eq('game_id', gameId)
+            .or(`and(home_team.eq."${ph}",away_team.eq."${pa}"),and(home_team.eq."${pa}",away_team.eq."${ph}")`)
+        }
+      }
+    } catch (e) {
+      console.error('Error syncing TV channels:', e)
+    }
     
     revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
-    return { success: true, message: `Matcherna har synkats med ${sourceProvider}!` }
+    return { success: true, message: `Matcherna och TV-kanalerna har synkats!` }
   } catch (err: any) {
     console.error('Sync error:', err)
     return { error: 'Synkning misslyckades: ' + err.message }

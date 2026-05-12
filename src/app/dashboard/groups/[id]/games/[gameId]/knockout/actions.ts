@@ -37,16 +37,22 @@ export async function saveKnockoutPredictions(
   const rows: Array<{ user_id: string; group_id: string; game_id: string; round: string; team_name: string }> = []
 
   for (const round of KNOCKOUT_ROUNDS) {
+    const roundPicks = new Set<string>()
     const teamCount = round.teamCount
     for (let i = 0; i < teamCount; i++) {
       const val = formData.get(`${round.key}_${i}`) as string
       if (val && val.trim()) {
+        const team = val.trim()
+        if (roundPicks.has(team)) {
+          return { error: `Du kan inte välja samma lag flera gånger i ${round.label}` }
+        }
+        roundPicks.add(team)
         rows.push({
           user_id: user.id,
           group_id: groupId,
           game_id: gameId,
           round: round.key,
-          team_name: val.trim(),
+          team_name: team,
         })
       }
     }

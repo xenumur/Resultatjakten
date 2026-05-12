@@ -141,9 +141,18 @@ function RoundSection({
                 className="w-full text-sm font-semibold py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-60 disabled:cursor-not-allowed pr-8"
               >
                 <option value="">— välj lag —</option>
-                {availableTeams.map(team => (
-                  <option key={team} value={team}>{countryToFlag(team)} {team}</option>
-                ))}
+                {availableTeams.map(team => {
+                  const isSelectedElsewhere = picks.some((p, idx) => p === team && idx !== i)
+                  return (
+                    <option 
+                      key={team} 
+                      value={team} 
+                      disabled={isSelectedElsewhere}
+                    >
+                      {countryToFlag(team)} {team} {isSelectedElsewhere ? '(valt)' : ''}
+                    </option>
+                  )
+                })}
               </select>
             </div>
           </div>
