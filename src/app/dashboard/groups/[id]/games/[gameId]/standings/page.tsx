@@ -47,9 +47,17 @@ export default async function StandingsPage({
         <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="text-sm font-bold text-zinc-500 hover:text-indigo-600 mb-2 inline-flex items-center gap-1 transition">
           <ArrowLeft className="w-4 h-4" /> Tillbaka till Spelet
         </Link>
-        <div className="flex items-center gap-3">
-          <Table className="w-8 h-8 text-indigo-600" />
-          <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white">Gruppställning</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Table className="w-8 h-8 text-indigo-600" />
+            <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white">Gruppställning</h1>
+          </div>
+          <Link
+            href={`/dashboard/groups/${groupId}/games/${gameId}/bracket`}
+            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition shadow-sm shadow-emerald-600/20 self-start sm:self-auto"
+          >
+            🌳 Visa Slutspelsbracket
+          </Link>
         </div>
         <p className="text-zinc-500 dark:text-zinc-400 font-medium">Aktuell tabell för alla grupper i {game.name}.</p>
       </div>
