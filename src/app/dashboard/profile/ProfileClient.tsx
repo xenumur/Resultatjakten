@@ -2,9 +2,10 @@
 
 import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
-import { Sun, Moon, Monitor, Check, User, Mail, Shield } from 'lucide-react'
+import { Sun, Moon, Monitor, Check, Mail, Shield } from 'lucide-react'
 import { updateThemePreference } from './actions'
 import { toast } from 'sonner'
+import { NotificationToggle } from '@/components/PushNotificationManager'
 
 export default function ProfileClient({ profile, userEmail }: { profile: any, userEmail: string }) {
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -127,6 +128,12 @@ export default function ProfileClient({ profile, userEmail }: { profile: any, us
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Notifications Card */}
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[40px] p-8 shadow-sm">
+        <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-6">Notiser</h2>
+        <NotificationToggle />
       </div>
     </div>
   )

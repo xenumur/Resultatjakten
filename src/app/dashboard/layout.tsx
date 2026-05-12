@@ -4,7 +4,7 @@ import { logout } from '@/app/(auth)/login/actions'
 import { getUnreadCount } from '@/app/dashboard/notifications/actions'
 import Link from 'next/link'
 import { Home, Users, PlusCircle, LogOut, Bell } from 'lucide-react'
-import { PushNotificationManager } from '@/components/PushNotificationManager'
+
 import { MobileHeader } from '@/components/MobileHeader'
 
 export default async function DashboardLayout({
@@ -72,8 +72,6 @@ export default async function DashboardLayout({
       <main className="flex-1 w-full max-w-6xl mx-auto md:p-6 lg:p-10">
         {children}
       </main>
-
-      <PushNotificationManager />
     </div>
   )
 }
