@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export function PullToRefresh() {
   const [pullDistance, setPullDistance] = useState(0)
@@ -10,6 +11,13 @@ export function PullToRefresh() {
   const pullThreshold = 100
 
   useEffect(() => {
+    // Check if we just refreshed
+    const justRefreshed = sessionStorage.getItem('pull_refreshed')
+    if (justRefreshed) {
+      toast.success('Innehållet har uppdaterats!')
+      sessionStorage.removeItem('pull_refreshed')
+    }
+
     const handleTouchStart = (e: TouchEvent) => {
       // Only trigger if we are at the very top of the page
       if (window.scrollY === 0) {
@@ -42,6 +50,7 @@ export function PullToRefresh() {
 
       if (pullDistance >= pullThreshold) {
         setIsRefreshing(true)
+        sessionStorage.setItem('pull_refreshed', 'true')
         // Give the spinner a moment to show before reloading
         setTimeout(() => {
           window.location.reload()
