@@ -21,7 +21,19 @@ export async function bulkUpdateMatchResults(
   }
 
   try {
+  // Hämta befintliga matcher för att jämföra värden
+  const { data: dbMatches } = await supabase
+    .from('matches')
+    .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override')
+    .in('id', Array.from(matchIds))
+
+  if (!dbMatches) return { success: false, error: 'Kunde inte hämta matcher för validering.' }
+
+  try {
     for (const matchId of Array.from(matchIds)) {
+      const existing = dbMatches.find(m => m.id === matchId)
+      if (!existing) continue
+
       const homeScoreStr = formData.get(`${matchId}_homeScore`) as string
       const awayScoreStr = formData.get(`${matchId}_awayScore`) as string
       const status = formData.get(`${matchId}_status`) as string
@@ -32,10 +44,23 @@ export async function bulkUpdateMatchResults(
 
       const homeScore = parseInt(homeScoreStr, 10)
       const awayScore = parseInt(awayScoreStr, 10)
+      
+      const newHomeScore = isNaN(homeScore) ? null : homeScore
+      const newAwayScore = isNaN(awayScore) ? null : awayScore
+
+      // Kolla om något faktiskt har ändrats
+      const hasChanged = 
+        newHomeScore !== existing.final_home_score ||
+        newAwayScore !== existing.final_away_score ||
+        status !== existing.status ||
+        (homeTeam && homeTeam !== existing.home_team) ||
+        (awayTeam && awayTeam !== existing.away_team)
+
+      if (!hasChanged) continue
 
       const updateData: any = {
-        final_home_score: isNaN(homeScore) ? null : homeScore,
-        final_away_score: isNaN(awayScore) ? null : awayScore,
+        final_home_score: newHomeScore,
+        final_away_score: newAwayScore,
         status: status,
         is_manual_override: true
       }
