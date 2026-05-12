@@ -54,7 +54,7 @@ export default function GraderClient({ question, answers, groupId }: { question:
                       type="number" 
                       max={question.max_points} 
                       min={0}
-                      defaultValue={ans.points_awarded ?? ''}
+                      defaultValue={ans.points_awarded ?? question.max_points}
                       required 
                       className="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-black text-xl"
                     />
