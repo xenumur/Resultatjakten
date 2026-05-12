@@ -319,7 +319,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
       )
 
       const existingMatch = dbMatches.find(m => {
-        const normalize = (s: string | null) => s?.trim().toLowerCase() || ''
+        const normalize = (s: string | null | undefined) => s?.trim().toLowerCase() || ''
         
         // 1. Match by official API match number (most reliable)
         if (isKnockout && liveMatch.api_match_num && m.api_match_num === liveMatch.api_match_num) {
