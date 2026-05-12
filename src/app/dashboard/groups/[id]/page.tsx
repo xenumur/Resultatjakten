@@ -136,7 +136,7 @@ export default async function GroupDetailPage({
           <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
             <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Prispott</span>
             <div className="mt-auto">
@@ -145,36 +145,30 @@ export default async function GroupDetailPage({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 border-2 border-amber-100 dark:border-amber-900/20 p-6 rounded-3xl relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
-             <div className="absolute top-0 right-0 p-4 opacity-5">
-               <Trophy className="w-10 h-10 md:w-12 md:h-12 text-amber-500" />
-             </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">1:a Pris (60%)</span>
-             <div className="mt-auto">
-               <div className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.first)}</div>
-               <p className="text-[9px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Guldmedaljören</p>
-             </div>
-          </div>
-
-          <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 p-6 rounded-3xl relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
-             <div className="absolute top-0 right-0 p-4 opacity-5">
-               <Medal className="w-10 h-10 md:w-12 md:h-12 text-zinc-400" />
-             </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">2:a Pris (25%)</span>
-             <div className="mt-auto">
-               <div className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.second)}</div>
-               <p className="text-[9px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Silvermedaljören</p>
-             </div>
-          </div>
-
-          <div className="bg-white dark:bg-zinc-900 border-2 border-orange-100 dark:border-orange-900/20 p-6 rounded-3xl relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px] bg-gradient-to-br from-white to-orange-50/20 dark:from-zinc-900 dark:to-orange-900/5">
-             <div className="absolute top-0 right-0 p-4 opacity-5">
-               <Medal className="w-10 h-10 md:w-12 md:h-12 text-orange-600" />
-             </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-orange-700 dark:text-orange-400">3:e Pris (10%)</span>
-             <div className="mt-auto">
-               <div className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white leading-none">{formatMoney(prizes.third)}</div>
-               <p className="text-[9px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">Bronsmedaljören</p>
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
+             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Prisfördelning</span>
+             <div className="space-y-3 mt-auto">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-amber-400/20">1</div>
+                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Guld (60%)</span>
+                 </div>
+                 <span className="font-black text-amber-600 dark:text-amber-400 text-base">{formatMoney(prizes.first)}</span>
+               </div>
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="w-6 h-6 rounded-full bg-zinc-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-zinc-400/20">2</div>
+                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Silver (25%)</span>
+                 </div>
+                 <span className="font-black text-zinc-600 dark:text-zinc-400 text-base">{formatMoney(prizes.second)}</span>
+               </div>
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-orange-500/20">3</div>
+                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Brons (10%)</span>
+                 </div>
+                 <span className="font-black text-orange-600 dark:text-orange-400 text-base">{formatMoney(prizes.third)}</span>
+               </div>
              </div>
           </div>
         </div>
