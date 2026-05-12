@@ -195,8 +195,22 @@ async function recalculateAllKnockoutScores(gameId: string, matches: any[], supa
     return n.includes('winner') || n.includes('loser') || n.includes('tbd') || /^w\d+$/.test(n) || /^l\d+$/.test(n) || n.includes('match')
   }
 
+  // Fetch manual overrides
+  const { data: manualTeams } = await supabase
+    .from('knockout_actual_teams')
+    .select('round, team_name')
+    .eq('game_id', gameId)
+
   // Derive actual teams per round from the matches table
   const actualTeamsByRound = new Map<string, Set<string>>()
+  
+  // 1. Add manual overrides
+  for (const at of manualTeams ?? []) {
+    if (!actualTeamsByRound.has(at.round)) actualTeamsByRound.set(at.round, new Set())
+    actualTeamsByRound.get(at.round)!.add(at.team_name.toLowerCase().trim())
+  }
+
+  // 2. Add automated teams from matches
   for (const m of matches) {
     const internalKey = stageMap[m.stage]
     if (!internalKey) continue

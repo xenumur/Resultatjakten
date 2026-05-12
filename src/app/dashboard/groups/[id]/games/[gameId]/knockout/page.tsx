@@ -44,9 +44,8 @@ export default async function KnockoutPage({
     .eq('user_id', user.id)
     .eq('game_id', gameId)
 
-  // Get actual teams for showing correctness (automated from matches)
+  // Get actual teams for showing correctness (automated from matches + manual overrides)
   const stageMap: Record<string, string> = {
-    'Round of 32': 'round_of_32',
     'Round of 16': 'round_of_16',
     'Quarter-final': 'quarter_final',
     'Semi-final': 'semi_final',
@@ -60,7 +59,19 @@ export default async function KnockoutPage({
     return n.includes('winner') || n.includes('loser') || n.includes('tbd') || /^w\d+$/.test(n) || /^l\d+$/.test(n) || n.includes('match')
   }
 
+  const [{ data: actualManualTeams }] = await Promise.all([
+    supabase.from('knockout_actual_teams').select('round, team_name').eq('game_id', gameId)
+  ])
+
   const actualByRound = new Map<string, Set<string>>()
+  
+  // 1. Add manual teams first
+  for (const at of actualManualTeams ?? []) {
+    if (!actualByRound.has(at.round)) actualByRound.set(at.round, new Set())
+    actualByRound.get(at.round)!.add(at.team_name.toLowerCase().trim())
+  }
+
+  // 2. Add automated teams from matches
   for (const m of matches ?? []) {
     const internalKey = stageMap[m.stage]
     if (!internalKey) continue
