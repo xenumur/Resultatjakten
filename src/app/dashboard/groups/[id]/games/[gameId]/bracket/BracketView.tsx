@@ -11,6 +11,7 @@ interface Match {
   final_home_score: number | null
   final_away_score: number | null
   status: string
+  api_match_num: number | null
 }
 
 interface BracketViewProps {
@@ -178,12 +179,32 @@ function RoundColumn({
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export function BracketView({ matches }: BracketViewProps) {
-  const ro32 = matches.filter(m => m.stage === 'Round of 32')
-  const ro16 = matches.filter(m => m.stage === 'Round of 16')
-  const qf   = matches.filter(m => m.stage === 'Quarter-final')
-  const sf   = matches.filter(m => m.stage === 'Semi-final')
+  // Define the exact visual order from top to bottom based on FIFA 2026 bracket structure
+  const visualOrderR32 = [73, 77, 74, 75, 80, 82, 81, 84, 86, 87, 78, 79, 83, 85, 76, 88]
+  const visualOrderR16 = [89, 90, 93, 94, 91, 92, 95, 96]
+  const visualOrderQF  = [97, 98, 99, 100]
+  const visualOrderSF  = [101, 102]
+
+  // Helper to sort by visual order or fallback to ID
+  const sortByOrder = (matchList: Match[], orderArr: number[]) => {
+    return [...matchList].sort((a, b) => {
+      const aIdx = a.api_match_num ? orderArr.indexOf(a.api_match_num) : -1
+      const bIdx = b.api_match_num ? orderArr.indexOf(b.api_match_num) : -1
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx
+      if (aIdx !== -1) return -1
+      if (bIdx !== -1) return 1
+      // Fallback
+      return a.id.localeCompare(b.id)
+    })
+  }
+
+  const ro32 = sortByOrder(matches.filter(m => m.stage === 'Round of 32'), visualOrderR32)
+  const ro16 = sortByOrder(matches.filter(m => m.stage === 'Round of 16'), visualOrderR16)
+  const qf   = sortByOrder(matches.filter(m => m.stage === 'Quarter-final'), visualOrderQF)
+  const sf   = sortByOrder(matches.filter(m => m.stage === 'Semi-final'), visualOrderSF)
   const third = matches.filter(m => m.stage === 'Match for third place')
   const final = matches.filter(m => m.stage === 'Final')
+
 
   // Build the ordered list of rounds that have data
   const allRounds: { label: string; emoji: string; matches: Match[] }[] = []
