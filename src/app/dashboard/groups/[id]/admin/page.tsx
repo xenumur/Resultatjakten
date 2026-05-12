@@ -57,7 +57,8 @@ export default async function GroupAdminPage({
                 name: group.name,
                 description: group.description,
                 entry_fee: group.entry_fee,
-                currency: group.currency
+                currency: group.currency,
+                payment_info: group.payment_info
               }} 
             />
           </div>
