@@ -23,26 +23,45 @@ export default async function LeaderboardPage({
     `)
     .eq('group_id', groupId)
 
-  const { data: predictions } = await supabase
-    .from('predictions')
-    .select('user_id, points_awarded')
-    .eq('game_id', gameId)
-    .not('points_awarded', 'is', null)
+  const [
+    { data: predictions },
+    { data: knockoutPredictions },
+    { data: bonusAnswers }
+  ] = await Promise.all([
+    supabase.from('predictions').select('user_id, points_awarded').eq('game_id', gameId).not('points_awarded', 'is', null),
+    supabase.from('knockout_predictions').select('user_id, points_awarded').eq('game_id', gameId).not('points_awarded', 'is', null),
+    supabase.from('bonus_answers').select('user_id, points_awarded').match({ 'bonus_questions.game_id': gameId }).select('user_id, points_awarded, bonus_questions!inner(game_id)')
+  ])
 
-  const leaderboard = members?.map(member => {
-    const userPredictions = predictions?.filter(p => p.user_id === member.user_id) || []
-    const totalPoints = userPredictions.reduce((sum, p) => sum + (p.points_awarded || 0), 0)
-    // En helt perfekt match ger numera 7 poäng
-    const exactMatches = userPredictions.filter(p => p.points_awarded === 7).length
+  const leaderboard = (members || []).map(member => {
+    const userMatchPoints = (predictions || [])
+      .filter(p => p.user_id === member.user_id)
+      .reduce((sum, p) => sum + (p.points_awarded || 0), 0)
+    
+    const userKnockoutPoints = (knockoutPredictions || [])
+      .filter(p => p.user_id === member.user_id)
+      .reduce((sum, p) => sum + (p.points_awarded || 0), 0)
+    
+    const userBonusPoints = (bonusAnswers || [])
+      .filter(a => a.user_id === member.user_id)
+      .reduce((sum, a) => sum + (a.points_awarded || 0), 0)
+
+    const totalPoints = userMatchPoints + userKnockoutPoints + userBonusPoints
+    
+    const exactMatches = (predictions || [])
+      .filter(p => p.user_id === member.user_id && p.points_awarded === 7).length
     
     return {
       userId: member.user_id,
       name: (member.profiles as any)?.display_name || 'Okänd',
+      matchPoints: userMatchPoints,
+      knockoutPoints: userKnockoutPoints,
+      bonusPoints: userBonusPoints,
       totalPoints,
       exactMatches,
-      matchesPlayed: userPredictions.length
+      matchesPlayed: (predictions || []).filter(p => p.user_id === member.user_id).length
     }
-  }).sort((a, b) => b.totalPoints - a.totalPoints || b.exactMatches - a.exactMatches) || []
+  }).sort((a, b) => b.totalPoints - a.totalPoints || b.exactMatches - a.exactMatches)
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">

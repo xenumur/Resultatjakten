@@ -15,21 +15,21 @@ export default async function GroupDetailPage({
 
   if (!user) redirect('/login')
 
-  const [{ data: group }, { data: members }, { data: matchPredictions }, { data: knockoutPredictions }, { data: games }] = await Promise.all([
+  const [
+    { data: group }, 
+    { data: members }, 
+    { data: matchPredictions }, 
+    { data: knockoutPredictions }, 
+    { data: games },
+    { data: bonusAnswers }
+  ] = await Promise.all([
     supabase.from('groups').select('*').eq('id', groupId).single(),
     supabase.from('group_members').select('*, profiles:user_id(display_name, email)').eq('group_id', groupId),
     supabase.from('predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('knockout_predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('games').select('*').eq('group_id', groupId),
-    supabase.from('bonus_answers').select('user_id, points_awarded').filter('bonus_questions.group_id', 'eq', groupId)
+    supabase.from('bonus_answers').select('user_id, points_awarded, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId)
   ])
-  
-  // Note: The filter above might need a join or a separate query if Supabase client doesn't support nested filtering this way easily in one call.
-  // Let's refine it to be safer:
-  const { data: bonusAnswers } = await supabase
-    .from('bonus_answers')
-    .select('user_id, points_awarded, bonus_questions!inner(group_id)')
-    .eq('bonus_questions.group_id', groupId)
 
   if (!group || !members) {
     return <div className="p-8 text-center text-red-500">Kunde inte hitta gruppen.</div>
