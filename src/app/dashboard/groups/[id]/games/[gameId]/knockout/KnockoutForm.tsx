@@ -35,8 +35,11 @@ export function KnockoutPredictionForm({ action, existingPicks, availableTeams, 
     picksByRound.get(p.round)!.push(p.team_name)
   }
 
+  // Force re-render of uncontrolled inputs by using a key that changes with the data
+  const formKey = existingPicks.map(p => `${p.round}:${p.team_name}`).join('|');
+
   return (
-    <form action={formAction}>
+    <form action={formAction} key={formKey}>
       <div className="space-y-8">
         {KNOCKOUT_ROUNDS.map(round => {
           const picks = picksByRound.get(round.key) ?? []
@@ -71,9 +74,11 @@ export function KnockoutPredictionForm({ action, existingPicks, availableTeams, 
   )
 }
 
+import { useState } from 'react'
+
 function RoundSection({
   round,
-  picks,
+  picks: initialPicks,
   availableTeams,
   isLocked,
 }: {
@@ -82,11 +87,25 @@ function RoundSection({
   availableTeams: string[]
   isLocked: boolean
 }) {
+  const [picks, setPicks] = useState<string[]>(() => {
+    const arr = Array(round.teamCount).fill('')
+    initialPicks.forEach((p, i) => { arr[i] = p })
+    return arr
+  })
+
   const pointsPerTeam = round.key === 'round_of_16' ? 2
     : round.key === 'quarter_final' ? 4
     : round.key === 'semi_final' ? 6
     : round.key === 'third_place' ? 8
     : 10
+
+  const handleTeamChange = (index: number, value: string) => {
+    const newPicks = [...picks]
+    newPicks[index] = value
+    setPicks(newPicks)
+  }
+
+  const selectedCount = picks.filter(Boolean).length
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm">
@@ -100,8 +119,12 @@ function RoundSection({
             </p>
           </div>
         </div>
-        <div className="text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-800">
-          {picks.length}/{round.teamCount} valda
+        <div className={`text-xs font-bold px-3 py-1 rounded-full border transition-colors ${
+          selectedCount === round.teamCount 
+            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-800'
+            : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-800'
+        }`}>
+          {selectedCount}/{round.teamCount} valda
         </div>
       </div>
 
@@ -118,7 +141,8 @@ function RoundSection({
               <select
                 name={`${round.key}_${i}`}
                 disabled={isLocked}
-                defaultValue={picks[i] ?? ''}
+                value={picks[i] ?? ''}
+                onChange={(e) => handleTeamChange(i, e.target.value)}
                 className={`w-full text-sm font-semibold py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-60 disabled:cursor-not-allowed ${picks[i] ? 'pl-8' : 'pl-3'} pr-2`}
               >
                 <option value="">— välj lag —</option>
