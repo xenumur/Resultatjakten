@@ -106,9 +106,9 @@ export default async function GroupDetailPage({
   const formatMoney = (amount: number) => `${amount} ${group.currency}`
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 md:px-10 md:py-12 space-y-10 md:space-y-16 overflow-x-hidden">
+    <div className="max-w-6xl mx-auto px-4 py-8 md:px-10 md:py-12 flex flex-col gap-10 md:gap-16 overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 text-center md:text-left">
+      <div className="order-1 flex flex-col md:flex-row md:items-end justify-between gap-8 text-center md:text-left">
         <div className="space-y-3 min-w-0">
           <Link href="/dashboard" className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center justify-center md:justify-start gap-2">
             <ArrowLeft className="w-3.5 h-3.5" /> Mina grupper
@@ -130,7 +130,7 @@ export default async function GroupDetailPage({
       </div>
 
       {/* Prize Pool Summary */}
-      <section className="space-y-6">
+      <section className="order-3 md:order-2 space-y-6">
         <div className="flex items-center justify-center md:justify-start gap-2">
           <Coins className="w-5 h-5 text-amber-500 shrink-0" />
           <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
@@ -181,7 +181,7 @@ export default async function GroupDetailPage({
       </section>
 
       {/* Main Grid: Games & Leaderboard */}
-      <div className="grid lg:grid-cols-3 gap-10 md:gap-16">
+      <div className="order-2 md:order-3 grid lg:grid-cols-3 gap-10 md:gap-16">
         
         {/* Left Side: Active Games */}
         <div className="lg:col-span-1 space-y-8 min-w-0 order-2 lg:order-1">
