@@ -55,8 +55,8 @@ export default async function GameAdminPage({
       .filter(Boolean)
   )).sort() as string[]
 
-  const upcomingMatches = (allMatches || []).filter(m => m.status === 'upcoming')
-  const playedMatches = (allMatches || []).filter(m => m.status !== 'upcoming')
+  const upcomingMatches = (allMatches || []).filter(m => m.status === 'upcoming' || m.status === 'live')
+  const playedMatches = (allMatches || []).filter(m => m.status !== 'upcoming' && m.status !== 'live')
   const matches = activeTab === 'upcoming' ? upcomingMatches : playedMatches
 
   return (
