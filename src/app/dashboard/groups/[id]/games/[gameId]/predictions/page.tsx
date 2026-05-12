@@ -207,8 +207,8 @@ export default async function PredictionsPage({
               </section>
             ))}
           </div>
-        </PredictionsForm>
-      )}
+        )}
+      </PredictionsForm>
     </div>
   )
 }
