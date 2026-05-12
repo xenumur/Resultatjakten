@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { updatePaymentStatus, updateGroupSettings } from './actions'
 import { GroupSettingsForm } from './GroupSettingsForm'
 import { DeleteGroupButton } from './DeleteGroupButton'
+import { RemoveMemberButton } from './RemoveMemberButton'
 import { Settings, Users, ArrowLeft } from 'lucide-react'
 
 export default async function GroupAdminPage({
@@ -117,6 +118,13 @@ export default async function GroupAdminPage({
                             <button type="submit" className="text-xs font-black bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2 rounded-xl hover:opacity-80 transition active:scale-95">
                               Spara
                             </button>
+                            {member.user_id !== user.id && (
+                              <RemoveMemberButton 
+                                groupId={groupId} 
+                                userId={member.user_id} 
+                                userName={p?.display_name || p?.email || 'Medlem'} 
+                              />
+                            )}
                           </form>
                         </td>
                       </tr>

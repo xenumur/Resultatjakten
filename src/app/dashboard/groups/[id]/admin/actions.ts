@@ -119,3 +119,38 @@ export async function deleteGroup(groupId: string) {
   revalidatePath('/dashboard')
   redirect('/dashboard')
 }
+
+export async function removeMember(groupId: string, targetUserId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Inte inloggad' }
+
+  // Verify current user is admin of the group
+  const { data: adminMember } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!adminMember || adminMember.role !== 'admin') {
+    return { error: 'Endast administratörer kan ta bort medlemmar.' }
+  }
+
+  // Prevent admin from removing themselves (they should use another way or delete group)
+  if (user.id === targetUserId) {
+    return { error: 'Du kan inte ta bort dig själv från gruppen här.' }
+  }
+
+  const { error } = await supabase
+    .from('group_members')
+    .delete()
+    .eq('group_id', groupId)
+    .eq('user_id', targetUserId)
+
+  if (error) return { error: 'Kunde inte ta bort medlemmen: ' + error.message }
+
+  revalidatePath(`/dashboard/groups/${groupId}/admin`)
+  revalidatePath(`/dashboard/groups/${groupId}`)
+  return { success: true }
+}
