@@ -76,7 +76,7 @@ export default function IntroductionPage() {
                   { title: 'Hitta matcherna', description: 'När du är i gruppen, klicka på dina aktiva spel för att se alla kommande matcher.' },
                   { title: 'Tippa resultaten', description: 'Navigera till "Tippa matcher" för att börja fylla i dina förutsägelser.' },
                   { title: 'Håll koll på deadline', description: 'Se till att skicka in dina tips i god tid innan matchen startar och systemet låses.' },
-                  { title: 'Spara dina tips', description: 'Glöm inte att klicka på spara för att registrera dina resultat i poängjakten.' },
+                  { title: 'Spara dina tips', description: 'Registrera dina resultat för att delta i poängjakten. Du tippar en runda i taget – när gruppspelet är klart öppnas tippandet för sextondelsfinalerna, och så vidare efter varje avslutad runda.' },
                   { title: 'Slutspelsträdet', description: 'Gissa vilka lag som tar sig hela vägen från åttondelsfinal till den stora finalen.' },
                   { title: 'Svara på bonusfrågor', description: 'Håll utkik efter kluriga bonusfrågor som kan ge dig det där lilla extra försprånget.' },
                   { title: 'Följ leaderboarden', description: 'Se din placering uppdateras live och tävla om förstaplatsen i gruppen!' }
