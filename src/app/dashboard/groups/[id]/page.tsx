@@ -285,7 +285,7 @@ export default async function GroupDetailPage({
               <table className="w-full text-left border-collapse min-w-full">
                 <thead>
                   <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-                    <th className="py-3 pl-4 pr-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">#</th>
+                    <th className="py-3 pl-4 pr-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">#</th>
                     <th className="py-3 px-2 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Deltagare</th>
                     <th className="py-3 px-1.5 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">M</th>
                     <th className="py-3 px-1.5 md:py-5 md:px-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">S</th>
@@ -304,7 +304,7 @@ export default async function GroupDetailPage({
                         className={`transition-colors ${isMe ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30'}`}
                       >
                         <td className="py-3 pl-4 pr-2 md:py-5 md:px-6">
-                          <div className={`w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center font-black text-[10px] ${
+                          <div className={`mx-auto w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center font-black text-[10px] ${
                             entry.rank === 1 ? 'bg-amber-400 text-white shadow-lg shadow-amber-400/20' :
                             entry.rank === 2 ? 'bg-zinc-400 text-white shadow-lg shadow-zinc-400/20' :
                             entry.rank === 3 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' :
