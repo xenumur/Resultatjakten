@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Coins, Target, Users, Medal } from 'lucide-react'
+import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown } from 'lucide-react'
 
 export default async function GroupDetailPage({
   params,
@@ -100,7 +100,8 @@ export default async function GroupDetailPage({
     if (i > 0 && entry.total_points < leaderboard[i - 1].total_points) {
       currentRank = i + 1
     }
-    return { ...entry, rank: currentRank }
+    const memberObj = members.find((m: any) => m.user_id === entry.user_id)
+    return { ...entry, rank: currentRank, previous_rank: memberObj?.previous_rank }
   })
 
   const formatMoney = (amount: number) => `${amount} ${group.currency}`
@@ -289,6 +290,12 @@ export default async function GroupDetailPage({
                             <div className="min-w-0">
                               <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 md:gap-2 text-sm">
                                 <span className="truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none">{entry.display_name}</span>
+                                {entry.previous_rank && entry.rank < entry.previous_rank && (
+                                  <ArrowUp className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                )}
+                                {entry.previous_rank && entry.rank > entry.previous_rank && (
+                                  <ArrowDown className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                                )}
                                 {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                               </div>
                               <div className="flex items-center gap-1 md:gap-1.5">

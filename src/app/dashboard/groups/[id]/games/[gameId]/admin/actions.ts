@@ -145,9 +145,14 @@ export async function updateGameName(groupId: string, gameId: string, prevState:
 
 
 import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
+import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
 
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
   const supabase = await createClient()
+
+  // Spara nuvarande rank innan poäng uppdateras
+  await snapshotGroupLeaderboard(groupId)
+
 
   const { data: matches } = await supabase
     .from('matches')

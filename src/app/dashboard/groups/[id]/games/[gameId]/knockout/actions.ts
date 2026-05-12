@@ -112,6 +112,8 @@ export async function toggleKnockoutLock(groupId: string, gameId: string) {
 
 // ─── Admin: Save actual teams per round ──────────────────────────────────────
 
+import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
+
 export async function saveActualTeams(
   groupId: string,
   gameId: string,
@@ -120,6 +122,8 @@ export async function saveActualTeams(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Inte inloggad' }
+
+  await snapshotGroupLeaderboard(groupId)
 
   for (const round of KNOCKOUT_ROUNDS) {
     // Remove existing actual teams for this round

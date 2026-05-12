@@ -85,6 +85,8 @@ export async function submitBonusAnswer(formData: FormData) {
   revalidatePath(`/dashboard/groups/${groupId}/bonus`)
 }
 
+import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
+
 export async function gradeBonusAnswer(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -95,6 +97,8 @@ export async function gradeBonusAnswer(formData: FormData) {
   const groupId = formData.get('groupId') as string
   const points = parseInt(formData.get('points') as string)
   const comment = formData.get('comment') as string
+
+  await snapshotGroupLeaderboard(groupId)
 
   const { error } = await supabase
     .from('bonus_answers')
