@@ -90,10 +90,12 @@ export default async function PredictionsPage({
           />
           <SubmitButton 
             type="submit" 
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-600/20"
+            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-600/20"
           >
-            <Save className="w-4 h-4" />
-            <span className="leading-none">Spara Tips</span>
+            <div className="flex items-center justify-center gap-2">
+              <Save className="w-4 h-4" />
+              <span className="leading-none mt-0.5">Spara Tips</span>
+            </div>
           </SubmitButton>
         </div>
 
