@@ -184,7 +184,7 @@ export default async function GroupDetailPage({
       <div className="grid lg:grid-cols-3 gap-10 md:gap-16">
         
         {/* Left Side: Active Games */}
-        <div className="lg:col-span-1 space-y-8 min-w-0">
+        <div className="lg:col-span-1 space-y-8 min-w-0 order-2 lg:order-1">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Aktiva Spel</h2>
@@ -268,7 +268,7 @@ export default async function GroupDetailPage({
         </div>
 
         {/* Right Side: Consolidated Leaderboard */}
-        <div className="lg:col-span-2 space-y-6 min-w-0">
+        <div className="lg:col-span-2 space-y-6 min-w-0 order-1 lg:order-2">
           <div className="flex items-center gap-2">
             <Medal className="w-5 h-5 text-indigo-500 shrink-0" />
             <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Leaderboard</h2>
