@@ -21,15 +21,14 @@ export async function bulkUpdateMatchResults(
   }
 
   try {
-  // Hämta befintliga matcher för att jämföra värden
-  const { data: dbMatches } = await supabase
-    .from('matches')
-    .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override')
-    .in('id', Array.from(matchIds))
+    // Hämta befintliga matcher för att jämföra värden
+    const { data: dbMatches } = await supabase
+      .from('matches')
+      .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override')
+      .in('id', Array.from(matchIds))
 
-  if (!dbMatches) return { success: false, error: 'Kunde inte hämta matcher för validering.' }
+    if (!dbMatches) return { success: false, error: 'Kunde inte hämta matcher för validering.' }
 
-  try {
     for (const matchId of Array.from(matchIds)) {
       const existing = dbMatches.find(m => m.id === matchId)
       if (!existing) continue
