@@ -5,7 +5,7 @@
 export const KNOCKOUT_ROUND_POINTS: Record<string, number> = {
   round_of_16:   1,
   quarter_final: 2,
-  semi_final:    6,
+  semi_final:    4,
   third_place:   8,
   final:         10,
 }
