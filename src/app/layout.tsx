@@ -29,8 +29,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-import { Toaster } from 'sonner'
-import { ThemeProvider } from '@/components/ThemeProvider'
+import { PullToRefresh } from '@/components/PullToRefresh'
 
 export default function RootLayout({
   children,
@@ -50,6 +49,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <PullToRefresh />
           {children}
           <Toaster position="bottom-center" richColors />
         </ThemeProvider>

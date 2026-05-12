@@ -17,7 +17,6 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  overscroll-behavior-y: none; /* Förhindrar pull-to-refresh studs på mobil */
   -webkit-tap-highlight-color: transparent; /* Tar bort blå rutor på touch */
 }
 
