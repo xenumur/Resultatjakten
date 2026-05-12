@@ -44,20 +44,38 @@ export default async function KnockoutPage({
     .eq('user_id', user.id)
     .eq('game_id', gameId)
 
-  // Get actual teams for showing correctness
-  const { data: actualTeams } = await supabase
-    .from('knockout_actual_teams')
-    .select('round, team_name')
-    .eq('game_id', gameId)
+  // Get actual teams for showing correctness (automated from matches)
+  const stageMap: Record<string, string> = {
+    'Round of 32': 'round_of_32',
+    'Round of 16': 'round_of_16',
+    'Quarter-final': 'quarter_final',
+    'Semi-final': 'semi_final',
+    'Match for third place': 'third_place',
+    'Final': 'final'
+  }
+
+  const isPlaceholder = (name: string) => {
+    if (!name) return true
+    const n = name.toLowerCase()
+    return n.includes('winner') || n.includes('loser') || n.includes('tbd') || /^w\d+$/.test(n) || /^l\d+$/.test(n) || n.includes('match')
+  }
 
   const actualByRound = new Map<string, Set<string>>()
-  for (const at of actualTeams ?? []) {
-    if (!actualByRound.has(at.round)) actualByRound.set(at.round, new Set())
-    actualByRound.get(at.round)!.add(at.team_name.toLowerCase().trim())
+  for (const m of matches ?? []) {
+    const internalKey = stageMap[m.stage]
+    if (!internalKey) continue
+    if (!actualByRound.has(internalKey)) actualByRound.set(internalKey, new Set())
+    
+    if (m.home_team && !isPlaceholder(m.home_team)) {
+      actualByRound.get(internalKey)!.add(m.home_team.toLowerCase().trim())
+    }
+    if (m.away_team && !isPlaceholder(m.away_team)) {
+      actualByRound.get(internalKey)!.add(m.away_team.toLowerCase().trim())
+    }
   }
 
   const totalPoints = (myPicks ?? []).reduce((sum, p) => sum + (p.points_awarded ?? 0), 0)
-  const hasResults = (actualTeams?.length ?? 0) > 0
+  const hasResults = actualByRound.size > 0
 
   const boundSave = saveKnockoutPredictions.bind(null, groupId, gameId)
 
@@ -108,7 +126,7 @@ export default async function KnockoutPage({
       </div>
 
       {/* Points guide */}
-      <div className="mb-8 grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="mb-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {KNOCKOUT_ROUNDS.map(r => (
           <div key={r.key} className="flex flex-col items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 text-center">
             <span className="text-xl mb-1">{r.emoji}</span>
@@ -123,10 +141,13 @@ export default async function KnockoutPage({
       {hasResults && myPicks && myPicks.length > 0 && (
         <div className="mb-8 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800 rounded-3xl p-6">
           <h2 className="font-black text-lg text-indigo-900 dark:text-indigo-200 mb-4">📊 Din poängöversikt</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {KNOCKOUT_ROUNDS.map(r => {
               const myRoundPicks = (myPicks ?? []).filter(p => p.round === r.key)
-              const correct = myRoundPicks.filter(p => (p.points_awarded ?? 0) > 0).length
+              const correct = myRoundPicks.filter(p => {
+                const actual = actualByRound.get(r.key)
+                return actual?.has(p.team_name.toLowerCase().trim())
+              }).length
               const total = myRoundPicks.length
               return (
                 <div key={r.key} className="bg-white/70 dark:bg-zinc-900/50 rounded-xl p-3 text-center">

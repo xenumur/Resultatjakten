@@ -95,12 +95,14 @@ export async function updateMatchResult(
   return { success: true, message: 'Resultatet har uppdaterats.' }
 }
 
+import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
+
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
   const supabase = await createClient()
 
   const { data: matches } = await supabase
     .from('matches')
-    .select('id, final_home_score, final_away_score, status, home_team, away_team')
+    .select('id, final_home_score, final_away_score, status, home_team, away_team, stage')
     .eq('game_id', gameId)
 
   if (!matches || matches.length === 0) {
@@ -135,6 +137,7 @@ export async function calculateScores(groupId: string, gameId: string, _formData
     return
   }
 
+  // 1. Calculate Match Results Points
   for (const match of matches) {
     const matchPredictions = predictions.filter(p => p.match_id === match.id)
     const isFinished = match.status === 'finished'
@@ -169,8 +172,69 @@ export async function calculateScores(groupId: string, gameId: string, _formData
     }
   }
 
+  // 2. Calculate Knockout Stage Points (Robust Automation)
+  await recalculateAllKnockoutScores(gameId, matches, supabase)
+
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`)
-  return { success: true, message: 'Poängen har räknats om för alla deltagare!' }
+  return { success: true, message: 'Alla poäng (matcher & slutspel) har räknats om!' }
+}
+
+async function recalculateAllKnockoutScores(gameId: string, matches: any[], supabase: any) {
+  // Map DB stage names to our internal keys
+  const stageMap: Record<string, string> = {
+    'Round of 32': 'round_of_32',
+    'Round of 16': 'round_of_16',
+    'Quarter-final': 'quarter_final',
+    'Semi-final': 'semi_final',
+    'Match for third place': 'third_place',
+    'Final': 'final'
+  }
+
+  const isPlaceholder = (name: string) => {
+    if (!name) return true
+    const n = name.toLowerCase()
+    return n.includes('winner') || n.includes('loser') || n.includes('tbd') || /^w\d+$/.test(n) || /^l\d+$/.test(n) || n.includes('match')
+  }
+
+  // Derive actual teams per round from the matches table
+  const actualTeamsByRound = new Map<string, Set<string>>()
+  for (const m of matches) {
+    const internalKey = stageMap[m.stage]
+    if (!internalKey) continue
+
+    if (!actualTeamsByRound.has(internalKey)) {
+      actualTeamsByRound.set(internalKey, new Set())
+    }
+
+    if (m.home_team && !isPlaceholder(m.home_team)) {
+      actualTeamsByRound.get(internalKey)!.add(m.home_team.toLowerCase().trim())
+    }
+    if (m.away_team && !isPlaceholder(m.away_team)) {
+      actualTeamsByRound.get(internalKey)!.add(m.away_team.toLowerCase().trim())
+    }
+  }
+
+  // Fetch all knockout predictions for this game
+  const { data: predictions } = await supabase
+    .from('knockout_predictions')
+    .select('id, round, team_name, points_awarded')
+    .eq('game_id', gameId)
+
+  if (!predictions) return
+
+  // Update points for each prediction
+  for (const pred of predictions) {
+    const actual = actualTeamsByRound.get(pred.round)
+    const isCorrect = actual?.has(pred.team_name.toLowerCase().trim()) ?? false
+    const pts = isCorrect ? (KNOCKOUT_ROUND_POINTS[pred.round] ?? 0) : 0
+
+    if (pred.points_awarded !== pts) {
+      await supabase
+        .from('knockout_predictions')
+        .update({ points_awarded: pts })
+        .eq('id', pred.id)
+    }
+  }
 }
 
 import { getProvider } from '@/lib/providers'

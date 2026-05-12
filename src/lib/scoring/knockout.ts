@@ -3,6 +3,7 @@
  * Kan justeras för att stödja strikt bracket-logik i framtiden.
  */
 export const KNOCKOUT_ROUND_POINTS: Record<string, number> = {
+  round_of_32:   1,
   round_of_16:   2,
   quarter_final: 4,
   semi_final:    6,
@@ -11,6 +12,7 @@ export const KNOCKOUT_ROUND_POINTS: Record<string, number> = {
 }
 
 export const KNOCKOUT_ROUNDS = [
+  { key: 'round_of_32',   label: 'Sextondelsfinal', teamCount: 32, emoji: '🟣' },
   { key: 'round_of_16',   label: 'Åttondelsfinal', teamCount: 16, emoji: '🔵' },
   { key: 'quarter_final', label: 'Kvartsfinal',     teamCount: 8,  emoji: '🟡' },
   { key: 'semi_final',    label: 'Semifinal',       teamCount: 4,  emoji: '🟠' },
