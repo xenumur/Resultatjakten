@@ -20,7 +20,6 @@ export async function createBonusQuestion(formData: FormData) {
     question_text: questionText,
     description: description,
     max_points: maxPoints,
-    deadline: deadline,
     status: status
   })
 
@@ -38,7 +37,6 @@ export async function updateBonusQuestion(formData: FormData) {
     question_text: formData.get('questionText'),
     description: formData.get('description'),
     max_points: parseInt(formData.get('maxPoints') as string),
-    deadline: formData.get('deadline'),
     status: formData.get('status'),
     updated_at: new Date().toISOString()
   }

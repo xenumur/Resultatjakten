@@ -58,9 +58,6 @@ export default function BonusAdminClient({ groupId, initialQuestions }: { groupI
                 </div>
                 <h3 className="text-xl font-black text-zinc-900 dark:text-white truncate">{q.question_text}</h3>
                 <p className="text-zinc-500 text-sm truncate">{q.description || 'Ingen beskrivning'}</p>
-                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                  Deadline: {new Date(q.deadline).toLocaleString('sv-SE')}
-                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -135,14 +132,18 @@ export default function BonusAdminClient({ groupId, initialQuestions }: { groupI
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Maxpoäng</label>
-                  <input 
+                  <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Poäng</label>
+                  <select 
                     name="maxPoints" 
-                    type="number" 
                     defaultValue={editingQuestion?.max_points || 5}
                     required 
-                    className="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold"
-                  />
+                    className="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold appearance-none"
+                  >
+                    <option value="5">5 poäng</option>
+                    <option value="10">10 poäng</option>
+                    <option value="15">15 poäng</option>
+                    <option value="20">20 poäng</option>
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Status</label>
@@ -159,16 +160,6 @@ export default function BonusAdminClient({ groupId, initialQuestions }: { groupI
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Deadline</label>
-                <input 
-                  name="deadline" 
-                  type="datetime-local" 
-                  defaultValue={editingQuestion?.deadline ? new Date(editingQuestion.deadline).toISOString().slice(0, 16) : ''}
-                  required 
-                  className="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-bold"
-                />
-              </div>
 
               <div className="pt-4">
                 <SubmitButton className="w-full py-5 rounded-[24px] bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-xl shadow-indigo-600/20 transition-all">
