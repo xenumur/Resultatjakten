@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
 
@@ -154,6 +154,10 @@ export async function saveActualTeams(
 // in knockout stage matches, without needing admin to manually enter them.
 
 export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
+  // Use admin client for updates so we can update ALL users' predictions,
+  // not just the currently authenticated user (RLS UPDATE policy = auth.uid() = user_id)
+  const adminClient = createAdminClient()
+
   // 1. Manual overrides from admin (knockout_actual_teams table)
   const { data: manualTeams } = await supabase
     .from('knockout_actual_teams')
@@ -190,7 +194,7 @@ export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
 
   if (actualByRound.size === 0) return
 
-  // Get all predictions for this game
+  // Get all predictions for this game (using regular client — SELECT RLS allows group members)
   const { data: allPredictions } = await supabase
     .from('knockout_predictions')
     .select('id, user_id, round, team_name')
@@ -198,12 +202,12 @@ export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
 
   if (!allPredictions) return
 
-  // Batch update points
+  // Update points using admin client to bypass RLS UPDATE restriction
   for (const pred of allPredictions) {
     const actual = actualByRound.get(pred.round)
     const isCorrect = actual?.has(pred.team_name.toLowerCase().trim()) ?? false
     const pts = isCorrect ? (KNOCKOUT_ROUND_POINTS[pred.round] ?? 0) : 0
-    await supabase
+    await adminClient
       .from('knockout_predictions')
       .update({ points_awarded: pts })
       .eq('id', pred.id)
