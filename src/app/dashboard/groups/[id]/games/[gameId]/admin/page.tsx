@@ -9,6 +9,7 @@ import { DeleteMatchButton } from './DeleteMatchButton'
 import { AdminActionButton } from './AdminActionButtons'
 import { BulkMatchSaveButton } from './BulkMatchSaveButton'
 import { MatchResultForm } from './MatchResultForm'
+import { GameNameForm } from './GameNameForm'
 import { TabBar } from '@/components/TabBar'
 
 const TIMEZONE = 'Europe/Stockholm'
@@ -41,6 +42,16 @@ export default async function GameAdminPage({
     return <div className="p-12 text-center text-red-500">Åtkomst nekad. Endast för administratörer.</div>
   }
 
+  const { data: game } = await supabase
+    .from('games')
+    .select('name')
+    .eq('id', gameId)
+    .single()
+
+  if (!game) {
+    return <div className="p-12 text-center text-red-500">Kunde inte hitta spelet.</div>
+  }
+
   const { data: allMatches } = await supabase
     .from('matches')
     .select('*')
@@ -68,7 +79,7 @@ export default async function GameAdminPage({
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white">Admin: Matchresultat</h1>
+          <GameNameForm groupId={groupId} gameId={gameId} initialName={game.name} />
         </div>
 
         <div className="flex flex-wrap gap-3">

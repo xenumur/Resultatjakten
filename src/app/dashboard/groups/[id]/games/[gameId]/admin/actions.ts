@@ -120,6 +120,30 @@ export async function updateMatchResult(
   return { success: true, message: 'Resultatet har uppdaterats.' }
 }
 
+export async function updateGameName(groupId: string, gameId: string, prevState: any, formData: FormData) {
+  const supabase = await createClient()
+  const newName = formData.get('name') as string
+
+  if (!newName || newName.trim().length === 0) {
+    return { success: false, error: 'Namnet får inte vara tomt.' }
+  }
+
+  const { error } = await supabase
+    .from('games')
+    .update({ name: newName.trim() })
+    .eq('id', gameId)
+    .eq('group_id', groupId)
+
+  if (error) {
+    return { success: false, error: 'Kunde inte uppdatera namnet: ' + error.message }
+  }
+
+  revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+  revalidatePath(`/dashboard/groups/${groupId}`)
+  return { success: true, message: 'Turneringens namn har uppdaterats.' }
+}
+
+
 import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
 
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
