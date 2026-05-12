@@ -7,6 +7,21 @@ import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
 const revalidate = (groupId: string, gameId: string) =>
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)
 
+// Stage name in DB → internal round key used in knockout_predictions
+const STAGE_TO_ROUND: Record<string, string> = {
+  'Round of 32':           'round_of_32',
+  'Round of 16':           'round_of_16',
+  'Quarter-final':         'quarter_final',
+  'Semi-final':            'semi_final',
+  'Match for third place': 'third_place',
+  'Final':                 'final',
+}
+
+function isPlaceholder(name: string) {
+  if (!name) return true
+  return /^[WL]\d+$/.test(name) || /^(winner|loser|tbd)/i.test(name)
+}
+
 // ─── User: Save all picks in one bulk action ──────────────────────────────────
 
 export async function saveKnockoutPredictions(
@@ -134,16 +149,48 @@ export async function saveActualTeams(
   return { success: true, message: 'Faktiska lag sparade och poäng beräknade!' }
 }
 
-// ─── Internal: Recalculate points for all users ───────────────────────────────
+// ─── Recalculate points: uses BOTH manual actual_teams AND match data ─────────
+// This means points are awarded automatically as soon as real teams appear
+// in knockout stage matches, without needing admin to manually enter them.
 
-async function recalculateKnockoutPoints(gameId: string, supabase: any) {
-  const { data: actualTeams } = await supabase
+export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
+  // 1. Manual overrides from admin (knockout_actual_teams table)
+  const { data: manualTeams } = await supabase
     .from('knockout_actual_teams')
     .select('round, team_name')
     .eq('game_id', gameId)
 
-  if (!actualTeams || actualTeams.length === 0) return
+  // 2. Automatic: real teams derived from knockout stage match records
+  const { data: knockoutMatches } = await supabase
+    .from('matches')
+    .select('stage, home_team, away_team')
+    .eq('game_id', gameId)
+    .in('stage', Object.keys(STAGE_TO_ROUND))
 
+  const actualByRound = new Map<string, Set<string>>()
+
+  // Add manual teams
+  for (const at of manualTeams ?? []) {
+    if (!actualByRound.has(at.round)) actualByRound.set(at.round, new Set())
+    actualByRound.get(at.round)!.add(at.team_name.toLowerCase().trim())
+  }
+
+  // Add teams from matches (any team appearing in a knockout match qualifies for that round)
+  for (const m of knockoutMatches ?? []) {
+    const roundKey = STAGE_TO_ROUND[m.stage]
+    if (!roundKey) continue
+    if (!actualByRound.has(roundKey)) actualByRound.set(roundKey, new Set())
+    if (m.home_team && !isPlaceholder(m.home_team)) {
+      actualByRound.get(roundKey)!.add(m.home_team.toLowerCase().trim())
+    }
+    if (m.away_team && !isPlaceholder(m.away_team)) {
+      actualByRound.get(roundKey)!.add(m.away_team.toLowerCase().trim())
+    }
+  }
+
+  if (actualByRound.size === 0) return
+
+  // Get all predictions for this game
   const { data: allPredictions } = await supabase
     .from('knockout_predictions')
     .select('id, user_id, round, team_name')
@@ -151,12 +198,7 @@ async function recalculateKnockoutPoints(gameId: string, supabase: any) {
 
   if (!allPredictions) return
 
-  const actualByRound = new Map<string, Set<string>>()
-  for (const at of actualTeams) {
-    if (!actualByRound.has(at.round)) actualByRound.set(at.round, new Set())
-    actualByRound.get(at.round)!.add(at.team_name.toLowerCase().trim())
-  }
-
+  // Batch update points
   for (const pred of allPredictions) {
     const actual = actualByRound.get(pred.round)
     const isCorrect = actual?.has(pred.team_name.toLowerCase().trim()) ?? false
