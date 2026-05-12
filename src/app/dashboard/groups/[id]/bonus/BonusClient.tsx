@@ -53,7 +53,7 @@ export default function BonusClient({
         ) : (
           questions.map(q => {
             const answer = findUserAnswer(q.id)
-            const isLocked = q.status === 'locked' || q.status === 'graded' || new Date(q.deadline) < new Date()
+            const isLocked = q.status === 'locked' || q.status === 'graded' || (q.deadline && new Date(q.deadline) < new Date())
             const isGraded = q.status === 'graded' && answer?.points_awarded !== null
 
             return (
