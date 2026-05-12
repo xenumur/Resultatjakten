@@ -36,9 +36,11 @@ interface MatchTabsProps {
 function MatchItem({ match, prediction }: { match: Match; prediction?: Prediction }) {
   const isFinished = match.status === 'finished'
   const isLive = match.status === 'live'
+  const hasPoints = isFinished && prediction && prediction.points_awarded !== null
 
   return (
     <li className="p-4 md:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-4">
+      {/* Left: teams + meta */}
       <div className="flex flex-col items-center md:items-start w-full md:w-auto">
         <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-2 flex items-center gap-2 flex-wrap justify-center md:justify-start">
           <span>{formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'yyyy-MM-dd HH:mm')}</span>
@@ -60,32 +62,37 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
             {match.away_team}
           </span>
         </div>
+        {/* Prediction tip (only shown, no duplicate points badge here) */}
         {prediction && (
-          <div className="mt-2 inline-flex items-center gap-2">
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-3 py-1 rounded-xl text-xs font-bold border border-indigo-100 dark:border-indigo-800/50">
-              Tips: {prediction.predicted_home_score} – {prediction.predicted_away_score}
+          <div className="mt-2">
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-3 py-1 rounded-xl text-xs font-bold border border-indigo-100 dark:border-indigo-800/50 inline-block">
+              Ditt tips: {prediction.predicted_home_score} – {prediction.predicted_away_score}
             </div>
-            {isFinished && prediction.points_awarded !== null && (
-              <div className={`px-3 py-1 rounded-xl text-xs font-black border ${
-                prediction.points_awarded > 0
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50'
-                  : 'bg-zinc-50 text-zinc-400 border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700'
-              }`}>
-                +{prediction.points_awarded}p
-              </div>
-            )}
           </div>
         )}
       </div>
-      <div className="flex items-center justify-center shrink-0">
+
+      {/* Right: score + points */}
+      <div className="flex flex-col items-center gap-1.5 shrink-0">
         {isLive ? (
           <span className="px-4 py-1.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] md:text-xs font-black rounded-full uppercase tracking-widest animate-pulse flex items-center gap-1.5">
             <Flame className="w-3 h-3" /> Live
           </span>
         ) : isFinished ? (
-          <div className="text-center font-black text-xl md:text-2xl bg-zinc-100 dark:bg-zinc-800 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm min-w-[100px]">
-            {match.final_home_score} – {match.final_away_score}
-          </div>
+          <>
+            <div className="text-center font-black text-xl md:text-2xl bg-zinc-100 dark:bg-zinc-800 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm min-w-[100px]">
+              {match.final_home_score} – {match.final_away_score}
+            </div>
+            {hasPoints && (
+              <div className={`text-sm font-black px-3 py-1 rounded-xl border ${
+                prediction!.points_awarded! > 0
+                  ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/40'
+                  : 'bg-zinc-50 text-zinc-400 border-zinc-200 dark:bg-zinc-800/60 dark:border-zinc-700 dark:text-zinc-500'
+              }`}>
+                {prediction!.points_awarded! > 0 ? `+${prediction!.points_awarded}p` : '0p'}
+              </div>
+            )}
+          </>
         ) : (
           <span className="px-4 py-1.5 bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 text-[10px] md:text-xs font-black rounded-full uppercase tracking-widest border border-amber-100 dark:border-amber-800/50">
             Kommande
@@ -95,6 +102,7 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
     </li>
   )
 }
+
 
 function GroupSection({ groupName, matches, predictionMap }: {
   groupName: string
