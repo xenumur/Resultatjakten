@@ -80,7 +80,7 @@ export default async function GameDetailPage({
             Tippa Matcher
           </Link>
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/knockout`} className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
-            🏆 Slutspelstips
+            🏆 Tippa slutspel
           </Link>
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/bracket`} className="px-5 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-sm flex items-center gap-2">
             🌳 Slutspelsbracket
