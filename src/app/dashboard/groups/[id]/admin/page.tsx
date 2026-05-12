@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { updatePaymentStatus, updateGroupSettings } from './actions'
 import { GroupSettingsForm } from './GroupSettingsForm'
+import { PaymentStatusForm } from './PaymentStatusForm'
 import { DeleteGroupButton } from './DeleteGroupButton'
 import { RemoveMemberButton } from './RemoveMemberButton'
 import { Settings, Users, ArrowLeft } from 'lucide-react'
@@ -85,7 +86,6 @@ export default async function GroupAdminPage({
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {members?.map(member => {
-                    const bindedAction = updatePaymentStatus.bind(null, groupId, member.user_id)
                     const p = member.profiles as any
                     return (
                       <tr key={member.user_id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
@@ -106,26 +106,22 @@ export default async function GroupAdminPage({
                           </span>
                         </td>
                         <td className="p-5">
-                          <form action={bindedAction} className="flex justify-end gap-2">
-                            <select 
-                              name="status" 
-                              defaultValue={member.payment_status} 
-                              className="text-xs font-bold px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                            >
-                              <option value="pending">Väntar</option>
-                              <option value="paid">Betald</option>
-                            </select>
-                            <button type="submit" className="text-xs font-black bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2 rounded-xl hover:opacity-80 transition active:scale-95">
-                              Spara
-                            </button>
-                            {member.user_id !== user.id && (
-                              <RemoveMemberButton 
-                                groupId={groupId} 
-                                userId={member.user_id} 
-                                userName={p?.display_name || p?.email || 'Medlem'} 
-                              />
-                            )}
-                          </form>
+                          <div className="flex justify-end items-center gap-2">
+                            <PaymentStatusForm 
+                              groupId={groupId} 
+                              userId={member.user_id} 
+                              initialStatus={member.payment_status} 
+                            />
+                            <div className="w-10 flex justify-center">
+                              {member.user_id !== user.id && (
+                                <RemoveMemberButton 
+                                  groupId={groupId} 
+                                  userId={member.user_id} 
+                                  userName={p?.display_name || p?.email || 'Medlem'} 
+                                />
+                              )}
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     )
