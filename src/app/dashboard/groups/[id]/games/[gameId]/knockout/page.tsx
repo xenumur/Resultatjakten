@@ -24,7 +24,7 @@ export default async function KnockoutPage({
     supabase.from('games').select('name, tournament_type').eq('id', gameId).single(),
     supabase.from('group_members').select('role').eq('group_id', groupId).eq('user_id', user.id).single(),
     supabase.from('knockout_settings').select('*').eq('game_id', gameId).single(),
-    supabase.from('matches').select('home_team, away_team').eq('game_id', gameId),
+    supabase.from('matches').select('home_team, away_team, stage').eq('game_id', gameId),
   ])
 
   if (!member) redirect('/dashboard')
