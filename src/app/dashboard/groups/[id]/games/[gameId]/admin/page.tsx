@@ -74,8 +74,8 @@ export default async function GameAdminPage({
         <table className="w-full text-left border-collapse min-w-[700px]">
           <thead>
             <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Match</th>
-              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Datum</th>
+              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Tid & Info</th>
+              <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Match (Lagnamn)</th>
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Resultat</th>
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Status</th>
               <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400 text-right w-10"></th>
@@ -97,16 +97,15 @@ export default async function GameAdminPage({
               return (
                 <Fragment key={match.id}>
                   <tr className={hasConflict ? 'bg-amber-50/60 dark:bg-amber-900/10' : ''}>
-                    <td className="p-4 font-bold">
-                      <div className="flex items-center gap-2">
-                        {match.home_team} - {match.away_team}
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-zinc-500 dark:text-zinc-400 text-sm">
+                          {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'yyyy-MM-dd HH:mm')}
+                        </span>
                         {match.is_manual_override && (
-                          <span className="text-xs font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded">Manuell</span>
+                          <span className="w-fit text-[10px] font-black uppercase tracking-widest bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded">Manuell</span>
                         )}
                       </div>
-                    </td>
-                    <td className="p-4 text-zinc-500 dark:text-zinc-400 text-sm">
-                      {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'yyyy-MM-dd HH:mm')}
                     </td>
                     
                     <MatchResultForm 
@@ -114,6 +113,9 @@ export default async function GameAdminPage({
                       homeScore={match.final_home_score}
                       awayScore={match.final_away_score}
                       status={match.status}
+                      homeTeam={match.home_team}
+                      awayTeam={match.away_team}
+                      stage={match.stage}
                     />
 
                     <td className="p-4 text-right">

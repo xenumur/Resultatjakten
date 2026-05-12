@@ -25,20 +25,27 @@ export async function bulkUpdateMatchResults(
       const homeScoreStr = formData.get(`${matchId}_homeScore`) as string
       const awayScoreStr = formData.get(`${matchId}_awayScore`) as string
       const status = formData.get(`${matchId}_status`) as string
+      const homeTeam = formData.get(`${matchId}_homeTeam`) as string
+      const awayTeam = formData.get(`${matchId}_awayTeam`) as string
 
       if (homeScoreStr === null || awayScoreStr === null) continue
 
       const homeScore = parseInt(homeScoreStr, 10)
       const awayScore = parseInt(awayScoreStr, 10)
 
+      const updateData: any = {
+        final_home_score: isNaN(homeScore) ? null : homeScore,
+        final_away_score: isNaN(awayScore) ? null : awayScore,
+        status: status,
+        is_manual_override: true
+      }
+
+      if (homeTeam) updateData.home_team = homeTeam
+      if (awayTeam) updateData.away_team = awayTeam
+
       await supabase
         .from('matches')
-        .update({
-          final_home_score: isNaN(homeScore) ? null : homeScore,
-          final_away_score: isNaN(awayScore) ? null : awayScore,
-          status: status,
-          is_manual_override: true
-        })
+        .update(updateData)
         .eq('id', matchId)
     }
     
@@ -63,15 +70,22 @@ export async function updateMatchResult(
   const homeScore = parseInt(formData.get('homeScore') as string, 10)
   const awayScore = parseInt(formData.get('awayScore') as string, 10)
   const status = formData.get('status') as string
+  const homeTeam = formData.get('homeTeam') as string
+  const awayTeam = formData.get('awayTeam') as string
+
+  const updateData: any = {
+    final_home_score: isNaN(homeScore) ? null : homeScore,
+    final_away_score: isNaN(awayScore) ? null : awayScore,
+    status: status,
+    is_manual_override: true
+  }
+
+  if (homeTeam) updateData.home_team = homeTeam
+  if (awayTeam) updateData.away_team = awayTeam
 
   await supabase
     .from('matches')
-    .update({
-      final_home_score: isNaN(homeScore) ? null : homeScore,
-      final_away_score: isNaN(awayScore) ? null : awayScore,
-      status: status,
-      is_manual_override: true
-    })
+    .update(updateData)
     .eq('id', matchId)
 
   // Automatisk omräkning av poäng efter individuell uppdatering

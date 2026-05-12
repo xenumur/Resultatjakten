@@ -9,11 +9,54 @@ interface MatchResultFormProps {
   homeScore: number | null
   awayScore: number | null
   status: string
+  homeTeam: string
+  awayTeam: string
+  stage: string | null
 }
 
-export function MatchResultForm({ matchId, homeScore, awayScore, status }: MatchResultFormProps) {
+export function MatchResultForm({ 
+  matchId, 
+  homeScore, 
+  awayScore, 
+  status,
+  homeTeam,
+  awayTeam,
+  stage
+}: MatchResultFormProps) {
+  const isKnockout = stage && (
+    stage.toLowerCase().includes('round') || 
+    stage.toLowerCase().includes('final') || 
+    stage.toLowerCase().includes('quarter') || 
+    stage.toLowerCase().includes('semi') ||
+    stage.toLowerCase().includes('play-off')
+  );
+
   return (
     <>
+      <td className="p-4">
+        {isKnockout ? (
+          <div className="flex flex-col gap-2 min-w-[150px]">
+            <input 
+              form="bulk-matches-form"
+              type="text" 
+              name={`${matchId}_homeTeam`} 
+              defaultValue={homeTeam} 
+              className="w-full px-2 py-1 text-sm rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Hemmalag"
+            />
+            <input 
+              form="bulk-matches-form"
+              type="text" 
+              name={`${matchId}_awayTeam`} 
+              defaultValue={awayTeam} 
+              className="w-full px-2 py-1 text-sm rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Bortalag"
+            />
+          </div>
+        ) : (
+          <div className="font-bold">{homeTeam} - {awayTeam}</div>
+        )}
+      </td>
       <td className="p-4">
         <div className="flex gap-2 items-center">
           <input 
