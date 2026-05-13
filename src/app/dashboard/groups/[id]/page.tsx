@@ -201,31 +201,6 @@ export default async function GroupDetailPage({
               )}
             </div>
             <div className="space-y-4">
-              {/* Deadlines Card (if any) */}
-              {deadlines && deadlines.length > 0 && (
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4 animate-in fade-in duration-500">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-indigo-500" />
-                    <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400">Viktiga Deadlines</h3>
-                  </div>
-                  <div className="space-y-4">
-                    {deadlines.map(d => (
-                      <div key={d.id} className="flex justify-between items-start gap-4">
-                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">{d.title}</span>
-                        <div className="text-right shrink-0">
-                          <div className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
-                            {new Date(d.deadline_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}
-                          </div>
-                          <div className="text-[10px] font-bold text-zinc-400">
-                            kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Bonus Questions Card */}
               <Link
                 href={`/dashboard/groups/${groupId}/bonus`}
@@ -359,9 +334,34 @@ export default async function GroupDetailPage({
 
       </div>
 
-      {/* Group Info Widget */}
-      <section className="order-4">
-        <div className="bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-8 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
+      {/* Group Info & Deadlines Widget */}
+      <section className={`order-4 grid grid-cols-1 ${deadlines && deadlines.length > 0 ? 'md:grid-cols-2' : ''} gap-6 md:gap-10`}>
+        {/* Deadlines Card (if any) */}
+        {deadlines && deadlines.length > 0 && (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-indigo-500" />
+              <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">Viktiga Deadlines</h3>
+            </div>
+            <div className="space-y-5">
+              {deadlines.map(d => (
+                <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
+                  <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight">{d.title}</span>
+                  <div className="text-right shrink-0">
+                    <div className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
+                      {new Date(d.deadline_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}
+                    </div>
+                    <div className="text-[11px] font-bold text-zinc-400">
+                      kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <Users className="w-24 h-24 text-indigo-500" />
           </div>
