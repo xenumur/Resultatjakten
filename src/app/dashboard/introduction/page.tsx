@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Info, Trophy, CheckCircle2, HelpCircle, MessageSquare } from 'lucide-react'
+import { Info, Trophy, CheckCircle2, HelpCircle, MessageSquare, Bell, Smartphone } from 'lucide-react'
 
 export default function IntroductionPage() {
   return (
@@ -26,6 +26,19 @@ export default function IntroductionPage() {
             </p>
           </div>
         </div>
+
+        {/* VM 2026 Info */}
+        <section className="bg-white dark:bg-zinc-900 rounded-[32px] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
+              <Trophy className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">VM 2026</h2>
+          </div>
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+            VM 2026 arrangeras i <strong>USA, Kanada och Mexiko</strong> och är det största någonsin med 48 nationer och 104 matcher. Finalen spelas den 19 juli 2026 i New York/New Jersey.
+          </p>
+        </section>
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -62,17 +75,48 @@ export default function IntroductionPage() {
               </div>
             </section>
 
-            {/* Background Card */}
+            {/* Notifications Card */}
             <section className="bg-white dark:bg-zinc-900 rounded-[32px] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
-                  <Trophy className="w-5 h-5" />
+                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                  <Bell className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">VM 2026</h2>
+                <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Push-notiser 🔔</h2>
               </div>
-              <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
-                VM 2026 arrangeras i <strong>USA, Kanada och Mexiko</strong> och är det största någonsin med 48 nationer och 104 matcher. Finalen spelas den 19 juli 2026 i New York/New Jersey.
-              </p>
+              <div className="space-y-4">
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed font-medium">
+                  För att få ut det mesta av Skorio är det <span className="text-indigo-600 dark:text-indigo-400 font-bold underline decoration-indigo-500/30 underline-offset-4">viktigt att du aktiverar push-notiser</span>. Då missar du aldrig viktiga händelser:
+                </p>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    'Påminnelser inför deadline',
+                    'Uppdateringar från administratörer',
+                    'Resultat och poänguppdateringar',
+                    'Viktiga gruppmeddelanden'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                      <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-4 p-5 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
+                  <h4 className="text-xs font-black text-indigo-900 dark:text-indigo-300 uppercase tracking-wider mb-2">Så här aktiverar du:</h4>
+                  <p className="text-xs text-indigo-800/70 dark:text-indigo-400/70 leading-relaxed font-medium">
+                    Klicka på <strong>"Tillåt"</strong> när din webbläsare eller telefon frågar om behörighet för notiser. Om du nekat tidigare kan du behöva gå till webbläsarens inställningar för att återställa behörigheten för Skorio.
+                  </p>
+                </div>
+
+                <div className="mt-3 p-5 bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Smartphone className="w-4 h-4 text-amber-600" />
+                    <h4 className="text-xs font-black text-amber-900 dark:text-amber-300 uppercase tracking-wider">För iPhone/iOS-användare:</h4>
+                  </div>
+                  <p className="text-xs text-amber-800/70 dark:text-amber-400/70 leading-relaxed font-medium">
+                    För att få push-notiser på iOS måste du lägga till Skorio på hemskärmen. Tryck på <strong>Dela-knappen</strong> (fyrkanten med en pil uppåt) i Safari och välj <strong>"Lägg till på hemskärmen"</strong>. Öppna sedan Skorio från din hemskärm för att kunna aktivera notiser.
+                  </p>
+                </div>
+              </div>
             </section>
           </div>
 
