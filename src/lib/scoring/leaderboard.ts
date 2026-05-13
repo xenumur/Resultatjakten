@@ -99,9 +99,22 @@ export async function notifyLeaderboardChanges(
   oldLeaderboard: LeaderboardEntry[],
   newLeaderboard: LeaderboardEntry[]
 ) {
+  const supabase = createAdminClient()
+  
+  // Fetch notification preferences for all users in the group
+  const userIds = newLeaderboard.map(e => e.user_id)
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, notify_on_points_change')
+    .in('id', userIds)
+
   for (const newEntry of newLeaderboard) {
     const oldEntry = oldLeaderboard.find(o => o.user_id === newEntry.user_id)
+    const profile = profiles?.find(p => p.id === newEntry.user_id)
     
+    // Check if user has opted out of point notifications
+    if (profile && profile.notify_on_points_change === false) continue
+
     // Only notify if points have actually changed
     if (!oldEntry || newEntry.total_points !== oldEntry.total_points) {
       const rankMsg = newEntry.rank === 1 ? '1:a' : `${newEntry.rank}:e`

@@ -1,4 +1,5 @@
 import { NotificationToggle } from '@/components/PushNotificationManager'
+import { PointNotificationToggle } from '@/components/PointNotificationToggle'
 import { ChevronLeft, Settings } from 'lucide-react'
 import Link from 'next/link'
 
@@ -32,6 +33,16 @@ export default function NotificationSettingsPage() {
             Aktivera push-notiser för att få uppdateringar i realtid om händelser i dina grupper, även när du inte använder appen.
           </p>
           <NotificationToggle />
+        </section>
+
+        <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Poänguppdateringar</h2>
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+            Välj om du vill få notiser när din poäng eller ranking ändras efter att en administratör har rättat en match eller bonusfråga.
+          </p>
+          <PointNotificationToggle />
         </section>
 
         <div className="h-px bg-zinc-100 dark:bg-zinc-800" />

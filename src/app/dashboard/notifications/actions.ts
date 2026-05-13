@@ -203,3 +203,36 @@ export async function clearNotifications() {
   revalidatePath('/dashboard/notifications')
   revalidatePath('/dashboard', 'layout')
 }
+
+export async function updateNotificationPreference(notifyOnPointsChange: boolean) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: 'Ej inloggad' }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ notify_on_points_change: notifyOnPointsChange })
+    .eq('id', user.id)
+
+  if (error) return { error: error.message }
+  
+  revalidatePath('/dashboard/notifications/settings')
+  return { success: true }
+}
+
+export async function getNotificationPreference() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { notify_on_points_change: true }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('notify_on_points_change')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (error || !data) return { notify_on_points_change: true }
+  return { notify_on_points_change: data.notify_on_points_change ?? true }
+}
