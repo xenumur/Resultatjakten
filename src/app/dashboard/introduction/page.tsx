@@ -19,7 +19,7 @@ export default function IntroductionPage() {
             </div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-none">
               Välkommen till <br />
-              <span className="text-indigo-200">Resultatjakten</span> ⚽
+              <span className="text-indigo-200">Skorio</span> ⚽
             </h1>
             <p className="text-indigo-100 text-lg font-medium max-w-xl leading-relaxed opacity-90">
               Bemästra Skorio och tävla mot dina vänner i historiens största världsmästerskap. Här är allt du behöver veta.

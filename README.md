@@ -1,4 +1,4 @@
-# Resultatjakten
+# Skorio
 
 Ett modernt tips-/bettingsystem för fotbollsturneringar (som VM 2026), byggt med Next.js, Tailwind CSS och Supabase.
 

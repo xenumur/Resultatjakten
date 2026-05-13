@@ -33,7 +33,7 @@ export default async function DashboardLayout({
       {/* Desktop Header */}
       <header className="hidden md:flex bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-8 py-4 justify-between items-center sticky top-0 z-50">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <img src="/logo.png" alt="Resultatjakten" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
+          <img src="/logo.png" alt="Skorio" className="w-10 h-10 object-contain rounded-xl shadow-sm" />
           <span className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-cyan-500 hidden lg:block">
             Skorio
           </span>

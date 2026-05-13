@@ -1,6 +1,6 @@
 {
-  "name": "Resultatjakten",
-  "short_name": "Tips",
+  "name": "Skorio",
+  "short_name": "Skorio",
   "description": "Tippa fotbollsturneringar med vänner",
   "start_url": "/dashboard",
   "display": "standalone",
