@@ -25,12 +25,14 @@ export async function sendPersonalNotification({
   groupId,
   title,
   content,
+  url,
   senderId = null
 }: {
   userId: string,
   groupId: string,
   title: string,
   content: string,
+  url?: string,
   senderId?: string | null
 }) {
   const adminSupabase = createAdminClient()
@@ -61,7 +63,7 @@ export async function sendPersonalNotification({
     const payload = JSON.stringify({
       title,
       body: content,
-      url: `/dashboard/groups/${groupId}/leaderboard`, // Link to the leaderboard
+      url: url || `/dashboard/groups/${groupId}`, // Link to the group page by default
       badgeCount: 1
     })
 
