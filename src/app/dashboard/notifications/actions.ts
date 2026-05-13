@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import webpush from 'web-push'
 
@@ -40,7 +40,8 @@ export async function sendNotification(groupId: string, title: string, content: 
   }
 
   // 2. Skicka Push-notiser till alla i gruppen
-  const { data: members } = await supabase
+  const adminSupabase = createAdminClient()
+  const { data: members } = await adminSupabase
     .from('group_members')
     .select('user_id')
     .eq('group_id', groupId)
@@ -49,7 +50,7 @@ export async function sendNotification(groupId: string, title: string, content: 
     const userIds = members.map(m => m.user_id)
     
     // Hämta alla push-prenumerationer för dessa användare
-    const { data: subscriptions } = await supabase
+    const { data: subscriptions } = await adminSupabase
       .from('push_subscriptions')
       .select('*')
       .in('user_id', userIds)
@@ -69,7 +70,7 @@ export async function sendNotification(groupId: string, title: string, content: 
             console.error('Push error:', err)
             if (err.statusCode === 410 || err.statusCode === 404) {
               // Prenumerationen är inte längre giltig, ta bort den
-              return supabase.from('push_subscriptions').delete().eq('id', sub.id)
+              return adminSupabase.from('push_subscriptions').delete().eq('id', sub.id)
             }
           })
       ))

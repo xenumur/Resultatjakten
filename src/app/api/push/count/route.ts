@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -11,8 +11,9 @@ export async function GET(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Hämta alla användare i gruppen
-  const { data: members } = await supabase
+  // Hämta alla användare i gruppen (använd admin för att se alla medlemmar och prenumerationer)
+  const adminSupabase = createAdminClient()
+  const { data: members } = await adminSupabase
     .from('group_members')
     .select('user_id')
     .eq('group_id', groupId)
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
   const userIds = members.map(m => m.user_id)
 
   // Räkna unika prenumerationer för dessa användare
-  const { count } = await supabase
+  const { count } = await adminSupabase
     .from('push_subscriptions')
     .select('*', { count: 'exact', head: true })
     .in('user_id', userIds)
