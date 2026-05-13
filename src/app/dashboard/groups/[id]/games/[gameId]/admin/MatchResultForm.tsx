@@ -43,7 +43,7 @@ export function MatchResultForm({
               form="bulk-matches-form"
               name={`${matchId}_homeTeam`} 
               defaultValue={homeTeam} 
-              className="w-full px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
             >
               <option value="">Välj hemmalag...</option>
               {teams.map(team => (
@@ -57,7 +57,7 @@ export function MatchResultForm({
               form="bulk-matches-form"
               name={`${matchId}_awayTeam`} 
               defaultValue={awayTeam} 
-              className="w-full px-2 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
             >
               <option value="">Välj bortalag...</option>
               {teams.map(team => (
@@ -79,7 +79,7 @@ export function MatchResultForm({
             type="number" 
             name={`${matchId}_homeScore`} 
             defaultValue={homeScore ?? ''} 
-            className="w-12 h-10 text-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-12 h-10 text-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400"
           />
           <span className="text-zinc-400">-</span>
           <input 
@@ -87,7 +87,7 @@ export function MatchResultForm({
             type="number" 
             name={`${matchId}_awayScore`} 
             defaultValue={awayScore ?? ''} 
-            className="w-12 h-10 text-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-12 h-10 text-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400"
           />
         </div>
       </td>
@@ -96,7 +96,7 @@ export function MatchResultForm({
           form="bulk-matches-form"
           name={`${matchId}_status`} 
           defaultValue={status} 
-          className="text-sm px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+          className="text-xs px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-black uppercase tracking-tight transition-all"
         >
           <option value="upcoming">Kommande</option>
           <option value="live">Live</option>

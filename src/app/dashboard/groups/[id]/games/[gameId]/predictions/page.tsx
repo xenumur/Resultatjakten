@@ -69,9 +69,8 @@ export default async function PredictionsPage({
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-10 pb-32">
-      <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="inline-flex items-center text-sm font-bold text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6 transition-colors active:scale-95">
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Tillbaka
+      <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center gap-2 mb-8">
+        <ArrowLeft className="w-3.5 h-3.5" /> Tillbaka till Spelet
       </Link>
 
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -90,11 +89,11 @@ export default async function PredictionsPage({
           />
           <SubmitButton 
             type="submit" 
-            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-600/20"
+            className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-indigo-600 text-white rounded-xl sm:rounded-2xl font-black hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-600/20 text-[10px] sm:text-xs uppercase tracking-widest"
           >
             <div className="flex items-center justify-center gap-2">
               <Save className="w-4 h-4" />
-              <span className="leading-none mt-0.5">Spara Tips</span>
+              Spara Tips
             </div>
           </SubmitButton>
         </div>

@@ -93,9 +93,8 @@ export default async function KnockoutPage({
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-10">
       {/* Header */}
-      <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="inline-flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 mb-8 transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Tillbaka till Spelet
+      <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center gap-2 mb-8">
+        <ArrowLeft className="w-3.5 h-3.5" /> Tillbaka till Spelet
       </Link>
 
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
@@ -121,7 +120,7 @@ export default async function KnockoutPage({
           {isAdmin && (
             <Link
               href={`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`}
-              className="flex items-center gap-2 px-5 py-2 border-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 font-bold rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900/40 transition"
+              className="flex items-center gap-2 px-3 sm:px-4 py-3 border-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20 text-amber-700 dark:text-amber-500 rounded-xl sm:rounded-2xl font-black hover:bg-amber-100 dark:hover:bg-amber-900/40 transition shadow-sm text-[10px] sm:text-xs"
             >
               👑 Admin
             </Link>

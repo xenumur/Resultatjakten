@@ -34,6 +34,15 @@ export default async function StandingsPage({
     .eq('id', gameId)
     .single()
 
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  const isAdmin = member?.role === 'admin'
+
   if (error || !game) {
     return <div className="p-12 text-center text-red-500 font-bold">Spelet hittades inte.</div>
   }
@@ -44,20 +53,22 @@ export default async function StandingsPage({
     <div className="max-w-6xl mx-auto p-4 md:p-10 space-y-10">
       {/* Header */}
       <div className="space-y-4">
-        <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="text-sm font-bold text-zinc-500 hover:text-indigo-600 mb-2 inline-flex items-center gap-1 transition">
-          <ArrowLeft className="w-4 h-4" /> Tillbaka till Spelet
+        <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center gap-2 mb-2">
+          <ArrowLeft className="w-3.5 h-3.5" /> Tillbaka till Spelet
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Table className="w-8 h-8 text-indigo-600" />
             <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white">Gruppställning</h1>
           </div>
-          <Link
-            href={`/dashboard/groups/${groupId}/games/${gameId}/bracket`}
-            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition shadow-sm shadow-emerald-600/20 self-start sm:self-auto"
-          >
-            🌳 Visa Slutspelsbracket
-          </Link>
+          {isAdmin && (
+            <Link
+              href={`/dashboard/groups/${groupId}/games/${gameId}/bracket`}
+              className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl sm:rounded-2xl transition shadow-lg shadow-emerald-600/20 self-start sm:self-auto text-[10px] sm:text-xs uppercase tracking-widest"
+            >
+              🌳 Visa Slutspelsbracket
+            </Link>
+          )}
         </div>
         <p className="text-zinc-500 dark:text-zinc-400 font-medium">Aktuell tabell för alla grupper i {game.name}.</p>
       </div>

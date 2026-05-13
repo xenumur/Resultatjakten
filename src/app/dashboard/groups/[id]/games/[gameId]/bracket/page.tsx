@@ -14,14 +14,24 @@ export default async function BracketPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: game }, { data: matches }] = await Promise.all([
+  const [{ data: game }, { data: matches }, { data: member }] = await Promise.all([
     supabase.from('games').select('name').eq('id', gameId).single(),
     supabase
       .from('matches')
       .select('id, stage, home_team, away_team, final_home_score, final_away_score, status, api_match_num')
       .eq('game_id', gameId)
-      .in('stage', ['Round of 32', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final', 'Match for third place'])
+      .in('stage', ['Round of 32', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final', 'Match for third place']),
+    supabase
+      .from('group_members')
+      .select('role')
+      .eq('group_id', groupId)
+      .eq('user_id', user.id)
+      .single()
   ])
+
+  if (!member || member.role !== 'admin') {
+    redirect(`/dashboard/groups/${groupId}/games/${gameId}`)
+  }
 
   // De-duplicate matches - keep only the one with real team names if duplicate placeholder matches exist
   const deduped = deduplicateMatches(matches ?? [])
@@ -33,9 +43,9 @@ export default async function BracketPage({
         <div className="space-y-4">
           <Link
             href={`/dashboard/groups/${groupId}/games/${gameId}`}
-            className="text-sm font-bold text-zinc-500 hover:text-indigo-600 inline-flex items-center gap-1 transition"
+            className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center gap-2 mb-8"
           >
-            <ArrowLeft className="w-4 h-4" /> Tillbaka till Spelet
+            <ArrowLeft className="w-3.5 h-3.5" /> Tillbaka till Spelet
           </Link>
           <div className="flex items-center gap-3">
             <GitMerge className="w-8 h-8 text-indigo-600" />

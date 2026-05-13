@@ -72,9 +72,11 @@ export default async function GameAdminPage({
 
   return (
     <div className="max-w-5xl mx-auto p-6 md:p-12">
-      <Link href={`/dashboard/groups/${groupId}/games/${gameId}`} className="inline-flex items-center text-sm font-bold text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 mb-6 transition-colors">
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Tillbaka till Spelet
+      <Link 
+        href={`/dashboard/groups/${groupId}/games/${gameId}`} 
+        className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-indigo-600 transition flex items-center gap-2 mb-8"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" /> Tillbaka till Spelet
       </Link>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -82,10 +84,10 @@ export default async function GameAdminPage({
           <GameNameForm groupId={groupId} gameId={gameId} initialName={game.name} />
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <BulkMatchSaveButton groupId={groupId} gameId={gameId} />
-          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`} className="flex items-center justify-center gap-2 px-5 py-2 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white rounded-lg font-bold transition-all shadow-sm active:scale-95">
-            <Lock className="w-4 h-4" />
+          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-[10px] sm:text-xs">
+            <Lock className="w-3.5 h-3.5" />
             Låsningar
           </Link>
           <AdminActionButton
@@ -113,11 +115,11 @@ export default async function GameAdminPage({
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-                <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Tid &amp; Info</th>
-                <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Match (Lagnamn)</th>
-                <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Resultat</th>
-                <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">Status</th>
-                <th className="p-4 font-semibold text-zinc-500 dark:text-zinc-400 text-right w-10"></th>
+                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Tid &amp; Info</th>
+                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Match (Lagnamn)</th>
+                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Resultat</th>
+                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Status</th>
+                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -194,8 +196,8 @@ export default async function GameAdminPage({
                               <span className="text-xs text-amber-600 dark:text-amber-400">Nu: {match.final_home_score ?? '?'} - {match.final_away_score ?? '?'} ({match.status})</span>
                             </div>
                             <form action={acceptApiResult.bind(null, groupId, gameId, match.id)}>
-                              <button type="submit" className="flex items-center gap-1.5 text-sm bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded-lg font-bold transition active:scale-95">
-                                <Check className="w-4 h-4" />
+                              <button type="submit" className="flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-amber-600/20">
+                                <Check className="w-3.5 h-3.5" />
                                 Tillämpa API
                               </button>
                             </form>
