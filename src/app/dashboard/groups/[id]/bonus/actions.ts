@@ -98,7 +98,16 @@ export async function gradeBonusAnswer(formData: FormData) {
   const points = parseInt(formData.get('points') as string)
   const comment = formData.get('comment') as string
 
-  await snapshotGroupLeaderboard(groupId)
+  // Endast snapshot om poängen faktiskt ändras
+  const { data: existing } = await supabase
+    .from('bonus_answers')
+    .select('points_awarded')
+    .eq('id', answerId)
+    .single()
+
+  if (existing && existing.points_awarded !== points) {
+    await snapshotGroupLeaderboard(groupId)
+  }
 
   const { error } = await supabase
     .from('bonus_answers')

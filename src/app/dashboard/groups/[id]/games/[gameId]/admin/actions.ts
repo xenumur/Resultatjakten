@@ -150,8 +150,13 @@ import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
   const supabase = await createClient()
 
-  // Spara nuvarande rank innan poäng uppdateras
-  await snapshotGroupLeaderboard(groupId)
+  let hasSnapshotted = false;
+  const ensureSnapshot = async () => {
+    if (!hasSnapshotted) {
+      await snapshotGroupLeaderboard(groupId)
+      hasSnapshotted = true
+    }
+  }
 
 
   const { data: matches } = await supabase
@@ -218,6 +223,7 @@ export async function calculateScores(groupId: string, gameId: string, _formData
       }
 
       if (pred.points_awarded !== points) {
+        await ensureSnapshot()
         await supabase
           .from('predictions')
           .update({ points_awarded: points })
@@ -227,13 +233,13 @@ export async function calculateScores(groupId: string, gameId: string, _formData
   }
 
   // 2. Calculate Knockout Stage Points (Robust Automation)
-  await recalculateAllKnockoutScores(gameId, matches, supabase)
+  await recalculateAllKnockoutScores(gameId, matches, supabase, ensureSnapshot)
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`)
   return { success: true, message: 'Alla poäng (matcher & slutspel) har räknats om!' }
 }
 
-async function recalculateAllKnockoutScores(gameId: string, matches: any[], supabase: any) {
+async function recalculateAllKnockoutScores(gameId: string, matches: any[], supabase: any, ensureSnapshot: () => Promise<void>) {
   // Map DB stage names to our internal keys
   const stageMap: Record<string, string> = {
     'Round of 16': 'round_of_16',
@@ -296,6 +302,7 @@ async function recalculateAllKnockoutScores(gameId: string, matches: any[], supa
     const pts = isCorrect ? (KNOCKOUT_ROUND_POINTS[pred.round] ?? 0) : 0
 
     if (pred.points_awarded !== pts) {
+      await ensureSnapshot()
       await supabase
         .from('knockout_predictions')
         .update({ points_awarded: pts })

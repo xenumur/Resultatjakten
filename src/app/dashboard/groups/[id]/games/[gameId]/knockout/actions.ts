@@ -123,7 +123,13 @@ export async function saveActualTeams(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Inte inloggad' }
 
-  await snapshotGroupLeaderboard(groupId)
+  let hasSnapshotted = false;
+  const ensureSnapshot = async () => {
+    if (!hasSnapshotted) {
+      await snapshotGroupLeaderboard(groupId)
+      hasSnapshotted = true
+    }
+  }
 
   for (const round of KNOCKOUT_ROUNDS) {
     // Remove existing actual teams for this round
@@ -146,7 +152,7 @@ export async function saveActualTeams(
   }
 
   // Recalculate all user points
-  await recalculateKnockoutPoints(gameId, supabase)
+  await recalculateKnockoutPoints(gameId, supabase, ensureSnapshot)
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`)
@@ -157,7 +163,7 @@ export async function saveActualTeams(
 // This means points are awarded automatically as soon as real teams appear
 // in knockout stage matches, without needing admin to manually enter them.
 
-export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
+export async function recalculateKnockoutPoints(gameId: string, supabase: any, ensureSnapshot?: () => Promise<void>) {
   // Use admin client for updates so we can update ALL users' predictions,
   // not just the currently authenticated user (RLS UPDATE policy = auth.uid() = user_id)
   const adminClient = createAdminClient()
@@ -201,7 +207,7 @@ export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
   // Get all predictions for this game (using regular client — SELECT RLS allows group members)
   const { data: allPredictions } = await supabase
     .from('knockout_predictions')
-    .select('id, user_id, round, team_name')
+    .select('id, user_id, round, team_name, points_awarded')
     .eq('game_id', gameId)
 
   if (!allPredictions) return
@@ -211,10 +217,13 @@ export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
     const actual = actualByRound.get(pred.round)
     const isCorrect = actual?.has(pred.team_name.toLowerCase().trim()) ?? false
     const pts = isCorrect ? (KNOCKOUT_ROUND_POINTS[pred.round] ?? 0) : 0
-    await adminClient
-      .from('knockout_predictions')
-      .update({ points_awarded: pts })
-      .eq('id', pred.id)
+    if ((pred as any).points_awarded !== pts) {
+      if (ensureSnapshot) await ensureSnapshot()
+      await adminClient
+        .from('knockout_predictions')
+        .update({ points_awarded: pts })
+        .eq('id', pred.id)
+    }
   }
 }
 
