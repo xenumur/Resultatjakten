@@ -151,9 +151,10 @@ export async function calculateScores(groupId: string, gameId: string, _formData
   const supabase = await createClient()
 
   let hasSnapshotted = false;
+  let oldLeaderboard: any[] = [];
   const ensureSnapshot = async () => {
     if (!hasSnapshotted) {
-      await snapshotGroupLeaderboard(groupId)
+      oldLeaderboard = await snapshotGroupLeaderboard(groupId)
       hasSnapshotted = true
     }
   }
@@ -234,6 +235,13 @@ export async function calculateScores(groupId: string, gameId: string, _formData
 
   // 2. Calculate Knockout Stage Points (Robust Automation)
   await recalculateAllKnockoutScores(gameId, matches, supabase, ensureSnapshot)
+
+  // 3. Send notifications if anything changed
+  if (hasSnapshotted) {
+    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
+    const newLeaderboard = await getGroupLeaderboard(groupId)
+    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
+  }
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`)
   return { success: true, message: 'Alla poäng (matcher & slutspel) har räknats om!' }

@@ -30,9 +30,19 @@ export async function createClient() {
 // Admin client that uses the service role key — bypasses RLS.
 // Use ONLY for trusted server-side operations (e.g. updating points for all users).
 export function createAdminClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!serviceRoleKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is missing in environment variables. " +
+      "This key is required for admin operations like sending notifications. " +
+      "Please add it to your .env.local file."
+    );
+  }
+
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    serviceRoleKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 }

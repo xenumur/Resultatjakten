@@ -124,9 +124,10 @@ export async function saveActualTeams(
   if (!user) return { error: 'Inte inloggad' }
 
   let hasSnapshotted = false;
+  let oldLeaderboard: any[] | null = null
   const ensureSnapshot = async () => {
     if (!hasSnapshotted) {
-      await snapshotGroupLeaderboard(groupId)
+      oldLeaderboard = await snapshotGroupLeaderboard(groupId)
       hasSnapshotted = true
     }
   }
@@ -154,6 +155,12 @@ export async function saveActualTeams(
   // Recalculate all user points
   await recalculateKnockoutPoints(gameId, supabase, ensureSnapshot)
 
+  if (oldLeaderboard) {
+    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
+    const newLeaderboard = await getGroupLeaderboard(groupId)
+    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
+  }
+
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`)
   return { success: true, message: 'Faktiska lag sparade och poäng beräknade!' }
@@ -175,11 +182,10 @@ export async function forceRecalculateKnockoutPoints(groupId: string, gameId: st
     return { error: 'Åtkomst nekad.' }
   }
 
-  let snapshotTaken = false
+  let oldLeaderboard: any[] | null = null
   const ensureSnapshot = async () => {
-    if (!snapshotTaken) {
-      await snapshotGroupLeaderboard(groupId)
-      snapshotTaken = true
+    if (!oldLeaderboard) {
+      oldLeaderboard = await snapshotGroupLeaderboard(groupId)
     }
   }
 
@@ -187,6 +193,12 @@ export async function forceRecalculateKnockoutPoints(groupId: string, gameId: st
   await ensureSnapshot()
 
   await recalculateKnockoutPoints(gameId, supabase, ensureSnapshot)
+
+  if (oldLeaderboard) {
+    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
+    const newLeaderboard = await getGroupLeaderboard(groupId)
+    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
+  }
 
   revalidatePath(`/dashboard/groups/${groupId}`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)

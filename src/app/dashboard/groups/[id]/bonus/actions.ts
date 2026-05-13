@@ -105,8 +105,9 @@ export async function gradeBonusAnswer(formData: FormData) {
     .eq('id', answerId)
     .single()
 
+  let oldLeaderboard: any[] | null = null
   if (existing && existing.points_awarded !== points) {
-    await snapshotGroupLeaderboard(groupId)
+    oldLeaderboard = await snapshotGroupLeaderboard(groupId)
   }
 
   const { error } = await supabase
@@ -120,6 +121,13 @@ export async function gradeBonusAnswer(formData: FormData) {
     .eq('id', answerId)
 
   if (error) throw error
+
+  if (oldLeaderboard) {
+    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
+    const newLeaderboard = await getGroupLeaderboard(groupId)
+    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
+  }
+
   revalidatePath(`/dashboard/groups/${groupId}/bonus`)
   revalidatePath(`/dashboard/groups/${groupId}/bonus/admin/grade/${questionId}`)
 }
