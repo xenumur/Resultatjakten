@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { fromZonedTime } from 'date-fns-tz'
 
 export async function updatePaymentStatus(groupId: string, userId: string, formData: FormData) {
   const supabase = await createClient()
@@ -184,7 +185,7 @@ export async function addDeadline(groupId: string, formData: FormData) {
     .insert({
       group_id: groupId,
       title: title.trim(),
-      deadline_at: new Date(deadlineAt).toISOString()
+      deadline_at: fromZonedTime(deadlineAt, 'Europe/Stockholm').toISOString()
     })
 
   if (error) return { error: 'Kunde inte spara deadline: ' + error.message }
@@ -252,7 +253,7 @@ export async function updateDeadline(groupId: string, deadlineId: string, formDa
     .from('group_deadlines')
     .update({
       title: title.trim(),
-      deadline_at: new Date(deadlineAt).toISOString()
+      deadline_at: fromZonedTime(deadlineAt, 'Europe/Stockholm').toISOString()
     })
     .eq('id', deadlineId)
     .eq('group_id', groupId)

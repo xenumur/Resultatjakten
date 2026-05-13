@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, Calendar, Clock, Edit2, X, Check } from 'lucide-react'
 import { addDeadline, deleteDeadline, updateDeadline } from './actions'
+import { formatInTimeZone } from 'date-fns-tz'
 
 interface Deadline {
   id: string
@@ -49,10 +50,7 @@ export function DeadlineManagement({ groupId, initialDeadlines }: DeadlineManage
   }
 
   const formatForInput = (dateStr: string) => {
-    const date = new Date(dateStr)
-    // Convert to local time string that datetime-local expects: YYYY-MM-DDTHH:mm
-    const pad = (n: number) => n.toString().padStart(2, '0')
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+    return formatInTimeZone(new Date(dateStr), 'Europe/Stockholm', "yyyy-MM-dd'T'HH:mm")
   }
 
   return (
