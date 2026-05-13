@@ -179,8 +179,13 @@ function RoundColumn({
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export function BracketView({ matches }: BracketViewProps) {
-  // Define the exact visual order from top to bottom based on FIFA 2026 bracket structure
-  const visualOrderR32 = [73, 77, 74, 75, 80, 82, 81, 84, 86, 87, 78, 79, 83, 85, 76, 88]
+  // Define the exact visual order from top to bottom based on official FIFA 2026 bracket pathing.
+  // Pairings for Round of 16 (89-96):
+  // Match 89: 74 vs 77 | Match 90: 73 vs 75
+  // Match 93: 83 vs 84 | Match 94: 81 vs 82
+  // Match 91: 76 vs 78 | Match 92: 79 vs 80
+  // Match 95: 86 vs 88 | Match 96: 85 vs 87
+  const visualOrderR32 = [74, 77, 73, 75, 83, 84, 81, 82, 76, 78, 79, 80, 86, 88, 85, 87]
   const visualOrderR16 = [89, 90, 93, 94, 91, 92, 95, 96]
   const visualOrderQF  = [97, 98, 99, 100]
   const visualOrderSF  = [101, 102]

@@ -2,10 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Save } from 'lucide-react'
-import { toggleKnockoutLock, saveActualTeams } from '../actions'
+import { toggleKnockoutLock, saveActualTeams, forceRecalculateKnockoutPoints } from '../actions'
 import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
 import { countryToFlag } from '@/lib/utils/flags'
-import { ToggleLockForm, ActualTeamsForm } from './AdminForms'
+import { ToggleLockForm, ActualTeamsForm, RecalculatePointsForm } from './AdminForms'
 
 export default async function KnockoutAdminPage({
   params,
@@ -48,6 +48,7 @@ export default async function KnockoutAdminPage({
 
   const boundToggleLock = toggleKnockoutLock.bind(null, groupId, gameId)
   const boundSaveActual = saveActualTeams.bind(null, groupId, gameId)
+  const boundForceRecalculate = forceRecalculateKnockoutPoints.bind(null, groupId, gameId)
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-10">
@@ -62,8 +63,11 @@ export default async function KnockoutAdminPage({
           <p className="text-zinc-500 dark:text-zinc-400">Hantera lås och mata in faktiska kvalificerade lag per runda.</p>
         </div>
 
-        {/* Lock toggle */}
-        <ToggleLockForm action={boundToggleLock} isLocked={isLocked} />
+        {/* Lock toggle & Recalculate */}
+        <div className="flex flex-col gap-3">
+          <ToggleLockForm action={boundToggleLock} isLocked={isLocked} />
+          <RecalculatePointsForm action={boundForceRecalculate} />
+        </div>
       </div>
 
       {/* Status card */}

@@ -159,6 +159,43 @@ export async function saveActualTeams(
   return { success: true, message: 'Faktiska lag sparade och poäng beräknade!' }
 }
 
+export async function forceRecalculateKnockoutPoints(groupId: string, gameId: string, _formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Ej inloggad' }
+
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || member.role !== 'admin') {
+    return { error: 'Åtkomst nekad.' }
+  }
+
+  let snapshotTaken = false
+  const ensureSnapshot = async () => {
+    if (!snapshotTaken) {
+      await snapshotGroupLeaderboard(groupId)
+      snapshotTaken = true
+    }
+  }
+
+  // Force snapshot before recalculating to ensure history is kept
+  await ensureSnapshot()
+
+  await recalculateKnockoutPoints(gameId, supabase, ensureSnapshot)
+
+  revalidatePath(`/dashboard/groups/${groupId}`)
+  revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)
+  revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`)
+
+  return { success: true, message: 'Poäng omräknade och leaderboard uppdaterad!' }
+}
+
+
 // ─── Recalculate points: uses BOTH manual actual_teams AND match data ─────────
 // This means points are awarded automatically as soon as real teams appear
 // in knockout stage matches, without needing admin to manually enter them.

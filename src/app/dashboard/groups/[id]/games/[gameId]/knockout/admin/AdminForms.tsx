@@ -64,3 +64,31 @@ export function ActualTeamsForm({
     </form>
   )
 }
+
+export function RecalculatePointsForm({
+  action
+}: {
+  action: (formData: FormData) => Promise<ActionResponse>
+}) {
+  const [state, formAction, isPending] = useActionState(async (_: any, formData: FormData) => {
+    return await action(formData)
+  }, null)
+
+  useEffect(() => {
+    if (state?.success) toast.success(state.message || 'Poäng omräknade!')
+    if (state?.error) toast.error(state.error)
+  }, [state])
+
+  return (
+    <form action={formAction}>
+      <button
+        type="submit"
+        disabled={isPending}
+        className="flex items-center gap-2 px-6 py-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white rounded-2xl font-black text-sm transition-all shadow-lg shadow-zinc-900/20 active:scale-95 disabled:opacity-50"
+      >
+        <Save className={`w-4 h-4 ${isPending ? 'animate-spin' : ''}`} />
+        {isPending ? 'Räknar om...' : 'Räkna om poäng & uppdatera leaderboard'}
+      </button>
+    </form>
+  )
+}
