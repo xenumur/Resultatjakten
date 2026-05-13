@@ -34,13 +34,22 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-12">
-      
       {/* Personalized Header Section */}
       <div className="pt-6 md:pt-4">
         <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight">
           Välkommen, <span className="text-indigo-600 dark:text-indigo-400">{displayName}</span>
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-lg font-medium">Här är dina aktiva grupper och snabbval.</p>
+      </div>
+      {/* Introduction Button (Centered) */}
+      <div className="flex justify-center pb-2 pt-4">
+        <Link 
+          href="/dashboard/introduction" 
+          className="flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-indigo-600 text-white rounded-2xl sm:rounded-[24px] font-black hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95"
+        >
+          <Info className="w-4 h-4 sm:w-5 h-5" />
+          Introduktion & Regler
+        </Link>
       </div>
 
       {/* Groups List (Top Priority) */}
@@ -103,7 +112,7 @@ export default async function DashboardPage() {
       {/* Quick Actions (Smaller and Moved Down) */}
       <div className="pt-4 space-y-6">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 text-center">Andra åtgärder</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
           <Link href="/dashboard/groups/create" className="group flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-[28px] border border-zinc-100 dark:border-zinc-800 hover:border-indigo-500 transition-all shadow-sm hover:shadow-md active:scale-95">
             <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
               <Plus className="w-5 h-5" />
@@ -123,13 +132,6 @@ export default async function DashboardPage() {
               <LayoutGrid className="w-5 h-5" />
             </div>
             <span className="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Profil</span>
-          </Link>
-
-          <Link href="/dashboard/introduction" className="group flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-[28px] border border-zinc-100 dark:border-zinc-800 hover:border-amber-400 transition-all shadow-sm hover:shadow-md active:scale-95">
-            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <Info className="w-5 h-5" />
-            </div>
-            <span className="text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300 group-hover:text-amber-600 transition-colors">Introduktion</span>
           </Link>
         </div>
       </div>
