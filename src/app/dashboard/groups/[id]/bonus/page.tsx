@@ -28,7 +28,7 @@ export default async function BonusPage({
     .select('*')
     .eq('group_id', groupId)
     .not('status', 'eq', 'draft')
-    .order('deadline', { ascending: true })
+    .order('created_at', { ascending: true })
 
   const { data: userAnswers } = await supabase
     .from('bonus_answers')

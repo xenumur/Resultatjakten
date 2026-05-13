@@ -12,7 +12,6 @@ export async function createBonusQuestion(formData: FormData) {
   const questionText = formData.get('questionText') as string
   const description = formData.get('description') as string
   const maxPoints = parseInt(formData.get('maxPoints') as string)
-  const deadline = formData.get('deadline') as string
   const status = formData.get('status') as string || 'draft'
 
   const { error } = await supabase.from('bonus_questions').insert({

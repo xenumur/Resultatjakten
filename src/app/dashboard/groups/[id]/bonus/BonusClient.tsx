@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { submitBonusAnswer } from './actions'
 import { SubmitButton } from '@/components/ui/SubmitButton'
-import { CheckCircle, Lock, Trophy, MessageSquare, AlertCircle, ChevronRight, Settings } from 'lucide-react'
+import { CheckCircle, Lock, Trophy, MessageSquare, ChevronRight, Settings } from 'lucide-react'
 import Link from 'next/link'
 
 export default function BonusClient({ 
@@ -53,7 +53,7 @@ export default function BonusClient({
         ) : (
           questions.map(q => {
             const answer = findUserAnswer(q.id)
-            const isLocked = q.status === 'locked' || q.status === 'graded' || (q.deadline && new Date(q.deadline) < new Date())
+            const isLocked = q.status === 'locked' || q.status === 'graded'
             const isGraded = q.status === 'graded' && answer?.points_awarded !== null
 
             return (
@@ -79,12 +79,6 @@ export default function BonusClient({
                       
                       <h3 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{q.question_text}</h3>
                       {q.description && <p className="text-zinc-500 font-bold text-sm">{q.description}</p>}
-                      
-                      {!isLocked && (
-                        <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                          <AlertCircle className="w-3 h-3" /> Deadline: {new Date(q.deadline).toLocaleString('sv-SE')}
-                        </div>
-                      )}
                     </div>
 
                     <div className="w-full md:w-96 shrink-0">
