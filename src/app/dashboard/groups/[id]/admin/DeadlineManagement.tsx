@@ -191,17 +191,17 @@ export function DeadlineManagement({ groupId, initialDeadlines }: DeadlineManage
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => setEditingId(d.id)}
-                        className="p-3 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all"
+                        className="p-3 text-zinc-400 hover:text-indigo-600 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all border border-zinc-100 dark:border-zinc-800"
                         title="Redigera"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(d.id)}
-                        className="p-3 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                        className="p-3 text-zinc-400 hover:text-red-500 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all border border-zinc-100 dark:border-zinc-800"
                         title="Ta bort"
                       >
                         <Trash2 className="w-4 h-4" />
