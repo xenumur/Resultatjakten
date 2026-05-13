@@ -49,15 +49,16 @@ export default function GraderClient({ question, answers, groupId }: { question:
                 }} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Poäng (0-{question.max_points})</label>
-                    <input 
+                    <select 
                       name="points" 
-                      type="number" 
-                      max={question.max_points} 
-                      min={0}
                       defaultValue={ans.points_awarded ?? ''}
                       required 
-                      className="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-black text-xl"
-                    />
+                      className="w-full px-6 py-4 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 font-black text-xl appearance-none"
+                    >
+                      <option value="">Välj poäng</option>
+                      <option value="0">0 poäng</option>
+                      <option value={question.max_points}>{question.max_points} poäng</option>
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Kommentar (frivillig)</label>
