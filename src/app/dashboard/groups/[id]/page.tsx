@@ -293,10 +293,16 @@ export default async function GroupDetailPage({
                               <div className="font-bold text-zinc-900 dark:text-white flex items-center gap-1.5 md:gap-2 text-sm">
                                 <span className="truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none">{entry.display_name}</span>
                                 {entry.previous_rank && entry.rank < entry.previous_rank && (
-                                  <ArrowUp className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                  <div className="flex items-center gap-0.5 text-emerald-500 font-black text-[10px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
+                                    <ArrowUp className="w-2.5 h-2.5 shrink-0" />
+                                    <span>{entry.previous_rank - entry.rank}</span>
+                                  </div>
                                 )}
                                 {entry.previous_rank && entry.rank > entry.previous_rank && (
-                                  <ArrowDown className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                                  <div className="flex items-center gap-0.5 text-red-500 font-black text-[10px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
+                                    <ArrowDown className="w-2.5 h-2.5 shrink-0" />
+                                    <span>{entry.rank - entry.previous_rank}</span>
+                                  </div>
                                 )}
                                 {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                               </div>
