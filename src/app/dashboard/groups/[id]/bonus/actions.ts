@@ -85,7 +85,6 @@ export async function submitBonusAnswer(formData: FormData) {
   revalidatePath(`/dashboard/groups/${groupId}/bonus`)
 }
 
-import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
 
 export async function gradeBonusAnswer(formData: FormData) {
   const supabase = await createClient()
@@ -98,18 +97,6 @@ export async function gradeBonusAnswer(formData: FormData) {
   const points = parseInt(formData.get('points') as string)
   const comment = formData.get('comment') as string
 
-  // Endast snapshot om poängen faktiskt ändras
-  const { data: existing } = await supabase
-    .from('bonus_answers')
-    .select('points_awarded')
-    .eq('id', answerId)
-    .single()
-
-  let oldLeaderboard: any[] | null = null
-  if (existing && existing.points_awarded !== points) {
-    oldLeaderboard = await snapshotGroupLeaderboard(groupId)
-  }
-
   const { error } = await supabase
     .from('bonus_answers')
     .update({
@@ -121,12 +108,6 @@ export async function gradeBonusAnswer(formData: FormData) {
     .eq('id', answerId)
 
   if (error) throw error
-
-  if (oldLeaderboard) {
-    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
-    const newLeaderboard = await getGroupLeaderboard(groupId)
-    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
-  }
 
   revalidatePath(`/dashboard/groups/${groupId}/bonus`)
   revalidatePath(`/dashboard/groups/${groupId}/bonus/admin/grade/${questionId}`)

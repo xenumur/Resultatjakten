@@ -7,7 +7,8 @@ import { PaymentStatusForm } from './PaymentStatusForm'
 import { DeleteGroupButton } from './DeleteGroupButton'
 import { RemoveMemberButton } from './RemoveMemberButton'
 import { DeadlineManagement } from './DeadlineManagement'
-import { Settings, Users, ArrowLeft, Calendar } from 'lucide-react'
+import { StatusUpdateTrigger } from './StatusUpdateTrigger'
+import { Settings, Users, ArrowLeft, Calendar, Bell } from 'lucide-react'
 
 export default async function GroupAdminPage({
   params,
@@ -67,13 +68,24 @@ export default async function GroupAdminPage({
               }} 
             />
           </div>
-          <DeleteGroupButton groupId={groupId} />
         </div>
 
-        {/* Middle: Deadlines */}
-        <DeadlineManagement groupId={groupId} initialDeadlines={deadlines || []} />
+        {/* Row for Deadlines and Status Update */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Deadlines */}
+          <DeadlineManagement groupId={groupId} initialDeadlines={deadlines || []} />
 
-        {/* Bottom: Members & Payments */}
+          {/* Status Update Trigger */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Bell className="w-5 h-5 text-indigo-500" />
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white">Utskick</h2>
+            </div>
+            <StatusUpdateTrigger groupId={groupId} />
+          </div>
+        </div>
+
+        {/* Members & Payments */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-5 h-5 text-indigo-500" />
@@ -135,6 +147,11 @@ export default async function GroupAdminPage({
               </table>
             </div>
           </div>
+        </div>
+
+        {/* Danger Zone: Delete Group at the bottom */}
+        <div className="pt-12 border-t border-zinc-100 dark:border-zinc-800">
+          <DeleteGroupButton groupId={groupId} />
         </div>
       </div>
     </div>

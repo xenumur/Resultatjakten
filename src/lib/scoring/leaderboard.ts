@@ -1,8 +1,8 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { sendPersonalNotification } from '@/lib/notifications/service'
 
 export interface LeaderboardEntry {
   user_id: string
+  display_name?: string
   total_points: number
   rank: number
   previous_rank?: number | null
@@ -21,7 +21,7 @@ export async function getGroupLeaderboard(groupId: string): Promise<LeaderboardE
     { data: knockoutPredictions },
     { data: bonusAnswers }
   ] = await Promise.all([
-    supabase.from('group_members').select('user_id, previous_rank').eq('group_id', groupId),
+    supabase.from('group_members').select('user_id, previous_rank, profiles:user_id(display_name)').eq('group_id', groupId),
     supabase.from('predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('knockout_predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('bonus_answers').select('user_id, points_awarded, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId)
@@ -53,11 +53,15 @@ export async function getGroupLeaderboard(groupId: string): Promise<LeaderboardE
   }
 
   const leaderboard = Object.entries(userScores)
-    .map(([user_id, total_points]) => ({ 
-      user_id, 
-      total_points,
-      previous_rank: members.find(m => m.user_id === user_id)?.previous_rank
-    }))
+    .map(([user_id, total_points]) => {
+      const member = members.find(m => m.user_id === user_id)
+      return { 
+        user_id, 
+        total_points,
+        display_name: (member?.profiles as any)?.display_name || 'Okänd deltagare',
+        previous_rank: member?.previous_rank
+      }
+    })
     .sort((a, b) => b.total_points - a.total_points)
 
   let currentRank = 1
@@ -89,42 +93,4 @@ export async function snapshotGroupLeaderboard(groupId: string) {
   }
 
   return leaderboard
-}
-
-/**
- * Compares old and new leaderboard states and sends notifications to members whose points changed.
- */
-export async function notifyLeaderboardChanges(
-  groupId: string,
-  oldLeaderboard: LeaderboardEntry[],
-  newLeaderboard: LeaderboardEntry[]
-) {
-  const supabase = createAdminClient()
-  
-  // Fetch notification preferences for all users in the group
-  const userIds = newLeaderboard.map(e => e.user_id)
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, notify_on_points_change')
-    .in('id', userIds)
-
-  for (const newEntry of newLeaderboard) {
-    const oldEntry = oldLeaderboard.find(o => o.user_id === newEntry.user_id)
-    const profile = profiles?.find(p => p.id === newEntry.user_id)
-    
-    // Check if user has opted out of point notifications
-    if (profile && profile.notify_on_points_change === false) continue
-
-    // Only notify if points have actually changed
-    if (!oldEntry || newEntry.total_points !== oldEntry.total_points) {
-      const rankMsg = newEntry.rank === 1 ? '1:a' : `${newEntry.rank}:e`
-      
-      await sendPersonalNotification({
-        userId: newEntry.user_id,
-        groupId,
-        title: 'Poänguppdatering!',
-        content: `Dina poäng har ändrats! Du ligger nu på ${rankMsg} plats med ${newEntry.total_points} poäng.`
-      })
-    }
-  }
 }

@@ -263,3 +263,55 @@ export async function updateDeadline(groupId: string, deadlineId: string, formDa
   revalidatePath(`/dashboard/groups/${groupId}/admin`)
   return { success: true }
 }
+
+export async function sendStatusUpdate(groupId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Inte inloggad' }
+
+  // Verify admin
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || member.role !== 'admin') {
+    return { error: 'Endast administratörer kan skicka statusuppdateringar.' }
+  }
+
+  const { getGroupLeaderboard } = await import('@/lib/scoring/leaderboard')
+  const { sendPersonalNotification } = await import('@/lib/notifications/service')
+  
+  const leaderboard = await getGroupLeaderboard(groupId)
+  
+  for (let i = 0; i < leaderboard.length; i++) {
+    const entry = leaderboard[i]
+    const rankMsg = entry.rank === 1 ? '1:a' : `${entry.rank}:e`
+    
+    let content = `Du har nu ${entry.total_points} poäng och ligger på ${rankMsg} plats! 🏆`
+    
+    if (i > 0) {
+      const nextPerson = leaderboard[i - 1]
+      const diff = nextPerson.total_points - entry.total_points
+      
+      if (diff === 0) {
+        content += `\nDu ligger på delad plats med ${nextPerson.display_name}! Snyggt jobbat! 🔥`
+      } else {
+        content += `\nDu är bara ${diff} poäng bakom ${nextPerson.display_name}. Kämpa på! 🚀`
+      }
+    } else {
+      content += `\nDu leder just nu! Grymt jobbat, behåll ledningen! 🥇👑`
+    }
+
+    await sendPersonalNotification({
+      userId: entry.user_id,
+      groupId,
+      title: 'Statusuppdatering',
+      content: content
+    })
+  }
+
+  return { success: true, message: 'Statusuppdateringar har skickats till alla deltagare!' }
+}

@@ -123,15 +123,6 @@ export async function saveActualTeams(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Inte inloggad' }
 
-  let hasSnapshotted = false;
-  let oldLeaderboard: any[] | null = null
-  const ensureSnapshot = async () => {
-    if (!hasSnapshotted) {
-      oldLeaderboard = await snapshotGroupLeaderboard(groupId)
-      hasSnapshotted = true
-    }
-  }
-
   for (const round of KNOCKOUT_ROUNDS) {
     // Remove existing actual teams for this round
     await supabase
@@ -153,13 +144,7 @@ export async function saveActualTeams(
   }
 
   // Recalculate all user points
-  await recalculateKnockoutPoints(gameId, supabase, ensureSnapshot)
-
-  if (oldLeaderboard) {
-    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
-    const newLeaderboard = await getGroupLeaderboard(groupId)
-    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
-  }
+  await recalculateKnockoutPoints(gameId, supabase)
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`)
@@ -182,29 +167,13 @@ export async function forceRecalculateKnockoutPoints(groupId: string, gameId: st
     return { error: 'Åtkomst nekad.' }
   }
 
-  let oldLeaderboard: any[] | null = null
-  const ensureSnapshot = async () => {
-    if (!oldLeaderboard) {
-      oldLeaderboard = await snapshotGroupLeaderboard(groupId)
-    }
-  }
-
-  // Force snapshot before recalculating to ensure history is kept
-  await ensureSnapshot()
-
-  await recalculateKnockoutPoints(gameId, supabase, ensureSnapshot)
-
-  if (oldLeaderboard) {
-    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
-    const newLeaderboard = await getGroupLeaderboard(groupId)
-    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
-  }
+  await recalculateKnockoutPoints(gameId, supabase)
 
   revalidatePath(`/dashboard/groups/${groupId}`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`)
 
-  return { success: true, message: 'Poäng omräknade och leaderboard uppdaterad!' }
+  return { success: true, message: 'Poäng omräknade!' }
 }
 
 
@@ -212,7 +181,7 @@ export async function forceRecalculateKnockoutPoints(groupId: string, gameId: st
 // This means points are awarded automatically as soon as real teams appear
 // in knockout stage matches, without needing admin to manually enter them.
 
-export async function recalculateKnockoutPoints(gameId: string, supabase: any, ensureSnapshot?: () => Promise<void>) {
+export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
   // Use admin client for updates so we can update ALL users' predictions,
   // not just the currently authenticated user (RLS UPDATE policy = auth.uid() = user_id)
   const adminClient = createAdminClient()
@@ -267,7 +236,6 @@ export async function recalculateKnockoutPoints(gameId: string, supabase: any, e
     const isCorrect = actual?.has(pred.team_name.toLowerCase().trim()) ?? false
     const pts = isCorrect ? (KNOCKOUT_ROUND_POINTS[pred.round] ?? 0) : 0
     if ((pred as any).points_awarded !== pts) {
-      if (ensureSnapshot) await ensureSnapshot()
       await adminClient
         .from('knockout_predictions')
         .update({ points_awarded: pts })

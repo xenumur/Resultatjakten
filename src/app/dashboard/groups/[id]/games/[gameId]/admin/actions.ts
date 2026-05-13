@@ -150,16 +150,6 @@ import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
   const supabase = await createClient()
 
-  let hasSnapshotted = false;
-  let oldLeaderboard: any[] = [];
-  const ensureSnapshot = async () => {
-    if (!hasSnapshotted) {
-      oldLeaderboard = await snapshotGroupLeaderboard(groupId)
-      hasSnapshotted = true
-    }
-  }
-
-
   const { data: matches } = await supabase
     .from('matches')
     .select('id, final_home_score, final_away_score, status, home_team, away_team, stage')
@@ -224,7 +214,6 @@ export async function calculateScores(groupId: string, gameId: string, _formData
       }
 
       if (pred.points_awarded !== points) {
-        await ensureSnapshot()
         await supabase
           .from('predictions')
           .update({ points_awarded: points })
@@ -234,20 +223,13 @@ export async function calculateScores(groupId: string, gameId: string, _formData
   }
 
   // 2. Calculate Knockout Stage Points (Robust Automation)
-  await recalculateAllKnockoutScores(gameId, matches, supabase, ensureSnapshot)
-
-  // 3. Send notifications if anything changed
-  if (hasSnapshotted) {
-    const { getGroupLeaderboard, notifyLeaderboardChanges } = await import('@/lib/scoring/leaderboard')
-    const newLeaderboard = await getGroupLeaderboard(groupId)
-    await notifyLeaderboardChanges(groupId, oldLeaderboard, newLeaderboard)
-  }
+  await recalculateAllKnockoutScores(gameId, matches, supabase)
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`)
   return { success: true, message: 'Alla poäng (matcher & slutspel) har räknats om!' }
 }
 
-async function recalculateAllKnockoutScores(gameId: string, matches: any[], supabase: any, ensureSnapshot: () => Promise<void>) {
+async function recalculateAllKnockoutScores(gameId: string, matches: any[], supabase: any) {
   // Map DB stage names to our internal keys
   const stageMap: Record<string, string> = {
     'Round of 16': 'round_of_16',
@@ -310,7 +292,6 @@ async function recalculateAllKnockoutScores(gameId: string, matches: any[], supa
     const pts = isCorrect ? (KNOCKOUT_ROUND_POINTS[pred.round] ?? 0) : 0
 
     if (pred.points_awarded !== pts) {
-      await ensureSnapshot()
       await supabase
         .from('knockout_predictions')
         .update({ points_awarded: pts })
