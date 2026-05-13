@@ -97,11 +97,16 @@ export default function IntroductionPage() {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-bold text-amber-900/70 dark:text-amber-200/70">Rätt vinnare</span>
-                        <span className="text-xl font-black text-amber-600">3p</span>
+                        <div className="flex items-baseline gap-1 w-24">
+                          <span className="text-xl font-black text-amber-600">3p</span>
+                        </div>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-bold text-amber-900/70 dark:text-amber-200/70">Rätt lagmål</span>
-                        <span className="text-xl font-black text-amber-600">2p <span className="text-[10px] text-amber-400 font-medium">/ lag</span></span>
+                        <div className="flex items-baseline gap-1 w-24">
+                          <span className="text-xl font-black text-amber-600">2p</span>
+                          <span className="text-[10px] text-amber-400 font-medium">/ lag</span>
+                        </div>
                       </div>
                     </div>
                   </div>
