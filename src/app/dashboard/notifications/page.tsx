@@ -1,11 +1,11 @@
-import { getNotifications } from './actions'
-import { Bell, Calendar, ChevronRight } from 'lucide-react'
+import { Bell, Calendar, ChevronRight, Settings } from 'lucide-react'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import Link from 'next/link'
 import { MarkAsRead } from '@/components/MarkAsRead'
-import { NotificationToggle } from '@/components/PushNotificationManager'
 import { ClearNotificationsButton } from '@/components/ClearNotificationsButton'
+
+import { getNotifications } from './actions'
 
 export default async function NotificationsPage() {
   const notifications = await getNotifications()
@@ -26,7 +26,13 @@ export default async function NotificationsPage() {
         </div>
         
         <div className="w-full md:w-auto flex items-center gap-3">
-          <NotificationToggle />
+          <Link
+            href="/dashboard/notifications/settings"
+            className="p-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 rounded-xl transition-all duration-200"
+            title="Inställningar"
+          >
+            <Settings className="w-5 h-5" />
+          </Link>
           <ClearNotificationsButton hasNotifications={notifications.length > 0} />
         </div>
       </div>
