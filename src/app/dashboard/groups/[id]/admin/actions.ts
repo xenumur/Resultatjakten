@@ -223,3 +223,43 @@ export async function deleteDeadline(groupId: string, deadlineId: string) {
   revalidatePath(`/dashboard/groups/${groupId}/admin`)
   return { success: true }
 }
+
+export async function updateDeadline(groupId: string, deadlineId: string, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Inte inloggad' }
+
+  // Verify admin
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || member.role !== 'admin') {
+    return { error: 'Endast administratörer kan ändra deadlines.' }
+  }
+
+  const title = formData.get('title') as string
+  const deadlineAt = formData.get('deadline_at') as string
+
+  if (!title || !deadlineAt) {
+    return { error: 'Titel och datum krävs.' }
+  }
+
+  const { error } = await supabase
+    .from('group_deadlines')
+    .update({
+      title: title.trim(),
+      deadline_at: new Date(deadlineAt).toISOString()
+    })
+    .eq('id', deadlineId)
+    .eq('group_id', groupId)
+
+  if (error) return { error: 'Kunde inte uppdatera deadline: ' + error.message }
+
+  revalidatePath(`/dashboard/groups/${groupId}`)
+  revalidatePath(`/dashboard/groups/${groupId}/admin`)
+  return { success: true }
+}

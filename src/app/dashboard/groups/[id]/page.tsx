@@ -347,14 +347,22 @@ export default async function GroupDetailPage({
               {deadlines.map(d => (
                 <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
                   <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight">{d.title}</span>
-                  <div className="text-right shrink-0">
-                    <div className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
-                      {new Date(d.deadline_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}
-                    </div>
-                    <div className="text-[11px] font-bold text-zinc-400">
-                      kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
+                        <div className="text-right shrink-0">
+                          <div className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
+                            {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
+                              day: 'numeric', 
+                              month: 'short',
+                              timeZone: 'Europe/Stockholm'
+                            })}
+                          </div>
+                          <div className="text-[11px] font-bold text-zinc-400">
+                            kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
+                              hour: '2-digit', 
+                              minute: '2-digit',
+                              timeZone: 'Europe/Stockholm'
+                            })}
+                          </div>
+                        </div>
                 </div>
               ))}
             </div>
