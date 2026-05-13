@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown } from 'lucide-react'
+import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown, Calendar } from 'lucide-react'
 
 export default async function GroupDetailPage({
   params,
