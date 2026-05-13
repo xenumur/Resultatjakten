@@ -4,20 +4,28 @@ import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import Link from 'next/link'
 import { MarkAsRead } from '@/components/MarkAsRead'
+import { NotificationToggle } from '@/components/PushNotificationManager'
 
 export default async function NotificationsPage() {
   const notifications = await getNotifications()
   
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-12">
+    <div className="max-w-4xl mx-auto p-6 md:p-12 space-y-12">
       <MarkAsRead />
-      <div className="flex items-center gap-3 mb-10">
-        <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl">
-          <Bell className="w-8 h-8" />
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl">
+            <Bell className="w-8 h-8" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-black text-zinc-900 dark:text-white">Inkorg</h1>
+            <p className="text-zinc-500 dark:text-zinc-400 font-medium">Notiser från dina gruppadministratörer</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-4xl font-black text-zinc-900 dark:text-white">Inkorg</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 font-medium">Notiser från dina gruppadministratörer</p>
+        
+        <div className="w-full md:w-auto">
+          <NotificationToggle />
         </div>
       </div>
 
