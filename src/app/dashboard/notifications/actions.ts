@@ -58,7 +58,8 @@ export async function sendNotification(groupId: string, title: string, content: 
       const payload = JSON.stringify({
         title,
         body: content,
-        url: `/dashboard/notifications`
+        url: `/dashboard/notifications`,
+        badgeCount: 1
       })
 
       // Skicka push till alla prenumerationer (parallellt)

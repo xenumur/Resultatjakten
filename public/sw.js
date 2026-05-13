@@ -12,7 +12,11 @@ self.addEventListener('push', function(event) {
     }
 
     event.waitUntil(
-      self.registration.showNotification(data.title, options)
+      Promise.all([
+        self.registration.showNotification(data.title, options),
+        // Set app badge if supported
+        'setAppBadge' in self.navigator ? self.navigator.setAppBadge(data.badgeCount || 1) : Promise.resolve()
+      ])
     )
   }
 })
