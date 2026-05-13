@@ -86,14 +86,14 @@ export default async function GameAdminPage({
 
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <BulkMatchSaveButton groupId={groupId} gameId={gameId} />
-          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-[10px] sm:text-xs">
-            <Lock className="w-3.5 h-3.5" />
+          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-[10px] sm:text-xs whitespace-nowrap leading-none border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
             Låsningar
           </Link>
           <AdminActionButton
             action={bindedSync}
             label="Synka med API"
-            icon={<RefreshCw className="w-4 h-4" />}
+            icon={<RefreshCw className="w-4 h-4 shrink-0" />}
           />
         </div>
       </div>
@@ -196,8 +196,8 @@ export default async function GameAdminPage({
                               <span className="text-xs text-amber-600 dark:text-amber-400">Nu: {match.final_home_score ?? '?'} - {match.final_away_score ?? '?'} ({match.status})</span>
                             </div>
                             <form action={acceptApiResult.bind(null, groupId, gameId, match.id)}>
-                              <button type="submit" className="flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-amber-600/20">
-                                <Check className="w-3.5 h-3.5" />
+                              <button type="submit" className="flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-amber-600/20 whitespace-nowrap leading-none">
+                                <Check className="w-3.5 h-3.5 shrink-0" />
                                 Tillämpa API
                               </button>
                             </form>

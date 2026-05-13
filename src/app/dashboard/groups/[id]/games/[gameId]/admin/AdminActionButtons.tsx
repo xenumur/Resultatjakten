@@ -25,7 +25,7 @@ export function AdminActionButton({ action, label, icon, variant = 'secondary' }
     }
   }, [state])
 
-  const baseClasses = "flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl sm:rounded-2xl font-black transition-all active:scale-95 text-[10px] sm:text-xs uppercase tracking-widest shadow-lg"
+  const baseClasses = "flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl sm:rounded-2xl font-black transition-all active:scale-95 text-[10px] sm:text-xs uppercase tracking-widest shadow-lg whitespace-nowrap leading-none"
   const variantClasses = variant === 'primary' 
     ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20" 
     : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 shadow-zinc-200/50 dark:shadow-none border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600"
