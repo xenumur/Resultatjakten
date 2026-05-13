@@ -202,7 +202,7 @@ export default function IntroductionPage() {
             </div>
             <h2 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Frågor? 🙋</h2>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm font-medium leading-relaxed">
-              Problem med inloggning eller regler? Kontakta din administratör eller skriv i gruppchatten.
+              Problem med inloggning eller regler? Kontakta din administratör.
             </p>
             <div className="pt-4">
               <span className="px-8 py-3 bg-indigo-600 text-white rounded-full text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20">
