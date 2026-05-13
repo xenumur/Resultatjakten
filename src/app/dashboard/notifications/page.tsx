@@ -5,6 +5,7 @@ import { sv } from 'date-fns/locale'
 import Link from 'next/link'
 import { MarkAsRead } from '@/components/MarkAsRead'
 import { NotificationToggle } from '@/components/PushNotificationManager'
+import { ClearNotificationsButton } from '@/components/ClearNotificationsButton'
 
 export default async function NotificationsPage() {
   const notifications = await getNotifications()
@@ -24,8 +25,9 @@ export default async function NotificationsPage() {
           </div>
         </div>
         
-        <div className="w-full md:w-auto">
+        <div className="w-full md:w-auto flex items-center gap-3">
           <NotificationToggle />
+          <ClearNotificationsButton hasNotifications={notifications.length > 0} />
         </div>
       </div>
 

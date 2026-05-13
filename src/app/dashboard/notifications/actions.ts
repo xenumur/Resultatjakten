@@ -104,6 +104,15 @@ export async function getNotifications() {
 
   if (!user) return []
 
+  // Hämta rensnings-tidsstämpel
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('last_cleared_notifications_at')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const clearAt = profile?.last_cleared_notifications_at || '-infinity'
+
   const { data, error } = await supabase
     .from('notifications')
     .select(`
@@ -111,6 +120,7 @@ export async function getNotifications() {
       profiles:sender_id(display_name),
       groups:group_id(name)
     `)
+    .gt('created_at', clearAt)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -129,11 +139,15 @@ export async function getUnreadCount() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('last_read_notifications_at')
+    .select('last_read_notifications_at, last_cleared_notifications_at')
     .eq('id', user.id)
     .maybeSingle()
 
   if (profileError || !profile) return 0
+
+  const lastRead = profile.last_read_notifications_at || '-infinity'
+  const lastCleared = profile.last_cleared_notifications_at || '-infinity'
+  const filterDate = lastRead > lastCleared ? lastRead : lastCleared
 
   // Hämta grupper som användaren är med i
   const { data: memberGroups, error: memberError } = await supabase
@@ -148,7 +162,7 @@ export async function getUnreadCount() {
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .in('group_id', groupIds)
-    .gt('created_at', profile.last_read_notifications_at)
+    .gt('created_at', filterDate)
 
   if (countError) {
     console.error('Error counting unread notifications:', countError)
@@ -169,5 +183,23 @@ export async function markNotificationsAsRead() {
     .update({ last_read_notifications_at: new Date().toISOString() })
     .eq('id', user.id)
 
+  revalidatePath('/dashboard', 'layout')
+}
+
+export async function clearNotifications() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return
+
+  await supabase
+    .from('profiles')
+    .update({ 
+      last_cleared_notifications_at: new Date().toISOString(),
+      last_read_notifications_at: new Date().toISOString()
+    })
+    .eq('id', user.id)
+
+  revalidatePath('/dashboard/notifications')
   revalidatePath('/dashboard', 'layout')
 }
