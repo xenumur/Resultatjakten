@@ -21,14 +21,16 @@ export default async function GroupDetailPage({
     { data: matchPredictions },
     { data: knockoutPredictions },
     { data: games },
-    { data: bonusAnswers }
+    { data: bonusAnswers },
+    { data: deadlines }
   ] = await Promise.all([
     supabase.from('groups').select('*').eq('id', groupId).single(),
     supabase.from('group_members').select('*, profiles:user_id(display_name, email)').eq('group_id', groupId),
     supabase.from('predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('knockout_predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('games').select('*').eq('group_id', groupId),
-    supabase.from('bonus_answers').select('user_id, points_awarded, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId)
+    supabase.from('bonus_answers').select('user_id, points_awarded, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId),
+    supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
 
   if (!group || !members) {
@@ -199,6 +201,31 @@ export default async function GroupDetailPage({
               )}
             </div>
             <div className="space-y-4">
+              {/* Deadlines Card (if any) */}
+              {deadlines && deadlines.length > 0 && (
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-4 animate-in fade-in duration-500">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-indigo-500" />
+                    <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400">Viktiga Deadlines</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {deadlines.map(d => (
+                      <div key={d.id} className="flex justify-between items-start gap-4">
+                        <span className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">{d.title}</span>
+                        <div className="text-right shrink-0">
+                          <div className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
+                            {new Date(d.deadline_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}
+                          </div>
+                          <div className="text-[10px] font-bold text-zinc-400">
+                            kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Bonus Questions Card */}
               <Link
                 href={`/dashboard/groups/${groupId}/bonus`}

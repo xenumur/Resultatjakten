@@ -6,7 +6,8 @@ import { GroupSettingsForm } from './GroupSettingsForm'
 import { PaymentStatusForm } from './PaymentStatusForm'
 import { DeleteGroupButton } from './DeleteGroupButton'
 import { RemoveMemberButton } from './RemoveMemberButton'
-import { Settings, Users, ArrowLeft } from 'lucide-react'
+import { DeadlineManagement } from './DeadlineManagement'
+import { Settings, Users, ArrowLeft, Calendar } from 'lucide-react'
 
 export default async function GroupAdminPage({
   params,
@@ -20,9 +21,10 @@ export default async function GroupAdminPage({
 
   if (!user) redirect('/login')
 
-  const [{ data: group }, { data: members }] = await Promise.all([
+  const [{ data: group }, { data: members }, { data: deadlines }] = await Promise.all([
     supabase.from('groups').select('*').eq('id', groupId).single(),
-    supabase.from('group_members').select('role, payment_status, user_id, profiles:user_id(display_name, email)').eq('group_id', groupId)
+    supabase.from('group_members').select('role, payment_status, user_id, profiles:user_id(display_name, email)').eq('group_id', groupId),
+    supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
 
   const isAdmin = members?.some(m => m.user_id === user.id && m.role === 'admin')
@@ -67,6 +69,9 @@ export default async function GroupAdminPage({
           </div>
           <DeleteGroupButton groupId={groupId} />
         </div>
+
+        {/* Middle: Deadlines */}
+        <DeadlineManagement groupId={groupId} initialDeadlines={deadlines || []} />
 
         {/* Bottom: Members & Payments */}
         <div className="space-y-6">
