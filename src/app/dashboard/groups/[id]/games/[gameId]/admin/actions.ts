@@ -553,6 +553,10 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
     }
     
     revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+    
+    // Trigger calculation so knockout points are updated if new teams were identified
+    await calculateScores(groupId, gameId)
+
     return { success: true, message: `Matcherna och TV-kanalerna har synkats!` }
   } catch (err: any) {
     console.error('Sync error:', err)
