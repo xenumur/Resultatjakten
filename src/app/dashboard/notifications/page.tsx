@@ -49,7 +49,7 @@ export default async function NotificationsPage() {
                   </h3>
                 </div>
                 <div className="text-xs font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-950 px-3 py-1.5 rounded-full border border-zinc-100 dark:border-zinc-800">
-                  Från: {notif.profiles?.display_name || 'Admin'}
+                  Från: Admin
                 </div>
               </div>
               
