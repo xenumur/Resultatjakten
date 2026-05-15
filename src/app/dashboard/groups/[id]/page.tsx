@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown, Calendar } from 'lucide-react'
+import { DeadlineCountdown } from '@/components/DeadlineCountdown'
+
 
 export default async function GroupDetailPage({
   params,
@@ -352,23 +354,26 @@ export default async function GroupDetailPage({
             <div className="space-y-5">
               {deadlines.map(d => (
                 <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
-                  <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight">{d.title}</span>
-                        <div className="text-right shrink-0">
-                          <div className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
-                            {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
-                              day: 'numeric', 
-                              month: 'short',
-                              timeZone: 'Europe/Stockholm'
-                            })}
-                          </div>
-                          <div className="text-[11px] font-bold text-zinc-400">
-                            kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
-                              hour: '2-digit', 
-                              minute: '2-digit',
-                              timeZone: 'Europe/Stockholm'
-                            })}
-                          </div>
-                        </div>
+                  <div className="flex flex-col gap-1.5 min-w-0">
+                    <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">{d.title}</span>
+                    <DeadlineCountdown date={d.deadline_at} />
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                      {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
+                        day: 'numeric', 
+                        month: 'short',
+                        timeZone: 'Europe/Stockholm'
+                      })}
+                    </div>
+                    <div className="text-[10px] font-bold text-zinc-400/60 uppercase tracking-widest">
+                      kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        timeZone: 'Europe/Stockholm'
+                      })}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
