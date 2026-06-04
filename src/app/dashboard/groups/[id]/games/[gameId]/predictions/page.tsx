@@ -8,6 +8,7 @@ import { PredictionsForm } from './PredictionsForm'
 import { countryToFlag } from '@/lib/utils/flags'
 import { TabBar } from '@/components/TabBar'
 import { SubmitButton } from '@/components/ui/SubmitButton'
+import { compareStages } from '@/lib/utils/stages'
 
 const TIMEZONE = 'Europe/Stockholm'
 
@@ -104,7 +105,9 @@ export default async function PredictionsPage({
           </div>
         ) : (
           <div className="space-y-10">
-            {Object.entries(matchesByGroup).map(([groupName, groupMatches]: [string, any]) => (
+            {Object.entries(matchesByGroup)
+              .sort(([groupA], [groupB]) => compareStages(groupA, groupB))
+              .map(([groupName, groupMatches]: [string, any]) => (
               <section key={groupName} className="space-y-4">
                 <div className="flex items-center gap-3 px-1">
                   <h2 className="font-black text-xl text-zinc-900 dark:text-white uppercase tracking-tight">{groupName}</h2>

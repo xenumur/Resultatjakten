@@ -4,6 +4,7 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { countryToFlag } from '@/lib/utils/flags'
 import { useState } from 'react'
 import { Clock, CheckCircle2, Flame } from 'lucide-react'
+import { compareStages } from '@/lib/utils/stages'
 
 const TIMEZONE = 'Europe/Stockholm'
 
@@ -199,7 +200,9 @@ export function MatchTabs({ matches, predictionMap }: MatchTabsProps) {
         </div>
       ) : (
         <div className="space-y-8">
-          {Object.entries(activeGroups).map(([groupName, groupMatches]) => (
+          {Object.entries(activeGroups)
+            .sort(([groupA], [groupB]) => compareStages(groupA, groupB))
+            .map(([groupName, groupMatches]) => (
             <GroupSection
               key={groupName}
               groupName={groupName}

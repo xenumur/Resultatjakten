@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Lock, Unlock, Zap } from 'lucide-react'
 import { toggleStageLock, lockAllGroupStages } from './actions'
+import { compareStages } from '@/lib/utils/stages'
 
 export default async function LocksAdminPage({
   params,
@@ -54,32 +55,8 @@ export default async function LocksAdminPage({
     });
   }
 
-  // Sortera listan logiskt istället för alfabetiskt
-  // Grupper först (Group A-L), sedan Matchday 1-17 (gruppspelsomgångar utan group_name),
-  // därefter slutspelsfaserna i rätt ordning.
-  const stageOrder = [
-    'Group A', 'Group B', 'Group C', 'Group D', 'Group E', 'Group F',
-    'Group G', 'Group H', 'Group I', 'Group J', 'Group K', 'Group L',
-    'Matchday 1', 'Matchday 2', 'Matchday 3', 'Matchday 4', 'Matchday 5',
-    'Matchday 6', 'Matchday 7', 'Matchday 8', 'Matchday 9', 'Matchday 10',
-    'Matchday 11', 'Matchday 12', 'Matchday 13', 'Matchday 14', 'Matchday 15',
-    'Matchday 16', 'Matchday 17',
-    'Round of 32',
-    'Round of 16',
-    'Quarter-final',
-    'Semi-final',
-    'Match for third place',
-    'Final',
-  ];
-
-  const uniqueStages = Array.from(uniqueStagesSet).sort((a, b) => {
-    const indexA = stageOrder.indexOf(a);
-    const indexB = stageOrder.indexOf(b);
-    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-    if (indexA !== -1) return -1;
-    if (indexB !== -1) return 1;
-    return a.localeCompare(b);
-  });
+  // Sortera listan logiskt
+  const uniqueStages = Array.from(uniqueStagesSet).sort(compareStages);
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
