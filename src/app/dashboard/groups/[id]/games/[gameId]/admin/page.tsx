@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatInTimeZone } from 'date-fns-tz'
 import { updateMatchResult, calculateScores, syncMatchesWithProvider, acceptApiResult, deleteMatch } from './actions'
-import { AlertTriangle, RefreshCw, Check, ArrowLeft, Lock, ArrowRight } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Check, ArrowLeft, Lock, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { DeleteMatchButton } from './DeleteMatchButton'
 import { AdminActionButton } from './AdminActionButtons'
 import { BulkMatchSaveButton } from './BulkMatchSaveButton'
@@ -86,6 +86,10 @@ export default async function GameAdminPage({
 
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <BulkMatchSaveButton groupId={groupId} gameId={gameId} />
+          <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin/predictions`} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-[10px] sm:text-xs whitespace-nowrap leading-none border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600">
+            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+            Tippningar
+          </Link>
           <Link href={`/dashboard/groups/${groupId}/games/${gameId}/admin/locks`} className="flex items-center justify-center gap-2 px-3 sm:px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl sm:rounded-2xl font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition shadow-sm text-[10px] sm:text-xs whitespace-nowrap leading-none border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600">
             <Lock className="w-3.5 h-3.5 shrink-0" />
             Låsningar
