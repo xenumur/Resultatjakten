@@ -56,6 +56,21 @@ interface KnockoutPrediction {
   team_name: string
 }
 
+interface BonusQuestion {
+  id: string
+  question_text: string
+  description: string | null
+  max_points: number
+  status: string
+}
+
+interface BonusAnswer {
+  user_id: string
+  question_id: string
+  answer_text: string
+  points_awarded: number | null
+}
+
 interface PredictionsOverviewClientProps {
   groupId: string
   gameId: string
@@ -64,6 +79,8 @@ interface PredictionsOverviewClientProps {
   matches: Match[]
   predictions: Prediction[]
   knockoutPredictions: KnockoutPrediction[]
+  bonusQuestions: BonusQuestion[]
+  bonusAnswers: BonusAnswer[]
 }
 
 const CATEGORIES = [
@@ -111,9 +128,11 @@ export function PredictionsOverviewClient({
   members,
   matches,
   predictions,
-  knockoutPredictions
+  knockoutPredictions,
+  bonusQuestions,
+  bonusAnswers
 }: PredictionsOverviewClientProps) {
-  const [activeTabType, setActiveTabType] = useState<'matches' | 'knockout'>('matches')
+  const [activeTabType, setActiveTabType] = useState<'matches' | 'knockout' | 'bonus'>('matches')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'incomplete'>('all')
   const [viewMode, setViewMode] = useState<'matrix' | 'detailed'>('matrix')
@@ -210,9 +229,27 @@ export function PredictionsOverviewClient({
       totalKoRequired += requiredCount
     })
 
+    // Bonus questions stats
+    const bonusStats: { total: number; predicted: number; missing: BonusQuestion[]; answers: Record<string, BonusAnswer> } = {
+      total: bonusQuestions.length,
+      predicted: 0,
+      missing: [],
+      answers: {}
+    }
+    bonusQuestions.forEach(q => {
+      const ans = bonusAnswers.find(a => a.user_id === m.user_id && a.question_id === q.id)
+      if (ans) {
+        bonusStats.predicted++
+        bonusStats.answers[q.id] = ans
+      } else {
+        bonusStats.missing.push(q)
+      }
+    })
+
     const isMatchesCompleted = totalMatchesCount > 0 && totalPredicted === totalMatchesCount
     const isKoCompleted = totalKoPredicted === totalKoRequired
-    const isFullyCompleted = isMatchesCompleted && isKoCompleted
+    const isBonusCompleted = bonusStats.total > 0 && bonusStats.predicted === bonusStats.total
+    const isFullyCompleted = isMatchesCompleted && isKoCompleted && (bonusStats.total === 0 || isBonusCompleted)
 
     return {
       user_id: m.user_id,
@@ -221,20 +258,24 @@ export function PredictionsOverviewClient({
       role: m.role,
       stageStats,
       koStats,
+      bonusStats,
       totalPredicted,
       totalMatchesCount,
       totalKoPredicted,
       totalKoRequired,
       isFullyCompleted,
       isMatchesCompleted,
-      isKoCompleted
+      isKoCompleted,
+      isBonusCompleted
     }
   })
 
   // 4. Calculate summaries dynamically based on active tab type
   const totalCount = memberStats.length
   const completedCount = memberStats.filter(m => 
-    activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
+    activeTabType === 'matches' ? m.isMatchesCompleted : 
+    activeTabType === 'knockout' ? m.isKoCompleted : 
+    m.isBonusCompleted
   ).length
   const incompleteCount = totalCount - completedCount
 
@@ -245,7 +286,9 @@ export function PredictionsOverviewClient({
     
     if (!matchesSearch) return false
 
-    const isCurrentCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
+    const isCurrentCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : 
+                               activeTabType === 'knockout' ? m.isKoCompleted : 
+                               m.isBonusCompleted
     if (statusFilter === 'completed') return isCurrentCompleted
     if (statusFilter === 'incomplete') return !isCurrentCompleted
     return true
@@ -272,7 +315,7 @@ export function PredictionsOverviewClient({
       })
 
       reminder = `Hej ${m.displayName}! ⚽️\nKom ihåg att lägga dina matchtips i spelet "${gameName}" på Skorio! Du saknar tips för följande matcher:\n\n${missingMatchesDetails.join('\n')}\n\nIn och tippa innan matchstart! ⚽️`
-    } else {
+    } else if (activeTabType === 'knockout') {
       const missingKoDetails: string[] = []
       KNOCKOUT_ROUNDS.forEach(r => {
         const stats = m.koStats[r.key]
@@ -282,6 +325,13 @@ export function PredictionsOverviewClient({
       })
 
       reminder = `Hej ${m.displayName}! 🏆\nKom ihåg att göra dina slutspelsval i spelet "${gameName}" på Skorio! Du har inte valt alla lag till följande slutspelsrundor:\n\n${missingKoDetails.join('\n')}\n\nIn och välj dina slutspelslag innan deadline! 🏆`
+    } else {
+      const missingBonusDetails: string[] = []
+      m.bonusStats.missing.forEach(q => {
+        missingBonusDetails.push(`- ${q.question_text} (Max ${q.max_points}p)`)
+      })
+
+      reminder = `Hej ${m.displayName}! 💡\nKom ihåg att svara på bonusfrågorna i spelet "${gameName}" på Skorio! Du saknar svar på följande frågor:\n\n${missingBonusDetails.join('\n')}\n\nIn och svara nu för extra poäng! 💡`
     }
 
     navigator.clipboard.writeText(reminder)
@@ -312,7 +362,7 @@ export function PredictionsOverviewClient({
       </div>
 
       {/* Primary Tab Switcher */}
-      <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl w-fit mb-8 border border-zinc-200/20 dark:border-zinc-700">
+      <div className="flex flex-wrap gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl w-fit mb-8 border border-zinc-200/20 dark:border-zinc-700">
         <button
           onClick={() => {
             setActiveTabType('matches')
@@ -338,6 +388,19 @@ export function PredictionsOverviewClient({
           }`}
         >
           🏆 Slutspelstips (Lag)
+        </button>
+        <button
+          onClick={() => {
+            setActiveTabType('bonus')
+            setExpandedMembers({}) // Reset expand states
+          }}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+            activeTabType === 'bonus'
+              ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
+              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+          }`}
+        >
+          💡 Bonusfrågor (Extra)
         </button>
       </div>
 
@@ -457,9 +520,15 @@ export function PredictionsOverviewClient({
                   activeCategories.map(cat => (
                     <th key={cat} className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">{cat}</th>
                   ))
-                ) : (
+                ) : activeTabType === 'knockout' ? (
                   KNOCKOUT_ROUNDS.map(r => (
                     <th key={r.key} className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">{r.label}</th>
+                  ))
+                ) : (
+                  bonusQuestions.map(q => (
+                    <th key={q.id} className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center max-w-[120px] truncate" title={q.question_text}>
+                      {q.question_text.length > 15 ? q.question_text.substring(0, 15) + '...' : q.question_text}
+                    </th>
                   ))
                 )}
                 
@@ -468,7 +537,9 @@ export function PredictionsOverviewClient({
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {filteredMembers.map(m => {
-                const isTabCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
+                const isTabCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : 
+                                       activeTabType === 'knockout' ? m.isKoCompleted : 
+                                       m.isBonusCompleted
 
                 return (
                   <tr key={m.user_id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-colors">
@@ -517,7 +588,7 @@ export function PredictionsOverviewClient({
                           </td>
                         )
                       })
-                    ) : (
+                    ) : activeTabType === 'knockout' ? (
                       KNOCKOUT_ROUNDS.map(r => {
                         const stats = m.koStats[r.key] || { total: 0, predicted: 0 }
                         const isAll = stats.predicted === stats.total
@@ -536,6 +607,23 @@ export function PredictionsOverviewClient({
                             ) : (
                               <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-[#451a03] border border-amber-200 dark:border-[#78350f] text-amber-700 dark:text-[#fbbf24] text-[11px] font-bold rounded-full leading-none">
                                 {stats.predicted}/{stats.total}
+                              </span>
+                            )}
+                          </td>
+                        )
+                      })
+                    ) : (
+                      bonusQuestions.map(q => {
+                        const ans = m.bonusStats.answers[q.id]
+                        return (
+                          <td key={q.id} className="p-4 text-center">
+                            {ans ? (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-[#022c22] border border-emerald-200 dark:border-[#064e3b] text-emerald-700 dark:text-[#34d399] text-[11px] font-bold rounded-full leading-none">
+                                Svarat
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-[#450a0a] border border-red-200 dark:border-[#7f1d1d] text-red-700 dark:text-[#f87171] text-[11px] font-bold rounded-full leading-none">
+                                Saknas
                               </span>
                             )}
                           </td>
@@ -572,11 +660,19 @@ export function PredictionsOverviewClient({
             // Variables based on active tab type
             const totalMissingCount = activeTabType === 'matches'
               ? activeCategories.reduce((sum, cat) => sum + (m.stageStats[cat]?.missing?.length || 0), 0)
-              : KNOCKOUT_ROUNDS.reduce((sum, r) => sum + (m.koStats[r.key]?.missingCount || 0), 0)
+              : activeTabType === 'knockout'
+              ? KNOCKOUT_ROUNDS.reduce((sum, r) => sum + (m.koStats[r.key]?.missingCount || 0), 0)
+              : m.bonusStats.missing.length
 
-            const totalPredictedCount = activeTabType === 'matches' ? m.totalPredicted : m.totalKoPredicted
-            const totalRequiredCount = activeTabType === 'matches' ? m.totalMatchesCount : m.totalKoRequired
-            const isTabCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
+            const totalPredictedCount = activeTabType === 'matches' ? m.totalPredicted : 
+                                        activeTabType === 'knockout' ? m.totalKoPredicted : 
+                                        m.bonusStats.predicted
+            const totalRequiredCount = activeTabType === 'matches' ? m.totalMatchesCount : 
+                                       activeTabType === 'knockout' ? m.totalKoRequired : 
+                                       m.bonusStats.total
+            const isTabCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : 
+                                   activeTabType === 'knockout' ? m.isKoCompleted : 
+                                   m.isBonusCompleted
 
             return (
               <div 
@@ -607,7 +703,9 @@ export function PredictionsOverviewClient({
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-[#451a03] border border-amber-100 dark:border-[#78350f] text-amber-700 dark:text-[#fbbf24] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                            {activeTabType === 'matches' ? `Saknar ${totalMissingCount} tips` : `Saknar ${totalMissingCount} lag`}
+                            {activeTabType === 'matches' ? `Saknar ${totalMissingCount} tips` : 
+                             activeTabType === 'knockout' ? `Saknar ${totalMissingCount} lag` : 
+                             `Saknar ${totalMissingCount} svar`}
                           </span>
                         )}
                       </div>
@@ -741,7 +839,7 @@ export function PredictionsOverviewClient({
                             })}
                           </div>
                         </div>
-                      ) : (
+                      ) : activeTabType === 'knockout' ? (
                         /* Slutspelstips Cards Grid */
                         <div>
                           <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-4 flex items-center gap-2">
@@ -789,6 +887,59 @@ export function PredictionsOverviewClient({
                                         </div>
                                       </div>
                                     )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        /* Bonusfrågor Cards Grid */
+                        <div>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-4 flex items-center gap-2">
+                            <span>💡 Bonusfrågor (Besvarade frågor)</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-full">
+                              {m.bonusStats.predicted}/{m.bonusStats.total} besvarade
+                            </span>
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {bonusQuestions.map(q => {
+                              const ans = m.bonusStats.answers[q.id]
+                              return (
+                                <div key={q.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                                  <div className="flex items-center justify-between mb-3 gap-2">
+                                    <span className="font-bold text-sm text-zinc-950 dark:text-white truncate" title={q.question_text}>{q.question_text}</span>
+                                    {ans ? (
+                                      <span className="text-[10px] font-bold text-emerald-700 dark:text-[#34d399] uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-[#022c22] px-2 py-0.5 rounded-full border border-emerald-100 dark:border-[#064e3b]">
+                                        Svarat
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] font-bold text-amber-700 dark:text-[#fbbf24] uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-[#451a03] px-2 py-0.5 rounded-full border border-amber-100 dark:border-[#78350f]">
+                                        Saknas
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="space-y-3">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">Max {q.max_points} poäng</span>
+                                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded uppercase tracking-wider">{q.status}</span>
+                                    </div>
+
+                                    <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2.5">
+                                      {ans ? (
+                                        <div>
+                                          <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block mb-1">Svar:</span>
+                                          <p className="text-xs text-zinc-800 dark:text-zinc-200 italic font-semibold line-clamp-3">"{ans.answer_text}"</p>
+                                          {ans.points_awarded !== null && (
+                                            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mt-2 block">
+                                              Rättad: {ans.points_awarded}p
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <p className="text-xs text-zinc-400 italic">Inget svar inskickat.</p>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               )

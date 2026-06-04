@@ -72,6 +72,20 @@ export default async function AdminPredictionsPage({
     .select('user_id, round, team_name')
     .eq('game_id', gameId)
 
+  // Hämta ALLA bonusfrågor för denna grupp (som ej är utkast)
+  const { data: bonusQuestions } = await supabase
+    .from('bonus_questions')
+    .select('id, question_text, description, max_points, status')
+    .eq('group_id', groupId)
+    .not('status', 'eq', 'draft')
+    .order('created_at', { ascending: true })
+
+  // Hämta ALLA svar på bonusfrågor i denna grupp
+  const { data: bonusAnswers } = await supabase
+    .from('bonus_answers')
+    .select('user_id, question_id, answer_text, points_awarded, bonus_questions!inner(group_id)')
+    .eq('bonus_questions.group_id', groupId)
+
   return (
     <PredictionsOverviewClient
       groupId={groupId}
@@ -81,6 +95,13 @@ export default async function AdminPredictionsPage({
       matches={matches || []}
       predictions={predictions || []}
       knockoutPredictions={knockoutPredictions || []}
+      bonusQuestions={bonusQuestions || []}
+      bonusAnswers={(bonusAnswers || []).map((ba: any) => ({
+        user_id: ba.user_id,
+        question_id: ba.question_id,
+        answer_text: ba.answer_text,
+        points_awarded: ba.points_awarded
+      }))}
     />
   )
 }
