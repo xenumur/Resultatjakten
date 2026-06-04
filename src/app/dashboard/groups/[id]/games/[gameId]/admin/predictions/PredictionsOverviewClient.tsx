@@ -113,6 +113,7 @@ export function PredictionsOverviewClient({
   predictions,
   knockoutPredictions
 }: PredictionsOverviewClientProps) {
+  const [activeTabType, setActiveTabType] = useState<'matches' | 'knockout'>('matches')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'incomplete'>('all')
   const [viewMode, setViewMode] = useState<'matrix' | 'detailed'>('matrix')
@@ -230,9 +231,11 @@ export function PredictionsOverviewClient({
     }
   })
 
-  // 4. Calculate summaries
+  // 4. Calculate summaries dynamically based on active tab type
   const totalCount = memberStats.length
-  const completedCount = memberStats.filter(m => m.isFullyCompleted).length
+  const completedCount = memberStats.filter(m => 
+    activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
+  ).length
   const incompleteCount = totalCount - completedCount
 
   // 5. Filter and Search members
@@ -242,8 +245,9 @@ export function PredictionsOverviewClient({
     
     if (!matchesSearch) return false
 
-    if (statusFilter === 'completed') return m.isFullyCompleted
-    if (statusFilter === 'incomplete') return !m.isFullyCompleted
+    const isCurrentCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
+    if (statusFilter === 'completed') return isCurrentCompleted
+    if (statusFilter === 'incomplete') return !isCurrentCompleted
     return true
   })
 
@@ -255,33 +259,30 @@ export function PredictionsOverviewClient({
   }
 
   const copyReminderText = (m: typeof memberStats[0]) => {
-    const missingMatchesDetails: string[] = []
-    activeCategories.forEach(cat => {
-      const { missing } = m.stageStats[cat]
-      missing.forEach(match => {
-        const formattedTime = formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')
-        missingMatchesDetails.push(`- ${match.home_team} vs ${match.away_team} (${formattedTime} - ${cat})`)
+    let reminder = ''
+
+    if (activeTabType === 'matches') {
+      const missingMatchesDetails: string[] = []
+      activeCategories.forEach(cat => {
+        const { missing } = m.stageStats[cat]
+        missing.forEach(match => {
+          const formattedTime = formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')
+          missingMatchesDetails.push(`- ${match.home_team} vs ${match.away_team} (${formattedTime} - ${cat})`)
+        })
       })
-    })
 
-    const missingKoDetails: string[] = []
-    KNOCKOUT_ROUNDS.forEach(r => {
-      const stats = m.koStats[r.key]
-      if (stats.missingCount > 0) {
-        missingKoDetails.push(`- ${r.label}: Saknar ${stats.missingCount} lag (valt ${stats.predicted}/${stats.total})`)
-      }
-    })
+      reminder = `Hej ${m.displayName}! ⚽️\nKom ihåg att lägga dina matchtips i spelet "${gameName}" på Skorio! Du saknar tips för följande matcher:\n\n${missingMatchesDetails.join('\n')}\n\nIn och tippa innan matchstart! ⚽️`
+    } else {
+      const missingKoDetails: string[] = []
+      KNOCKOUT_ROUNDS.forEach(r => {
+        const stats = m.koStats[r.key]
+        if (stats.missingCount > 0) {
+          missingKoDetails.push(`- ${r.label}: Saknar ${stats.missingCount} lag (valt ${stats.predicted}/${stats.total})`)
+        }
+      })
 
-    let reminder = `Hej ${m.displayName}! 🏆\nKom ihåg att lägga dina tips i spelet "${gameName}" på Skorio!\n`
-    
-    if (missingMatchesDetails.length > 0) {
-      reminder += `\nDu saknar matchtips för följande matcher:\n${missingMatchesDetails.join('\n')}\n`
+      reminder = `Hej ${m.displayName}! 🏆\nKom ihåg att göra dina slutspelsval i spelet "${gameName}" på Skorio! Du har inte valt alla lag till följande slutspelsrundor:\n\n${missingKoDetails.join('\n')}\n\nIn och välj dina slutspelslag innan deadline! 🏆`
     }
-    if (missingKoDetails.length > 0) {
-      reminder += `\nDu saknar val av lag i slutspelstipset:\n${missingKoDetails.join('\n')}\n`
-    }
-
-    reminder += `\nIn och tippa innan deadlines! ⚽️`
 
     navigator.clipboard.writeText(reminder)
     setCopiedMemberId(m.user_id)
@@ -301,13 +302,43 @@ export function PredictionsOverviewClient({
       </Link>
 
       {/* Header Title */}
-      <div className="mb-10">
+      <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white tracking-tight mb-2">
           Tippningsöversikt
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-lg">
           Följ upp vilka spelare i gruppen som har tippat matcherna samt valt slutspelslag inför spelstart.
         </p>
+      </div>
+
+      {/* Primary Tab Switcher */}
+      <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded-2xl w-fit mb-8 border border-zinc-200/20 dark:border-zinc-800/40">
+        <button
+          onClick={() => {
+            setActiveTabType('matches')
+            setExpandedMembers({}) // Reset expand states to avoid UI shifts
+          }}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+            activeTabType === 'matches'
+              ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
+              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+          }`}
+        >
+          ⚽️ Matchtips (Resultat)
+        </button>
+        <button
+          onClick={() => {
+            setActiveTabType('knockout')
+            setExpandedMembers({}) // Reset expand states
+          }}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+            activeTabType === 'knockout'
+              ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
+              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
+          }`}
+        >
+          🏆 Slutspelstips (Lag)
+        </button>
       </div>
 
       {/* Summary Cards */}
@@ -327,7 +358,7 @@ export function PredictionsOverviewClient({
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Helt klara</p>
+            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Klara</p>
             <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
               {completedCount} <span className="text-sm font-bold text-zinc-400">({totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0}%)</span>
             </p>
@@ -416,119 +447,118 @@ export function PredictionsOverviewClient({
       ) : viewMode === 'matrix' ? (
         /* MATRIX VIEW */
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm overflow-x-auto">
-          <table className="w-full border-collapse text-left min-w-[1200px]">
+          <table className="w-full border-collapse text-left min-w-[700px]">
             <thead>
-              <tr className="bg-zinc-100 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
-                <th rowSpan={2} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 align-middle">Spelare</th>
-                <th colSpan={activeCategories.length} className="p-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300 text-center border-r border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/10">
-                  Matchtips (Resultat)
-                </th>
-                <th colSpan={KNOCKOUT_ROUNDS.length} className="p-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300 text-center bg-zinc-50/50 dark:bg-zinc-900/10">
-                  Slutspelstips (Kvalificerade lag)
-                </th>
-                <th rowSpan={2} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center w-28 align-middle">Status</th>
-              </tr>
-              <tr className="bg-zinc-50 dark:bg-zinc-900/30 border-b border-zinc-200 dark:border-zinc-800">
-                {activeCategories.map((cat, i) => (
-                  <th key={cat} className={`p-3 text-[9px] font-black uppercase tracking-widest text-zinc-400 text-center ${i === activeCategories.length - 1 ? 'border-r border-zinc-200 dark:border-zinc-700' : ''}`}>
-                    {cat}
-                  </th>
-                ))}
-                {KNOCKOUT_ROUNDS.map(r => (
-                  <th key={r.key} className="p-3 text-[9px] font-black uppercase tracking-widest text-zinc-400 text-center">
-                    {r.label}
-                  </th>
-                ))}
+              <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
+                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Spelare</th>
+                
+                {/* Render categories based on active tab type */}
+                {activeTabType === 'matches' ? (
+                  activeCategories.map(cat => (
+                    <th key={cat} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">{cat}</th>
+                  ))
+                ) : (
+                  KNOCKOUT_ROUNDS.map(r => (
+                    <th key={r.key} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">{r.label}</th>
+                  ))
+                )}
+                
+                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center w-28">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {filteredMembers.map(m => (
-                <tr key={m.user_id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-colors">
-                  {/* Spelare */}
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-gradient-to-tr from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-sm">
-                        {m.displayName.substring(0, 2).toUpperCase()}
+              {filteredMembers.map(m => {
+                const isTabCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
+
+                return (
+                  <tr key={m.user_id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-colors">
+                    {/* Spelare */}
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-gradient-to-tr from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-sm">
+                          {m.displayName.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">{m.displayName}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">{m.displayName}</p>
-                      </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Match categories */}
-                  {activeCategories.map((cat, i) => {
-                    const stats = m.stageStats[cat] || { total: 0, predicted: 0 }
-                    const isAll = stats.predicted === stats.total
-                    const isNone = stats.predicted === 0
+                    {/* Conditional rendering of prediction status pills based on active tab */}
+                    {activeTabType === 'matches' ? (
+                      activeCategories.map(cat => {
+                        const stats = m.stageStats[cat] || { total: 0, predicted: 0 }
+                        const isAll = stats.predicted === stats.total
+                        const isNone = stats.predicted === 0
 
-                    if (stats.total === 0) {
-                      return (
-                        <td key={cat} className={`p-3 text-center ${i === activeCategories.length - 1 ? 'border-r border-zinc-200 dark:border-zinc-700' : ''}`}>
-                          <span className="text-xs text-zinc-300 dark:text-zinc-700 font-bold">-</span>
-                        </td>
-                      )
-                    }
+                        if (stats.total === 0) {
+                          return (
+                            <td key={cat} className="p-4 text-center">
+                              <span className="text-xs text-zinc-300 dark:text-zinc-700 font-bold">-</span>
+                            </td>
+                          )
+                        }
 
-                    return (
-                      <td key={cat} className={`p-3 text-center ${i === activeCategories.length - 1 ? 'border-r border-zinc-200 dark:border-zinc-700' : ''}`}>
-                        {isAll ? (
-                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
-                            {stats.predicted}/{stats.total}
-                          </span>
-                        ) : isNone ? (
-                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full leading-none">
-                            0/{stats.total}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full leading-none">
-                            {stats.predicted}/{stats.total}
-                          </span>
-                        )}
-                      </td>
-                    )
-                  })}
-
-                  {/* Knockout categories */}
-                  {KNOCKOUT_ROUNDS.map(r => {
-                    const stats = m.koStats[r.key] || { total: 0, predicted: 0 }
-                    const isAll = stats.predicted === stats.total
-                    const isNone = stats.predicted === 0
-
-                    return (
-                      <td key={r.key} className="p-3 text-center">
-                        {isAll ? (
-                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
-                            {stats.predicted}/{stats.total}
-                          </span>
-                        ) : isNone ? (
-                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full leading-none">
-                            0/{stats.total}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full leading-none">
-                            {stats.predicted}/{stats.total}
-                          </span>
-                        )}
-                      </td>
-                    )
-                  })}
-
-                  {/* Total Status */}
-                  <td className="p-4 text-center">
-                    {m.isFullyCompleted ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm shadow-emerald-500/20">
-                        <Check className="w-3 h-3" />
-                        Klar
-                      </span>
+                        return (
+                          <td key={cat} className="p-4 text-center">
+                            {isAll ? (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
+                                {stats.predicted}/{stats.total}
+                              </span>
+                            ) : isNone ? (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full leading-none">
+                                0/{stats.total}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full leading-none">
+                                {stats.predicted}/{stats.total}
+                              </span>
+                            )}
+                          </td>
+                        )
+                      })
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm shadow-amber-500/20">
-                        Saknas
-                      </span>
+                      KNOCKOUT_ROUNDS.map(r => {
+                        const stats = m.koStats[r.key] || { total: 0, predicted: 0 }
+                        const isAll = stats.predicted === stats.total
+                        const isNone = stats.predicted === 0
+
+                        return (
+                          <td key={r.key} className="p-4 text-center">
+                            {isAll ? (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
+                                {stats.predicted}/{stats.total}
+                              </span>
+                            ) : isNone ? (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full leading-none">
+                                0/{stats.total}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full leading-none">
+                                {stats.predicted}/{stats.total}
+                              </span>
+                            )}
+                          </td>
+                        )
+                      })
                     )}
-                  </td>
-                </tr>
-              ))}
+
+                    {/* Status */}
+                    <td className="p-4 text-center">
+                      {isTabCompleted ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm shadow-emerald-500/20">
+                          <Check className="w-3 h-3" />
+                          Klar
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm shadow-amber-500/20">
+                          Saknas
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -539,23 +569,20 @@ export function PredictionsOverviewClient({
             const isExpanded = !!expandedMembers[m.user_id]
             const isCopied = copiedMemberId === m.user_id
 
-            // Calculate total missing match count
-            let totalMissingCount = 0
-            activeCategories.forEach(cat => {
-              totalMissingCount += m.stageStats[cat]?.missing?.length || 0
-            })
+            // Variables based on active tab type
+            const totalMissingCount = activeTabType === 'matches'
+              ? activeCategories.reduce((sum, cat) => sum + (m.stageStats[cat]?.missing?.length || 0), 0)
+              : KNOCKOUT_ROUNDS.reduce((sum, r) => sum + (m.koStats[r.key]?.missingCount || 0), 0)
 
-            // Calculate total missing knockout team picks count
-            let totalMissingKoCount = 0
-            KNOCKOUT_ROUNDS.forEach(r => {
-              totalMissingKoCount += m.koStats[r.key]?.missingCount || 0
-            })
+            const totalPredictedCount = activeTabType === 'matches' ? m.totalPredicted : m.totalKoPredicted
+            const totalRequiredCount = activeTabType === 'matches' ? m.totalMatchesCount : m.totalKoRequired
+            const isTabCompleted = activeTabType === 'matches' ? m.isMatchesCompleted : m.isKoCompleted
 
             return (
               <div 
                 key={m.user_id} 
                 className={`bg-white dark:bg-zinc-900 border rounded-3xl shadow-sm transition-all overflow-hidden ${
-                  m.isFullyCompleted 
+                  isTabCompleted 
                     ? 'border-zinc-200 dark:border-zinc-800' 
                     : 'border-amber-200 dark:border-amber-900/40 hover:border-amber-300'
                 }`}
@@ -574,13 +601,13 @@ export function PredictionsOverviewClient({
                         <h3 className="font-black text-base text-zinc-900 dark:text-white leading-tight">
                           {m.displayName}
                         </h3>
-                        {m.isFullyCompleted ? (
+                        {isTabCompleted ? (
                           <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
                             <Check className="w-2.5 h-2.5" /> Klar
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
-                            Saknar {totalMissingCount + totalMissingKoCount} tips
+                            {activeTabType === 'matches' ? `Saknar ${totalMissingCount} tips` : `Saknar ${totalMissingCount} lag`}
                           </span>
                         )}
                       </div>
@@ -588,22 +615,18 @@ export function PredictionsOverviewClient({
                   </div>
 
                   <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                    {/* Progress Bar (Overall percentage) */}
+                    {/* Progress Bar */}
                     <div className="flex items-center gap-3 flex-1 sm:flex-initial min-w-[150px]">
                       <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full flex-1 overflow-hidden">
                         <div 
                           className={`h-full rounded-full transition-all ${
-                            m.isFullyCompleted ? 'bg-emerald-500' : 'bg-indigo-600'
+                            isTabCompleted ? 'bg-emerald-500' : 'bg-indigo-600'
                           }`}
-                          style={{ 
-                            width: `${(m.totalMatchesCount + m.totalKoRequired) > 0 
-                              ? ((m.totalPredicted + m.totalKoPredicted) / (m.totalMatchesCount + m.totalKoRequired)) * 100 
-                              : 0}%` 
-                          }}
+                          style={{ width: `${totalRequiredCount > 0 ? (totalPredictedCount / totalRequiredCount) * 100 : 0}%` }}
                         />
                       </div>
                       <span className="text-xs font-black text-zinc-500 shrink-0">
-                        {m.totalPredicted + m.totalKoPredicted}/{m.totalMatchesCount + m.totalKoRequired}
+                        {totalPredictedCount}/{totalRequiredCount}
                       </span>
                     </div>
 
@@ -619,13 +642,17 @@ export function PredictionsOverviewClient({
                   <div className="px-5 pb-6 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
                     <div className="pt-6 space-y-6">
                       {/* Remind Button */}
-                      {!m.isFullyCompleted && (
+                      {!isTabCompleted && (
                         <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                           <div className="flex items-start gap-2.5">
                             <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                             <div>
                               <h4 className="font-bold text-sm text-amber-800 dark:text-amber-300">Medlemmen saknar tippningar</h4>
-                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Kopiera en påminnelsetext med de saknade matcherna och slutspelsvalen för att skicka till spelaren.</p>
+                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                                {activeTabType === 'matches' 
+                                  ? 'Kopiera en påminnelsetext med de saknade matcherna.' 
+                                  : 'Kopiera en påminnelsetext med de saknade slutspelsvalen.'}
+                              </p>
                             </div>
                           </div>
                           <button
@@ -651,9 +678,9 @@ export function PredictionsOverviewClient({
                         </div>
                       )}
 
-                      {/* Split stage grids (Match vs Knockout) */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Matchtips Section */}
+                      {/* Render stage grids based on active tab type */}
+                      {activeTabType === 'matches' ? (
+                        /* Matchtips Cards Grid */
                         <div>
                           <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
                             <span>⚽️ Matchtips (Resultat)</span>
@@ -661,7 +688,7 @@ export function PredictionsOverviewClient({
                               {m.totalPredicted}/{m.totalMatchesCount} tippade
                             </span>
                           </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             {activeCategories.map(cat => {
                               const { total, predicted, missing } = m.stageStats[cat] || { total: 0, predicted: 0, missing: [] }
                               const isDone = predicted === total
@@ -714,8 +741,8 @@ export function PredictionsOverviewClient({
                             })}
                           </div>
                         </div>
-
-                        {/* Slutspelstips Section */}
+                      ) : (
+                        /* Slutspelstips Cards Grid */
                         <div>
                           <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
                             <span>🏆 Slutspelstips (Kvalificerade lag)</span>
@@ -723,7 +750,7 @@ export function PredictionsOverviewClient({
                               {m.totalKoPredicted}/{m.totalKoRequired} valda
                             </span>
                           </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             {KNOCKOUT_ROUNDS.map(r => {
                               const stats = m.koStats[r.key] || { total: 0, predicted: 0, missingCount: 0, picks: [] }
                               const isDone = stats.predicted === stats.total
@@ -768,7 +795,7 @@ export function PredictionsOverviewClient({
                             })}
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 )}
