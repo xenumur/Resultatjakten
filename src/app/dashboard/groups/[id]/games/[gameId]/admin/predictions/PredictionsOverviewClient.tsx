@@ -377,7 +377,6 @@ In och tippa innan matchstart! ⚽️`
                       </div>
                       <div>
                         <p className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">{m.displayName}</p>
-                        <p className="text-xs text-zinc-400 leading-none mt-1">{m.email}</p>
                       </div>
                     </div>
                   </td>
@@ -479,7 +478,6 @@ In och tippa innan matchstart! ⚽️`
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1">{m.email}</p>
                     </div>
                   </div>
 
