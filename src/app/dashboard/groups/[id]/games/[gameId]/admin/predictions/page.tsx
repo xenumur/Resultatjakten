@@ -66,6 +66,12 @@ export default async function AdminPredictionsPage({
     .select('user_id, match_id, predicted_home_score, predicted_away_score')
     .eq('game_id', gameId)
 
+  // Hämta ALLA slutspelstippningar för detta spel
+  const { data: knockoutPredictions } = await supabase
+    .from('knockout_predictions')
+    .select('user_id, round, team_name')
+    .eq('game_id', gameId)
+
   return (
     <PredictionsOverviewClient
       groupId={groupId}
@@ -74,6 +80,7 @@ export default async function AdminPredictionsPage({
       members={formattedMembers}
       matches={matches || []}
       predictions={predictions || []}
+      knockoutPredictions={knockoutPredictions || []}
     />
   )
 }

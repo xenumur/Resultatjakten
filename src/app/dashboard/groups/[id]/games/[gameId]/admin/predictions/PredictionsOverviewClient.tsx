@@ -18,6 +18,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { formatInTimeZone } from 'date-fns-tz'
+import { KNOCKOUT_ROUNDS } from '@/lib/scoring/knockout'
 
 const TIMEZONE = 'Europe/Stockholm'
 
@@ -49,6 +50,12 @@ interface Prediction {
   predicted_away_score: number
 }
 
+interface KnockoutPrediction {
+  user_id: string
+  round: string
+  team_name: string
+}
+
 interface PredictionsOverviewClientProps {
   groupId: string
   gameId: string
@@ -56,6 +63,7 @@ interface PredictionsOverviewClientProps {
   members: Member[]
   matches: Match[]
   predictions: Prediction[]
+  knockoutPredictions: KnockoutPrediction[]
 }
 
 const CATEGORIES = [
@@ -102,7 +110,8 @@ export function PredictionsOverviewClient({
   gameName,
   members,
   matches,
-  predictions
+  predictions,
+  knockoutPredictions
 }: PredictionsOverviewClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'incomplete'>('all')
@@ -133,11 +142,24 @@ export function PredictionsOverviewClient({
     predictions.map(p => `${p.user_id}_${p.match_id}`)
   )
 
+  // Group knockout predictions by user and round
+  const knockoutByUserAndRound: Record<string, Record<string, string[]>> = {}
+  knockoutPredictions.forEach(kp => {
+    if (!knockoutByUserAndRound[kp.user_id]) {
+      knockoutByUserAndRound[kp.user_id] = {}
+    }
+    if (!knockoutByUserAndRound[kp.user_id][kp.round]) {
+      knockoutByUserAndRound[kp.user_id][kp.round] = []
+    }
+    knockoutByUserAndRound[kp.user_id][kp.round].push(kp.team_name)
+  })
+
   // 3. Process each member's completion status
   const memberStats = members.map(m => {
     const displayName = m.profiles?.display_name || m.profiles?.email || 'Okänd spelare'
     const email = m.profiles?.email || ''
     
+    // Match predictions stats
     const stageStats: Record<string, { total: number; predicted: number; missing: Match[] }> = {}
     let totalPredicted = 0
     let totalMatchesCount = 0
@@ -166,7 +188,30 @@ export function PredictionsOverviewClient({
       totalMatchesCount += catMatches.length
     })
 
-    const isFullyCompleted = totalMatchesCount > 0 && totalPredicted === totalMatchesCount
+    // Knockout predictions stats
+    const koStats: Record<string, { total: number; predicted: number; missingCount: number; picks: string[] }> = {}
+    let totalKoPredicted = 0
+    let totalKoRequired = 0
+
+    KNOCKOUT_ROUNDS.forEach(r => {
+      const picks = knockoutByUserAndRound[m.user_id]?.[r.key] || []
+      const predictedCount = picks.length
+      const requiredCount = r.teamCount
+
+      koStats[r.key] = {
+        total: requiredCount,
+        predicted: predictedCount,
+        missingCount: Math.max(0, requiredCount - predictedCount),
+        picks
+      }
+
+      totalKoPredicted += Math.min(predictedCount, requiredCount)
+      totalKoRequired += requiredCount
+    })
+
+    const isMatchesCompleted = totalMatchesCount > 0 && totalPredicted === totalMatchesCount
+    const isKoCompleted = totalKoPredicted === totalKoRequired
+    const isFullyCompleted = isMatchesCompleted && isKoCompleted
 
     return {
       user_id: m.user_id,
@@ -174,9 +219,14 @@ export function PredictionsOverviewClient({
       email,
       role: m.role,
       stageStats,
+      koStats,
       totalPredicted,
       totalMatchesCount,
-      isFullyCompleted
+      totalKoPredicted,
+      totalKoRequired,
+      isFullyCompleted,
+      isMatchesCompleted,
+      isKoCompleted
     }
   })
 
@@ -205,33 +255,43 @@ export function PredictionsOverviewClient({
   }
 
   const copyReminderText = (m: typeof memberStats[0]) => {
-    const missingDetails: string[] = []
+    const missingMatchesDetails: string[] = []
     activeCategories.forEach(cat => {
       const { missing } = m.stageStats[cat]
-      if (missing.length > 0) {
-        missing.forEach(match => {
-          const formattedTime = formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')
-          missingDetails.push(`- ${match.home_team} vs ${match.away_team} (${formattedTime} - ${cat})`)
-        })
+      missing.forEach(match => {
+        const formattedTime = formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')
+        missingMatchesDetails.push(`- ${match.home_team} vs ${match.away_team} (${formattedTime} - ${cat})`)
+      })
+    })
+
+    const missingKoDetails: string[] = []
+    KNOCKOUT_ROUNDS.forEach(r => {
+      const stats = m.koStats[r.key]
+      if (stats.missingCount > 0) {
+        missingKoDetails.push(`- ${r.label}: Saknar ${stats.missingCount} lag (valt ${stats.predicted}/${stats.total})`)
       }
     })
 
-    const reminder = `Hej ${m.displayName}! 🏆
-Kom ihåg att lägga dina tips i spelet "${gameName}" på Skorio! Du saknar för närvarande tips på följande matcher:
+    let reminder = `Hej ${m.displayName}! 🏆\nKom ihåg att lägga dina tips i spelet "${gameName}" på Skorio!\n`
+    
+    if (missingMatchesDetails.length > 0) {
+      reminder += `\nDu saknar matchtips för följande matcher:\n${missingMatchesDetails.join('\n')}\n`
+    }
+    if (missingKoDetails.length > 0) {
+      reminder += `\nDu saknar val av lag i slutspelstipset:\n${missingKoDetails.join('\n')}\n`
+    }
 
-${missingDetails.join('\n')}
-
-In och tippa innan matchstart! ⚽️`
+    reminder += `\nIn och tippa innan deadlines! ⚽️`
 
     navigator.clipboard.writeText(reminder)
     setCopiedMemberId(m.user_id)
     setTimeout(() => {
       setCopiedMemberId(null)
-    }, 2000)
+    }, 2050)
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-10 pb-32">
+    <div className="max-w-7xl mx-auto p-4 md:p-10 pb-32">
       {/* Back to Admin */}
       <Link 
         href={`/dashboard/groups/${groupId}/games/${gameId}/admin`} 
@@ -246,7 +306,7 @@ In och tippa innan matchstart! ⚽️`
           Tippningsöversikt
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-lg">
-          Följ upp vilka spelare i gruppen som har tippat matcherna inför spelstart.
+          Följ upp vilka spelare i gruppen som har tippat matcherna samt valt slutspelslag inför spelstart.
         </p>
       </div>
 
@@ -356,14 +416,29 @@ In och tippa innan matchstart! ⚽️`
       ) : viewMode === 'matrix' ? (
         /* MATRIX VIEW */
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm overflow-x-auto">
-          <table className="w-full border-collapse text-left min-w-[800px]">
+          <table className="w-full border-collapse text-left min-w-[1200px]">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Spelare</th>
-                {activeCategories.map(cat => (
-                  <th key={cat} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">{cat}</th>
+              <tr className="bg-zinc-100 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+                <th rowSpan={2} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 align-middle">Spelare</th>
+                <th colSpan={activeCategories.length} className="p-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300 text-center border-r border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/10">
+                  Matchtips (Resultat)
+                </th>
+                <th colSpan={KNOCKOUT_ROUNDS.length} className="p-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300 text-center bg-zinc-50/50 dark:bg-zinc-900/10">
+                  Slutspelstips (Kvalificerade lag)
+                </th>
+                <th rowSpan={2} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center w-28 align-middle">Status</th>
+              </tr>
+              <tr className="bg-zinc-50 dark:bg-zinc-900/30 border-b border-zinc-200 dark:border-zinc-800">
+                {activeCategories.map((cat, i) => (
+                  <th key={cat} className={`p-3 text-[9px] font-black uppercase tracking-widest text-zinc-400 text-center ${i === activeCategories.length - 1 ? 'border-r border-zinc-200 dark:border-zinc-700' : ''}`}>
+                    {cat}
+                  </th>
                 ))}
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center w-28">Status</th>
+                {KNOCKOUT_ROUNDS.map(r => (
+                  <th key={r.key} className="p-3 text-[9px] font-black uppercase tracking-widest text-zinc-400 text-center">
+                    {r.label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -381,22 +456,22 @@ In och tippa innan matchstart! ⚽️`
                     </div>
                   </td>
 
-                  {/* Categories */}
-                  {activeCategories.map(cat => {
+                  {/* Match categories */}
+                  {activeCategories.map((cat, i) => {
                     const stats = m.stageStats[cat] || { total: 0, predicted: 0 }
                     const isAll = stats.predicted === stats.total
                     const isNone = stats.predicted === 0
 
                     if (stats.total === 0) {
                       return (
-                        <td key={cat} className="p-4 text-center">
+                        <td key={cat} className={`p-3 text-center ${i === activeCategories.length - 1 ? 'border-r border-zinc-200 dark:border-zinc-700' : ''}`}>
                           <span className="text-xs text-zinc-300 dark:text-zinc-700 font-bold">-</span>
                         </td>
                       )
                     }
 
                     return (
-                      <td key={cat} className="p-4 text-center">
+                      <td key={cat} className={`p-3 text-center ${i === activeCategories.length - 1 ? 'border-r border-zinc-200 dark:border-zinc-700' : ''}`}>
                         {isAll ? (
                           <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
                             {stats.predicted}/{stats.total}
@@ -414,7 +489,32 @@ In och tippa innan matchstart! ⚽️`
                     )
                   })}
 
-                  {/* Status */}
+                  {/* Knockout categories */}
+                  {KNOCKOUT_ROUNDS.map(r => {
+                    const stats = m.koStats[r.key] || { total: 0, predicted: 0 }
+                    const isAll = stats.predicted === stats.total
+                    const isNone = stats.predicted === 0
+
+                    return (
+                      <td key={r.key} className="p-3 text-center">
+                        {isAll ? (
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
+                            {stats.predicted}/{stats.total}
+                          </span>
+                        ) : isNone ? (
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full leading-none">
+                            0/{stats.total}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full leading-none">
+                            {stats.predicted}/{stats.total}
+                          </span>
+                        )}
+                      </td>
+                    )
+                  })}
+
+                  {/* Total Status */}
                   <td className="p-4 text-center">
                     {m.isFullyCompleted ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm shadow-emerald-500/20">
@@ -443,6 +543,12 @@ In och tippa innan matchstart! ⚽️`
             let totalMissingCount = 0
             activeCategories.forEach(cat => {
               totalMissingCount += m.stageStats[cat]?.missing?.length || 0
+            })
+
+            // Calculate total missing knockout team picks count
+            let totalMissingKoCount = 0
+            KNOCKOUT_ROUNDS.forEach(r => {
+              totalMissingKoCount += m.koStats[r.key]?.missingCount || 0
             })
 
             return (
@@ -474,7 +580,7 @@ In och tippa innan matchstart! ⚽️`
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
-                            Saknar {totalMissingCount} tips
+                            Saknar {totalMissingCount + totalMissingKoCount} tips
                           </span>
                         )}
                       </div>
@@ -482,18 +588,22 @@ In och tippa innan matchstart! ⚽️`
                   </div>
 
                   <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                    {/* Progress Bar */}
-                    <div className="flex items-center gap-3 flex-1 sm:flex-initial min-w-[120px]">
+                    {/* Progress Bar (Overall percentage) */}
+                    <div className="flex items-center gap-3 flex-1 sm:flex-initial min-w-[150px]">
                       <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full flex-1 overflow-hidden">
                         <div 
                           className={`h-full rounded-full transition-all ${
                             m.isFullyCompleted ? 'bg-emerald-500' : 'bg-indigo-600'
                           }`}
-                          style={{ width: `${m.totalMatchesCount > 0 ? (m.totalPredicted / m.totalMatchesCount) * 100 : 0}%` }}
+                          style={{ 
+                            width: `${(m.totalMatchesCount + m.totalKoRequired) > 0 
+                              ? ((m.totalPredicted + m.totalKoPredicted) / (m.totalMatchesCount + m.totalKoRequired)) * 100 
+                              : 0}%` 
+                          }}
                         />
                       </div>
                       <span className="text-xs font-black text-zinc-500 shrink-0">
-                        {m.totalPredicted}/{m.totalMatchesCount}
+                        {m.totalPredicted + m.totalKoPredicted}/{m.totalMatchesCount + m.totalKoRequired}
                       </span>
                     </div>
 
@@ -515,7 +625,7 @@ In och tippa innan matchstart! ⚽️`
                             <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                             <div>
                               <h4 className="font-bold text-sm text-amber-800 dark:text-amber-300">Medlemmen saknar tippningar</h4>
-                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Kopiera en påminnelsetext med de saknade matcherna för att skicka till spelaren.</p>
+                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Kopiera en påminnelsetext med de saknade matcherna och slutspelsvalen för att skicka till spelaren.</p>
                             </div>
                           </div>
                           <button
@@ -541,61 +651,123 @@ In och tippa innan matchstart! ⚽️`
                         </div>
                       )}
 
-                      {/* Stage Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {activeCategories.map(cat => {
-                          const { total, predicted, missing } = m.stageStats[cat] || { total: 0, predicted: 0, missing: [] }
-                          const isDone = predicted === total
-                          const isZero = predicted === 0
+                      {/* Split stage grids (Match vs Knockout) */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Matchtips Section */}
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                            <span>⚽️ Matchtips (Resultat)</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 rounded-full">
+                              {m.totalPredicted}/{m.totalMatchesCount} tippade
+                            </span>
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {activeCategories.map(cat => {
+                              const { total, predicted, missing } = m.stageStats[cat] || { total: 0, predicted: 0, missing: [] }
+                              const isDone = predicted === total
 
-                          if (total === 0) return null
+                              if (total === 0) return null
 
-                          return (
-                            <div key={cat} className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-                              <div className="flex items-center justify-between mb-3 gap-2">
-                                <span className="font-bold text-sm text-zinc-950 dark:text-white truncate">{cat}</span>
-                                {isDone ? (
-                                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900/30">
-                                    Klar
-                                  </span>
-                                ) : (
-                                  <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
-                                    {total - predicted} kvar
-                                  </span>
-                                )}
-                              </div>
-                              <div className="space-y-3">
-                                {/* Number representation */}
-                                <div className="flex justify-between items-baseline">
-                                  <span className="text-xl font-black text-zinc-900 dark:text-white">
-                                    {predicted}/{total}
-                                  </span>
-                                  <span className="text-xs font-bold text-zinc-400">tippade</span>
-                                </div>
-
-                                {/* Missing Matches list */}
-                                {missing.length > 0 && (
-                                  <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Saknade matcher:</p>
-                                    <ul className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
-                                      {missing.map(match => (
-                                        <li key={match.id} className="text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950 p-2 rounded-xl border border-zinc-100/50 dark:border-zinc-800/40">
-                                          <div className="font-bold truncate leading-tight mb-0.5">
-                                            {match.home_team} vs {match.away_team}
-                                          </div>
-                                          <div className="text-[9px] text-zinc-400 font-medium flex items-center gap-1">
-                                            <Calendar className="w-3 h-3 text-zinc-300" />
-                                            {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')}
-                                          </div>
-                                        </li>
-                                      ))}
-                                    </ul>
+                              return (
+                                <div key={cat} className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                                  <div className="flex items-center justify-between mb-3 gap-2">
+                                    <span className="font-bold text-sm text-zinc-950 dark:text-white truncate">{cat}</span>
+                                    {isDone ? (
+                                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900/30">
+                                        Klar
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
+                                        {total - predicted} kvar
+                                      </span>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })}
+                                  <div className="space-y-3">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-xl font-black text-zinc-900 dark:text-white">
+                                        {predicted}/{total}
+                                      </span>
+                                      <span className="text-xs font-bold text-zinc-400">tippade</span>
+                                    </div>
+
+                                    {missing.length > 0 && (
+                                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Saknade matcher:</p>
+                                        <ul className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
+                                          {missing.map(match => (
+                                            <li key={match.id} className="text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950 p-2 rounded-xl border border-zinc-100/50 dark:border-zinc-800/40">
+                                              <div className="font-bold truncate leading-tight mb-0.5">
+                                                {match.home_team} vs {match.away_team}
+                                              </div>
+                                              <div className="text-[9px] text-zinc-400 font-medium flex items-center gap-1">
+                                                <Calendar className="w-3 h-3 text-zinc-300" />
+                                                {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')}
+                                              </div>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Slutspelstips Section */}
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                            <span>🏆 Slutspelstips (Kvalificerade lag)</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 rounded-full">
+                              {m.totalKoPredicted}/{m.totalKoRequired} valda
+                            </span>
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {KNOCKOUT_ROUNDS.map(r => {
+                              const stats = m.koStats[r.key] || { total: 0, predicted: 0, missingCount: 0, picks: [] }
+                              const isDone = stats.predicted === stats.total
+
+                              return (
+                                <div key={r.key} className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                                  <div className="flex items-center justify-between mb-3 gap-2">
+                                    <span className="font-bold text-sm text-zinc-950 dark:text-white truncate">{r.label}</span>
+                                    {isDone ? (
+                                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900/30">
+                                        Klar
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
+                                        {stats.missingCount} kvar
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="space-y-3">
+                                    <div className="flex justify-between items-baseline">
+                                      <span className="text-xl font-black text-zinc-900 dark:text-white">
+                                        {stats.predicted}/{stats.total}
+                                      </span>
+                                      <span className="text-xs font-bold text-zinc-400">lag valda</span>
+                                    </div>
+
+                                    {stats.picks.length > 0 && (
+                                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Valda lag:</p>
+                                        <div className="flex flex-wrap gap-1 max-h-[120px] overflow-y-auto pr-1">
+                                          {stats.picks.map(pick => (
+                                            <span key={pick} className="text-[10px] font-bold bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800/80 px-2 py-0.5 rounded-lg">
+                                              {pick}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
