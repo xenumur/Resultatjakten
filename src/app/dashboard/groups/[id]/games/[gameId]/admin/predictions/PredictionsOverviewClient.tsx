@@ -312,13 +312,13 @@ export function PredictionsOverviewClient({
       </div>
 
       {/* Primary Tab Switcher */}
-      <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded-2xl w-fit mb-8 border border-zinc-200/20 dark:border-zinc-800/40">
+      <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl w-fit mb-8 border border-zinc-200/20 dark:border-zinc-700">
         <button
           onClick={() => {
             setActiveTabType('matches')
             setExpandedMembers({}) // Reset expand states to avoid UI shifts
           }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
             activeTabType === 'matches'
               ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
               : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
@@ -331,7 +331,7 @@ export function PredictionsOverviewClient({
             setActiveTabType('knockout')
             setExpandedMembers({}) // Reset expand states
           }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
             activeTabType === 'knockout'
               ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
               : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
@@ -348,30 +348,30 @@ export function PredictionsOverviewClient({
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Medlemmar</p>
-            <p className="text-3xl font-black text-zinc-900 dark:text-white">{totalCount}</p>
+            <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Medlemmar</p>
+            <p className="text-3xl font-bold text-zinc-900 dark:text-white">{totalCount}</p>
           </div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+          <div className="w-12 h-12 bg-emerald-50 dark:bg-[#022c22] border dark:border-[#064e3b]/50 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Klara</p>
-            <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+            <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Klara</p>
+            <p className="text-3xl font-bold text-emerald-600 dark:text-[#34d399]">
               {completedCount} <span className="text-sm font-bold text-zinc-400">({totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0}%)</span>
             </p>
           </div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400">
+          <div className="w-12 h-12 bg-amber-50 dark:bg-[#451a03] border dark:border-[#78350f]/50 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400">
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Saknar tips</p>
-            <p className="text-3xl font-black text-amber-600 dark:text-amber-400">{incompleteCount}</p>
+            <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Saknar tips</p>
+            <p className="text-3xl font-bold text-amber-600 dark:text-[#fbbf24]">{incompleteCount}</p>
           </div>
         </div>
       </div>
@@ -379,26 +379,26 @@ export function PredictionsOverviewClient({
       {/* Search and Filters Panel */}
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-sm mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
         {/* Search */}
-        <div className="relative w-full md:max-w-xs">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+        <div className="flex items-center gap-2.5 px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full md:max-w-xs focus-within:border-indigo-500 dark:focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all">
+          <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
           <input
             type="text"
             placeholder="Sök medlem..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-100 dark:border-zinc-800 rounded-2xl text-sm focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 text-zinc-900 dark:text-white transition-colors"
+            className="w-full bg-transparent border-0 p-0 text-sm focus:outline-none focus:ring-0 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500"
           />
         </div>
 
         {/* Filter & View Mode */}
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-end">
           {/* Status Filter */}
-          <div className="flex bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded-2xl">
+          <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl border border-zinc-200/20 dark:border-zinc-700">
             {(['all', 'completed', 'incomplete'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setStatusFilter(f)}
-                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
                   statusFilter === f
                     ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
                     : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
@@ -410,10 +410,10 @@ export function PredictionsOverviewClient({
           </div>
 
           {/* View Switcher */}
-          <div className="flex bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded-2xl">
+          <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl border border-zinc-200/20 dark:border-zinc-700">
             <button
               onClick={() => setViewMode('matrix')}
-              className={`p-2 rounded-xl flex items-center gap-1.5 text-xs font-black uppercase tracking-wider transition ${
+              className={`p-2 rounded-xl flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider transition ${
                 viewMode === 'matrix'
                   ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
                   : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
@@ -425,7 +425,7 @@ export function PredictionsOverviewClient({
             </button>
             <button
               onClick={() => setViewMode('detailed')}
-              className={`p-2 rounded-xl flex items-center gap-1.5 text-xs font-black uppercase tracking-wider transition ${
+              className={`p-2 rounded-xl flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider transition ${
                 viewMode === 'detailed'
                   ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
                   : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
@@ -450,20 +450,20 @@ export function PredictionsOverviewClient({
           <table className="w-full border-collapse text-left min-w-[700px]">
             <thead>
               <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Spelare</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Spelare</th>
                 
                 {/* Render categories based on active tab type */}
                 {activeTabType === 'matches' ? (
                   activeCategories.map(cat => (
-                    <th key={cat} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">{cat}</th>
+                    <th key={cat} className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">{cat}</th>
                   ))
                 ) : (
                   KNOCKOUT_ROUNDS.map(r => (
-                    <th key={r.key} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">{r.label}</th>
+                    <th key={r.key} className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center">{r.label}</th>
                   ))
                 )}
                 
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center w-28">Status</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-center w-28">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -502,15 +502,15 @@ export function PredictionsOverviewClient({
                         return (
                           <td key={cat} className="p-4 text-center">
                             {isAll ? (
-                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-[#022c22] border border-emerald-200 dark:border-[#064e3b] text-emerald-700 dark:text-[#34d399] text-[11px] font-bold rounded-full leading-none">
                                 {stats.predicted}/{stats.total}
                               </span>
                             ) : isNone ? (
-                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full leading-none">
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-[#450a0a] border border-red-200 dark:border-[#7f1d1d] text-red-700 dark:text-[#f87171] text-[11px] font-bold rounded-full leading-none">
                                 0/{stats.total}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full leading-none">
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-[#451a03] border border-amber-200 dark:border-[#78350f] text-amber-700 dark:text-[#fbbf24] text-[11px] font-bold rounded-full leading-none">
                                 {stats.predicted}/{stats.total}
                               </span>
                             )}
@@ -526,15 +526,15 @@ export function PredictionsOverviewClient({
                         return (
                           <td key={r.key} className="p-4 text-center">
                             {isAll ? (
-                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full leading-none">
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-emerald-50 dark:bg-[#022c22] border border-emerald-200 dark:border-[#064e3b] text-emerald-700 dark:text-[#34d399] text-[11px] font-bold rounded-full leading-none">
                                 {stats.predicted}/{stats.total}
                               </span>
                             ) : isNone ? (
-                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full leading-none">
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-50 dark:bg-[#450a0a] border border-red-200 dark:border-[#7f1d1d] text-red-700 dark:text-[#f87171] text-[11px] font-bold rounded-full leading-none">
                                 0/{stats.total}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full leading-none">
+                              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-amber-50 dark:bg-[#451a03] border border-amber-200 dark:border-[#78350f] text-amber-700 dark:text-[#fbbf24] text-[11px] font-bold rounded-full leading-none">
                                 {stats.predicted}/{stats.total}
                               </span>
                             )}
@@ -546,12 +546,12 @@ export function PredictionsOverviewClient({
                     {/* Status */}
                     <td className="p-4 text-center">
                       {isTabCompleted ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm shadow-emerald-500/20">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-[#022c22] border border-emerald-200 dark:border-[#064e3b] text-emerald-700 dark:text-[#34d399] rounded-xl text-[11px] font-bold uppercase tracking-wider leading-none">
                           <Check className="w-3 h-3" />
                           Klar
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm shadow-amber-500/20">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-[#451a03] border border-amber-200 dark:border-[#78350f] text-amber-700 dark:text-[#fbbf24] rounded-xl text-[11px] font-bold uppercase tracking-wider leading-none">
                           Saknas
                         </span>
                       )}
@@ -584,29 +584,29 @@ export function PredictionsOverviewClient({
                 className={`bg-white dark:bg-zinc-900 border rounded-3xl shadow-sm transition-all overflow-hidden ${
                   isTabCompleted 
                     ? 'border-zinc-200 dark:border-zinc-800' 
-                    : 'border-amber-200 dark:border-amber-900/40 hover:border-amber-300'
+                    : 'border-amber-200 dark:border-[#78350f]/40 hover:border-amber-300'
                 }`}
               >
                 {/* Accordion Header */}
                 <div 
                   onClick={() => toggleExpand(m.user_id)}
-                  className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/20 transition-colors"
+                  className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-gradient-to-tr from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-sm">
+                    <div className="w-11 h-11 bg-gradient-to-tr from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
                       {m.displayName.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-black text-base text-zinc-900 dark:text-white leading-tight">
+                        <h3 className="font-bold text-base text-zinc-900 dark:text-white leading-tight">
                           {m.displayName}
                         </h3>
                         {isTabCompleted ? (
-                          <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-[#022c22] border border-emerald-100 dark:border-[#064e3b] text-emerald-700 dark:text-[#34d399] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                             <Check className="w-2.5 h-2.5" /> Klar
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-[#451a03] border border-amber-100 dark:border-[#78350f] text-amber-700 dark:text-[#fbbf24] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                             {activeTabType === 'matches' ? `Saknar ${totalMissingCount} tips` : `Saknar ${totalMissingCount} lag`}
                           </span>
                         )}
@@ -625,7 +625,7 @@ export function PredictionsOverviewClient({
                           style={{ width: `${totalRequiredCount > 0 ? (totalPredictedCount / totalRequiredCount) * 100 : 0}%` }}
                         />
                       </div>
-                      <span className="text-xs font-black text-zinc-500 shrink-0">
+                      <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 shrink-0">
                         {totalPredictedCount}/{totalRequiredCount}
                       </span>
                     </div>
@@ -639,16 +639,16 @@ export function PredictionsOverviewClient({
 
                 {/* Accordion Content */}
                 {isExpanded && (
-                  <div className="px-5 pb-6 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
+                  <div className="px-5 pb-6 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
                     <div className="pt-6 space-y-6">
                       {/* Remind Button */}
                       {!isTabCompleted && (
-                        <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="bg-amber-50 dark:bg-[#451a03] p-4 rounded-2xl border border-amber-100 dark:border-[#78350f] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                           <div className="flex items-start gap-2.5">
-                            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                            <AlertCircle className="w-5 h-5 text-amber-700 dark:text-[#fbbf24] shrink-0 mt-0.5" />
                             <div>
-                              <h4 className="font-bold text-sm text-amber-800 dark:text-amber-300">Medlemmen saknar tippningar</h4>
-                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                              <h4 className="font-bold text-sm text-amber-900 dark:text-[#fbbf24]">Medlemmen saknar tippningar</h4>
+                              <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
                                 {activeTabType === 'matches' 
                                   ? 'Kopiera en påminnelsetext med de saknade matcherna.' 
                                   : 'Kopiera en påminnelsetext med de saknade slutspelsvalen.'}
@@ -657,10 +657,10 @@ export function PredictionsOverviewClient({
                           </div>
                           <button
                             onClick={() => copyReminderText(m)}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap shadow-sm ${
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 whitespace-nowrap shadow-sm ${
                               isCopied 
-                                ? 'bg-emerald-600 text-white shadow-emerald-600/10'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/10'
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
                             }`}
                           >
                             {isCopied ? (
@@ -682,9 +682,9 @@ export function PredictionsOverviewClient({
                       {activeTabType === 'matches' ? (
                         /* Matchtips Cards Grid */
                         <div>
-                          <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-4 flex items-center gap-2">
                             <span>⚽️ Matchtips (Resultat)</span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 rounded-full">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-full">
                               {m.totalPredicted}/{m.totalMatchesCount} tippade
                             </span>
                           </h4>
@@ -696,37 +696,37 @@ export function PredictionsOverviewClient({
                               if (total === 0) return null
 
                               return (
-                                <div key={cat} className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                                <div key={cat} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
                                   <div className="flex items-center justify-between mb-3 gap-2">
                                     <span className="font-bold text-sm text-zinc-950 dark:text-white truncate">{cat}</span>
                                     {isDone ? (
-                                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900/30">
+                                      <span className="text-[10px] font-bold text-emerald-700 dark:text-[#34d399] uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-[#022c22] px-2 py-0.5 rounded-full border border-emerald-100 dark:border-[#064e3b]">
                                         Klar
                                       </span>
                                     ) : (
-                                      <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
+                                      <span className="text-[10px] font-bold text-amber-700 dark:text-[#fbbf24] uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-[#451a03] px-2 py-0.5 rounded-full border border-amber-100 dark:border-[#78350f]">
                                         {total - predicted} kvar
                                       </span>
                                     )}
                                   </div>
                                   <div className="space-y-3">
                                     <div className="flex justify-between items-baseline">
-                                      <span className="text-xl font-black text-zinc-900 dark:text-white">
+                                      <span className="text-xl font-bold text-zinc-900 dark:text-white">
                                         {predicted}/{total}
                                       </span>
-                                      <span className="text-xs font-bold text-zinc-400">tippade</span>
+                                      <span className="text-xs font-medium text-zinc-500">tippade</span>
                                     </div>
 
                                     {missing.length > 0 && (
-                                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
-                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Saknade matcher:</p>
+                                      <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2.5">
+                                        <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Saknade matcher:</p>
                                         <ul className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                                           {missing.map(match => (
-                                            <li key={match.id} className="text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-950 p-2 rounded-xl border border-zinc-100/50 dark:border-zinc-800/40">
-                                              <div className="font-bold truncate leading-tight mb-0.5">
+                                            <li key={match.id} className="text-xs text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-950 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                                              <div className="font-semibold text-zinc-900 dark:text-zinc-100 truncate leading-tight mb-0.5">
                                                 {match.home_team} vs {match.away_team}
                                               </div>
-                                              <div className="text-[9px] text-zinc-400 font-medium flex items-center gap-1">
+                                              <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
                                                 <Calendar className="w-3 h-3 text-zinc-300" />
                                                 {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'd MMM HH:mm')}
                                               </div>
@@ -744,9 +744,9 @@ export function PredictionsOverviewClient({
                       ) : (
                         /* Slutspelstips Cards Grid */
                         <div>
-                          <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-4 flex items-center gap-2">
                             <span>🏆 Slutspelstips (Kvalificerade lag)</span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 rounded-full">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-full">
                               {m.totalKoPredicted}/{m.totalKoRequired} valda
                             </span>
                           </h4>
@@ -756,33 +756,33 @@ export function PredictionsOverviewClient({
                               const isDone = stats.predicted === stats.total
 
                               return (
-                                <div key={r.key} className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                                <div key={r.key} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
                                   <div className="flex items-center justify-between mb-3 gap-2">
                                     <span className="font-bold text-sm text-zinc-950 dark:text-white truncate">{r.label}</span>
                                     {isDone ? (
-                                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900/30">
+                                      <span className="text-[10px] font-bold text-emerald-700 dark:text-[#34d399] uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-emerald-50 dark:bg-[#022c22] px-2 py-0.5 rounded-full border border-emerald-100 dark:border-[#064e3b]">
                                         Klar
                                       </span>
                                     ) : (
-                                      <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
+                                      <span className="text-[10px] font-bold text-amber-700 dark:text-[#fbbf24] uppercase tracking-wider flex items-center gap-0.5 shrink-0 bg-amber-50 dark:bg-[#451a03] px-2 py-0.5 rounded-full border border-amber-100 dark:border-[#78350f]">
                                         {stats.missingCount} kvar
                                       </span>
                                     )}
                                   </div>
                                   <div className="space-y-3">
                                     <div className="flex justify-between items-baseline">
-                                      <span className="text-xl font-black text-zinc-900 dark:text-white">
+                                      <span className="text-xl font-bold text-zinc-900 dark:text-white">
                                         {stats.predicted}/{stats.total}
                                       </span>
-                                      <span className="text-xs font-bold text-zinc-400">lag valda</span>
+                                      <span className="text-xs font-medium text-zinc-500">lag valda</span>
                                     </div>
 
                                     {stats.picks.length > 0 && (
-                                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
-                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Valda lag:</p>
+                                      <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2.5">
+                                        <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Valda lag:</p>
                                         <div className="flex flex-wrap gap-1 max-h-[120px] overflow-y-auto pr-1">
                                           {stats.picks.map(pick => (
-                                            <span key={pick} className="text-[10px] font-bold bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800/80 px-2 py-0.5 rounded-lg">
+                                            <span key={pick} className="text-[10px] font-bold bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded-lg">
                                               {pick}
                                             </span>
                                           ))}
