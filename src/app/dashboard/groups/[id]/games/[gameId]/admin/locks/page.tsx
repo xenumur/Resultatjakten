@@ -4,6 +4,20 @@ import Link from 'next/link'
 import { ArrowLeft, Lock, Unlock, Zap } from 'lucide-react'
 import { toggleStageLock, lockAllGroupStages } from './actions'
 import { compareStages } from '@/lib/utils/stages'
+import { formatInTimeZone } from 'date-fns-tz'
+
+const TIMEZONE = 'Europe/Stockholm'
+
+interface StageLockMetadata {
+  locked_at?: string
+  locked_by_name?: string
+  unlocked_at?: string
+  unlocked_by_name?: string
+}
+
+interface StageLocksMetadata {
+  [stageName: string]: StageLockMetadata
+}
 
 export default async function LocksAdminPage({
   params,
@@ -29,16 +43,17 @@ export default async function LocksAdminPage({
     redirect(`/dashboard/groups/${groupId}/games/${gameId}`)
   }
 
-  // Hämta spelet för att veta vilka faser som är låsta
+  // Hämta spelet för att veta vilka faser som är låsta samt metadata
   const { data: game } = await supabase
     .from('games')
-    .select('locked_stages')
+    .select('locked_stages, stage_locks_metadata')
     .eq('id', gameId)
     .single()
 
   if (!game) return <div>Spel hittades inte</div>
 
   const lockedStages = game.locked_stages || []
+  const stageLocksMetadata = ((game as any).stage_locks_metadata as StageLocksMetadata) || {}
 
   // Hämta alla unika faser (stages/grupper) från matcherna
   const { data: matches } = await supabase
@@ -95,6 +110,7 @@ export default async function LocksAdminPage({
         <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {uniqueStages.map(stage => {
             const isLocked = lockedStages.includes(stage)
+            const metadata = stageLocksMetadata[stage]
             
             return (
               <div key={stage} className="p-6 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
@@ -103,6 +119,20 @@ export default async function LocksAdminPage({
                   <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                     Status: {isLocked ? 'Manuellt Låst' : 'Automatiskt (Låses vid avspark)'}
                   </p>
+                  {metadata && (metadata.locked_at || metadata.unlocked_at) && (
+                    <div className="mt-2 space-y-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+                      {metadata.unlocked_at && (
+                        <div>
+                          Senast upplåst: <span className="font-semibold text-zinc-600 dark:text-zinc-300">{formatInTimeZone(new Date(metadata.unlocked_at), TIMEZONE, 'yyyy-MM-dd HH:mm')}</span> av <span className="font-semibold text-zinc-600 dark:text-zinc-300">{metadata.unlocked_by_name}</span>
+                        </div>
+                      )}
+                      {isLocked && metadata.locked_at && (
+                        <div>
+                          Manuellt låst: <span className="font-semibold text-zinc-600 dark:text-zinc-300">{formatInTimeZone(new Date(metadata.locked_at), TIMEZONE, 'yyyy-MM-dd HH:mm')}</span> av <span className="font-semibold text-zinc-600 dark:text-zinc-300">{metadata.locked_by_name}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <form action={toggleStageLock.bind(null, gameId, groupId, stage, !isLocked, lockedStages)}>
@@ -141,3 +171,4 @@ export default async function LocksAdminPage({
     </div>
   )
 }
+
