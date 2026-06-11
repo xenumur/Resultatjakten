@@ -56,6 +56,14 @@ export default async function LeaderboardPage({
     }
   }).sort((a, b) => b.points - a.points || b.exactMatches - a.exactMatches)
 
+  let currentMatchRank = 1
+  const rankedMatchLeaderboard = matchLeaderboard.map((entry, i) => {
+    if (i > 0 && (entry.points !== matchLeaderboard[i - 1].points || entry.exactMatches !== matchLeaderboard[i - 1].exactMatches)) {
+      currentMatchRank++
+    }
+    return { ...entry, rank: currentMatchRank }
+  })
+
   const knockoutLeaderboard = (members || []).map(member => {
     const userKnockoutPoints = (knockoutPredictions || [])
       .filter(p => p.user_id === member.user_id)
@@ -67,6 +75,14 @@ export default async function LeaderboardPage({
       points: userKnockoutPoints,
     }
   }).filter(entry => entry.points > 0).sort((a, b) => b.points - a.points)
+
+  let currentKnockoutRank = 1
+  const rankedKnockoutLeaderboard = knockoutLeaderboard.map((entry, i) => {
+    if (i > 0 && entry.points !== knockoutLeaderboard[i - 1].points) {
+      currentKnockoutRank++
+    }
+    return { ...entry, rank: currentKnockoutRank }
+  })
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-12">
@@ -100,16 +116,16 @@ export default async function LeaderboardPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                {matchLeaderboard.map((entry, index) => {
-                  const isTop3 = index < 3;
+                {rankedMatchLeaderboard.map((entry) => {
+                  const isTop3 = entry.rank <= 3;
                   const isMe = entry.userId === user.id;
                   return (
                   <tr key={entry.userId} className={`group hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors ${isMe ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : ''}`}>
                     <td className="p-5 w-16">
-                      {index === 0 ? <Medal className="w-7 h-7 text-amber-400" /> : 
-                       index === 1 ? <Medal className="w-7 h-7 text-zinc-300" /> : 
-                       index === 2 ? <Medal className="w-7 h-7 text-amber-700" /> : 
-                       <span className="text-lg font-bold text-zinc-400 pl-2">{index + 1}</span>}
+                      {entry.rank === 1 ? <Medal className="w-7 h-7 text-amber-400" /> : 
+                       entry.rank === 2 ? <Medal className="w-7 h-7 text-zinc-300" /> : 
+                       entry.rank === 3 ? <Medal className="w-7 h-7 text-amber-700" /> : 
+                       <span className="text-lg font-bold text-zinc-400 pl-2">{entry.rank}</span>}
                     </td>
                     <td className="p-5">
                       <div className="flex items-center gap-3">
@@ -160,10 +176,10 @@ export default async function LeaderboardPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-              {knockoutLeaderboard.map((entry, index) => (
+              {rankedKnockoutLeaderboard.map((entry) => (
                 <tr key={entry.userId} className={`group hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors ${entry.userId === user.id ? 'bg-amber-50/40 dark:bg-amber-900/10' : ''}`}>
                   <td className="p-5 w-16">
-                    <span className="text-lg font-bold text-zinc-400 pl-2">{index + 1}</span>
+                    <span className="text-lg font-bold text-zinc-400 pl-2">{entry.rank}</span>
                   </td>
                   <td className="p-5">
                     <span className="font-bold text-zinc-900 dark:text-white">{entry.name}</span>
@@ -173,7 +189,7 @@ export default async function LeaderboardPage({
                   </td>
                 </tr>
               ))}
-              {knockoutLeaderboard.length === 0 && (
+              {rankedKnockoutLeaderboard.length === 0 && (
                 <tr>
                   <td colSpan={3} className="p-10 text-center text-zinc-500">Inga poäng utdelade än.</td>
                 </tr>

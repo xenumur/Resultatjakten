@@ -67,7 +67,7 @@ export async function getGroupLeaderboard(groupId: string): Promise<LeaderboardE
   let currentRank = 1
   const rankedLeaderboard = leaderboard.map((entry, i) => {
     if (i > 0 && entry.total_points < leaderboard[i - 1].total_points) {
-      currentRank = i + 1
+      currentRank++
     }
     return { ...entry, rank: currentRank }
   })

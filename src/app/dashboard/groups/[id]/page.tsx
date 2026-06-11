@@ -35,6 +35,13 @@ export default async function GroupDetailPage({
     supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
 
+  const now = new Date()
+  const filteredDeadlines = (deadlines || []).filter(d => {
+    const deadlineDate = new Date(d.deadline_at)
+    // Dölj efter 2 dagar (172800000 millisekunder) från att deadline har passerats
+    return deadlineDate.getTime() - now.getTime() > -172800000
+  })
+
   if (!group || !members) {
     return <div className="p-8 text-center text-red-500">Kunde inte hitta gruppen.</div>
   }
@@ -102,7 +109,7 @@ export default async function GroupDetailPage({
   let currentRank = 1
   const rankedLeaderboard = leaderboard.map((entry, i) => {
     if (i > 0 && entry.total_points < leaderboard[i - 1].total_points) {
-      currentRank = i + 1
+      currentRank++
     }
     const memberObj = members.find((m: any) => m.user_id === entry.user_id)
     return { ...entry, rank: currentRank, previous_rank: memberObj?.previous_rank }
@@ -343,16 +350,16 @@ export default async function GroupDetailPage({
       </div>
 
       {/* Group Info & Deadlines Widget */}
-      <section className={`order-4 grid grid-cols-1 ${deadlines && deadlines.length > 0 ? 'md:grid-cols-2' : ''} gap-6 md:gap-10`}>
+      <section className={`order-4 grid grid-cols-1 ${filteredDeadlines.length > 0 ? 'md:grid-cols-2' : ''} gap-6 md:gap-10`}>
         {/* Deadlines Card (if any) */}
-        {deadlines && deadlines.length > 0 && (
+        {filteredDeadlines.length > 0 && (
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-indigo-500" />
               <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">Viktiga Deadlines</h3>
             </div>
             <div className="space-y-5">
-              {deadlines.map(d => (
+              {filteredDeadlines.map(d => (
                 <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
                   <div className="flex flex-col gap-1.5 min-w-0">
                     <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">{d.title}</span>
