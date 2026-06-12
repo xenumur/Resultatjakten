@@ -187,6 +187,9 @@ export async function calculateScores(groupId: string, gameId: string, _formData
     return
   }
 
+  // Snapshot leaderboard before updating points
+  await snapshotGroupLeaderboard(groupId)
+
   // 1. Calculate Match Results Points
   for (const match of matches) {
     const matchPredictions = predictions.filter(p => p.match_id === match.id)

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
 
 export async function createBonusQuestion(formData: FormData) {
   const supabase = await createClient()
@@ -95,6 +96,9 @@ export async function gradeBonusAnswer(formData: FormData) {
   const groupId = formData.get('groupId') as string
   const points = parseInt(formData.get('points') as string)
   const comment = formData.get('comment') as string
+
+  // Snapshot leaderboard before updating points
+  await snapshotGroupLeaderboard(groupId)
 
   const { error } = await supabase
     .from('bonus_answers')

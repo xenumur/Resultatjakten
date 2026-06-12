@@ -143,6 +143,9 @@ export async function saveActualTeams(
     }
   }
 
+  // Snapshot leaderboard before calculating new points
+  await snapshotGroupLeaderboard(groupId)
+
   // Recalculate all user points
   await recalculateKnockoutPoints(gameId, supabase)
 
@@ -166,6 +169,9 @@ export async function forceRecalculateKnockoutPoints(groupId: string, gameId: st
   if (!member || member.role !== 'admin') {
     return { error: 'Åtkomst nekad.' }
   }
+
+  // Snapshot leaderboard before calculating new points
+  await snapshotGroupLeaderboard(groupId)
 
   await recalculateKnockoutPoints(gameId, supabase)
 
