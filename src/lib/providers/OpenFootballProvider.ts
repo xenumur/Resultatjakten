@@ -67,8 +67,15 @@ export class OpenFootballProvider implements TournamentProvider {
       }
 
       // Vissa JSON-filer har score, men framtida matcher har inte det.
-      const homeScore = item.score1 ?? null;
-      const awayScore = item.score2 ?? null;
+      let homeScore = null;
+      let awayScore = null;
+      if (item.score && Array.isArray(item.score.ft) && item.score.ft.length >= 2) {
+        homeScore = item.score.ft[0] !== undefined ? item.score.ft[0] : null;
+        awayScore = item.score.ft[1] !== undefined ? item.score.ft[1] : null;
+      } else {
+        homeScore = item.score1 ?? null;
+        awayScore = item.score2 ?? null;
+      }
       
       let status = 'upcoming';
       if (homeScore !== null && awayScore !== null) {

@@ -444,7 +444,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
         }
 
         // IMPORTANT: If the match is not manually overridden, 
-        // and it's a knockout match that just got real teams, update the teams!
+        // update the final scores/status and teams (if they were placeholders)
         if (!existingMatch.is_manual_override) {
           // If we had a placeholder but now have a real team, update it
           if (isPlaceholder(existingMatch.home_team) && !isPlaceholder(liveMatch.home_team)) {
@@ -453,6 +453,10 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           if (isPlaceholder(existingMatch.away_team) && !isPlaceholder(liveMatch.away_team)) {
             updateData.away_team = liveMatch.away_team
           }
+
+          updateData.final_home_score = liveMatch.final_home_score
+          updateData.final_away_score = liveMatch.final_away_score
+          updateData.status = liveMatch.status
         }
 
         await supabase
