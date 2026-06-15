@@ -1,8 +1,32 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown, Calendar } from 'lucide-react'
+import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown, Calendar, Clock, Tv } from 'lucide-react'
 import { DeadlineCountdown } from '@/components/DeadlineCountdown'
+import { countryToFlag } from '@/lib/utils/flags'
+import { formatInTimeZone } from 'date-fns-tz'
+const TIMEZONE = 'Europe/Stockholm'
+
+function formatKickoffTime(isoString: string) {
+  const matchDate = new Date(isoString)
+  const now = new Date()
+  const todayStr = formatInTimeZone(now, TIMEZONE, 'yyyy-MM-dd')
+  const tomorrowStr = formatInTimeZone(new Date(now.getTime() + 24 * 60 * 60 * 1000), TIMEZONE, 'yyyy-MM-dd')
+  const matchDayStr = formatInTimeZone(matchDate, TIMEZONE, 'yyyy-MM-dd')
+  
+  const timeStr = formatInTimeZone(matchDate, TIMEZONE, 'HH:mm')
+  
+  if (matchDayStr === todayStr) {
+    return `Idag ${timeStr}`
+  } else if (matchDayStr === tomorrowStr) {
+    return `Imorgon ${timeStr}`
+  } else {
+    const day = formatInTimeZone(matchDate, TIMEZONE, 'd')
+    const monthIndex = parseInt(formatInTimeZone(matchDate, TIMEZONE, 'M')) - 1
+    const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
+    return `${day} ${months[monthIndex]} ${timeStr}`
+  }
+}
 
 
 export default async function GroupDetailPage({
@@ -34,6 +58,19 @@ export default async function GroupDetailPage({
     supabase.from('bonus_answers').select('user_id, points_awarded, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId),
     supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
+
+  // Hämta de 4 närmaste kommande matcherna för gruppens spel
+  const gameIds = (games || []).map(g => g.id)
+  const { data: upcomingMatches } = gameIds.length > 0
+    ? await supabase
+        .from('matches')
+        .select('*')
+        .in('game_id', gameIds)
+        .eq('status', 'upcoming')
+        .gte('kickoff_time', new Date().toISOString())
+        .order('kickoff_time', { ascending: true })
+        .limit(4)
+    : { data: [] }
 
   const now = new Date()
   const filteredDeadlines = (deadlines || []).filter(d => {
@@ -141,8 +178,63 @@ export default async function GroupDetailPage({
         </div>
       </div>
 
+      {/* Upcoming Matches Horizontal Scroll Widget */}
+      {upcomingMatches && upcomingMatches.length > 0 && (
+        <div className="order-2 space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
+            <h2 className="text-xs font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Kommande matcher</h2>
+            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400">
+              {upcomingMatches.length}
+            </span>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none snap-x snap-mandatory">
+            {upcomingMatches.map((match: any) => (
+              <div
+                key={match.id}
+                className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 min-w-[280px] max-w-[320px] flex-1 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors shrink-0 group"
+              >
+                {/* Teams */}
+                <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg leading-none shrink-0" role="img" aria-label={match.home_team}>
+                      {countryToFlag(match.home_team) || '🏳️'}
+                    </span>
+                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
+                      {match.home_team}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg leading-none shrink-0" role="img" aria-label={match.away_team}>
+                      {countryToFlag(match.away_team) || '🏳️'}
+                    </span>
+                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
+                      {match.away_team}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Time & Broadcaster Info */}
+                <div className="text-right flex flex-col items-end gap-1.5 shrink-0 pl-2">
+                  <span className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 tracking-wide">
+                    {formatKickoffTime(match.kickoff_time)}
+                  </span>
+                  {match.broadcaster && (
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 rounded text-[9px] font-extrabold tracking-tight uppercase">
+                      <Tv className="w-2.5 h-2.5 opacity-70 shrink-0" />
+                      <span>{match.broadcaster}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Prize Pool Summary */}
-      <section className="order-3 md:order-2 space-y-6">
+      <section className="order-4 md:order-3 space-y-6">
         <div className="flex items-center justify-center md:justify-start gap-2">
           <Coins className="w-5 h-5 text-amber-500 shrink-0" />
           <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
@@ -193,7 +285,7 @@ export default async function GroupDetailPage({
       </section>
 
       {/* Main Grid: Games & Leaderboard */}
-      <div className="order-2 md:order-3 grid lg:grid-cols-3 gap-10 md:gap-16">
+      <div className="order-3 md:order-4 grid lg:grid-cols-3 gap-10 md:gap-16">
 
         {/* Left Side: Active Games */}
         <div className="lg:col-span-1 space-y-8 min-w-0 order-2 lg:order-1">
@@ -350,7 +442,7 @@ export default async function GroupDetailPage({
       </div>
 
       {/* Group Info & Deadlines Widget */}
-      <section className={`order-4 grid grid-cols-1 ${filteredDeadlines.length > 0 ? 'md:grid-cols-2' : ''} gap-6 md:gap-10`}>
+      <section className={`order-5 grid grid-cols-1 ${filteredDeadlines.length > 0 ? 'md:grid-cols-2' : ''} gap-6 md:gap-10`}>
         {/* Deadlines Card (if any) */}
         {filteredDeadlines.length > 0 && (
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
