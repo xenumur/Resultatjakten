@@ -479,7 +479,10 @@ export default async function GroupDetailPage({
       </div>
 
       {/* Group Info Widget (always at the very bottom) */}
-      <section className="order-[99] bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
+      <section 
+        style={{ order: 99 }}
+        className="bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden"
+      >
         <div className="absolute top-0 right-0 p-8 opacity-10">
           <Users className="w-24 h-24 text-indigo-500" />
         </div>
