@@ -59,18 +59,31 @@ export default async function GroupDetailPage({
     supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
 
-  // Hämta de 4 närmaste kommande matcherna för gruppens spel
+  // Hämta de 4 närmaste kommande matcherna och turneringsstatistik för gruppens spel
   const gameIds = (games || []).map(g => g.id)
-  const { data: upcomingMatches } = gameIds.length > 0
-    ? await supabase
-        .from('matches')
-        .select('*')
-        .in('game_id', gameIds)
-        .eq('status', 'upcoming')
-        .gte('kickoff_time', new Date().toISOString())
-        .order('kickoff_time', { ascending: true })
-        .limit(4)
-    : { data: [] }
+  
+  const [upcomingMatchesResult, statsResult] = gameIds.length > 0
+    ? await Promise.all([
+        supabase
+          .from('matches')
+          .select('*')
+          .in('game_id', gameIds)
+          .eq('status', 'upcoming')
+          .gte('kickoff_time', new Date().toISOString())
+          .order('kickoff_time', { ascending: true })
+          .limit(4),
+        supabase
+          .from('matches')
+          .select('red_cards, own_goals')
+          .in('game_id', gameIds)
+      ])
+    : [{ data: [] }, { data: [] }]
+
+  const upcomingMatches = upcomingMatchesResult?.data || []
+  const matchStats = statsResult?.data || []
+
+  const totalRedCards = matchStats.reduce((acc: number, m: any) => acc + (m.red_cards || 0), 0)
+  const totalOwnGoals = matchStats.reduce((acc: number, m: any) => acc + (m.own_goals || 0), 0)
 
   const now = new Date()
   const filteredDeadlines = (deadlines || []).filter(d => {
@@ -234,14 +247,14 @@ export default async function GroupDetailPage({
         </div>
       )}
 
-      {/* Prize Pool Summary */}
+      {/* Prize Pool & Stats Summary */}
       <section className="order-4 md:order-3 space-y-6">
         <div className="flex items-center justify-center md:justify-start gap-2">
-          <Coins className="w-5 h-5 text-amber-500 shrink-0" />
-          <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott & Belöningar</h2>
+          <Coins className="w-5 h-5 text-indigo-500 shrink-0" />
+          <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott, Belöningar &amp; Statistik</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
             <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Prispott</span>
             <div className="mt-auto">
@@ -273,6 +286,22 @@ export default async function GroupDetailPage({
                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Brons (10%)</span>
                 </div>
                 <span className="font-black text-orange-600 dark:text-orange-400 text-base">{formatMoney(prizes.third)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Turneringsstatistik</span>
+            <div className="grid grid-cols-2 gap-4 mt-auto">
+              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/20 hover:border-red-300 dark:hover:border-red-800 transition-colors">
+                <span className="text-xl mb-1 select-none">🟥</span>
+                <span className="text-2xl font-black text-red-600 dark:text-red-400 leading-none">{totalRedCards}</span>
+                <span className="text-[9px] font-extrabold uppercase text-red-500/70 tracking-wider mt-1 text-center">Röda kort</span>
+              </div>
+              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+                <span className="text-xl mb-1 select-none">⚽</span>
+                <span className="text-2xl font-black text-zinc-800 dark:text-zinc-200 leading-none">{totalOwnGoals}</span>
+                <span className="text-[9px] font-extrabold uppercase text-zinc-500 tracking-wider mt-1 text-center">Självmål</span>
               </div>
             </div>
           </div>

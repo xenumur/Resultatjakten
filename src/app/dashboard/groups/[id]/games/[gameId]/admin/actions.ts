@@ -25,7 +25,7 @@ export async function bulkUpdateMatchResults(
     // Hämta befintliga matcher för att jämföra värden
     const { data: dbMatches } = await supabase
       .from('matches')
-      .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override')
+      .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override, red_cards, own_goals')
       .in('id', Array.from(matchIds))
 
     if (!dbMatches) return { success: false, error: 'Kunde inte hämta matcher för validering.' }
@@ -39,20 +39,28 @@ export async function bulkUpdateMatchResults(
       const status = formData.get(`${matchId}_status`) as string
       const homeTeam = formData.get(`${matchId}_homeTeam`) as string
       const awayTeam = formData.get(`${matchId}_awayTeam`) as string
+      const redCardsStr = formData.get(`${matchId}_redCards`) as string
+      const ownGoalsStr = formData.get(`${matchId}_ownGoals`) as string
 
       if (homeScoreStr === null || awayScoreStr === null) continue
 
       const homeScore = parseInt(homeScoreStr, 10)
       const awayScore = parseInt(awayScoreStr, 10)
+      const redCards = parseInt(redCardsStr, 10)
+      const ownGoals = parseInt(ownGoalsStr, 10)
       
       const newHomeScore = isNaN(homeScore) ? null : homeScore
       const newAwayScore = isNaN(awayScore) ? null : awayScore
+      const newRedCards = isNaN(redCards) ? 0 : redCards
+      const newOwnGoals = isNaN(ownGoals) ? 0 : ownGoals
 
       // Kolla om något faktiskt har ändrats
       const hasChanged = 
         newHomeScore !== existing.final_home_score ||
         newAwayScore !== existing.final_away_score ||
         status !== existing.status ||
+        newRedCards !== (existing.red_cards ?? 0) ||
+        newOwnGoals !== (existing.own_goals ?? 0) ||
         (homeTeam && homeTeam !== existing.home_team) ||
         (awayTeam && awayTeam !== existing.away_team)
 
@@ -62,6 +70,8 @@ export async function bulkUpdateMatchResults(
         final_home_score: newHomeScore,
         final_away_score: newAwayScore,
         status: status,
+        red_cards: newRedCards,
+        own_goals: newOwnGoals,
         is_manual_override: true
       }
 
@@ -97,11 +107,15 @@ export async function updateMatchResult(
   const status = formData.get('status') as string
   const homeTeam = formData.get('homeTeam') as string
   const awayTeam = formData.get('awayTeam') as string
+  const redCards = parseInt(formData.get('redCards') as string, 10)
+  const ownGoals = parseInt(formData.get('ownGoals') as string, 10)
 
   const updateData: any = {
     final_home_score: isNaN(homeScore) ? null : homeScore,
     final_away_score: isNaN(awayScore) ? null : awayScore,
     status: status,
+    red_cards: isNaN(redCards) ? 0 : redCards,
+    own_goals: isNaN(ownGoals) ? 0 : ownGoals,
     is_manual_override: true
   }
 

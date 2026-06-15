@@ -162,6 +162,8 @@ export default async function GameAdminPage({
                         awayTeam={match.away_team}
                         stage={match.stage}
                         teams={allTeams}
+                        redCards={match.red_cards}
+                        ownGoals={match.own_goals}
                       />
 
                       <td className="p-4 text-right">

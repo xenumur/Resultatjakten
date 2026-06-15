@@ -13,6 +13,8 @@ interface MatchResultFormProps {
   awayTeam: string
   stage: string | null
   teams?: string[]
+  redCards?: number | null
+  ownGoals?: number | null
 }
 
 export function MatchResultForm({ 
@@ -23,7 +25,9 @@ export function MatchResultForm({
   homeTeam,
   awayTeam,
   stage,
-  teams = []
+  teams = [],
+  redCards = 0,
+  ownGoals = 0
 }: MatchResultFormProps) {
   const isKnockout = stage && (
     stage.toLowerCase().includes('round') || 
@@ -73,22 +77,51 @@ export function MatchResultForm({
         )}
       </td>
       <td className="p-4">
-        <div className="flex gap-2 items-center">
-          <input 
-            form="bulk-matches-form"
-            type="number" 
-            name={`${matchId}_homeScore`} 
-            defaultValue={homeScore ?? ''} 
-            className="w-12 h-10 text-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400"
-          />
-          <span className="text-zinc-400">-</span>
-          <input 
-            form="bulk-matches-form"
-            type="number" 
-            name={`${matchId}_awayScore`} 
-            defaultValue={awayScore ?? ''} 
-            className="w-12 h-10 text-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400"
-          />
+        <div className="flex flex-col gap-2">
+          {/* Mål */}
+          <div className="flex gap-2 items-center">
+            <input 
+              form="bulk-matches-form"
+              type="number" 
+              name={`${matchId}_homeScore`} 
+              defaultValue={homeScore ?? ''} 
+              className="w-12 h-10 text-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400"
+            />
+            <span className="text-zinc-400">-</span>
+            <input 
+              form="bulk-matches-form"
+              type="number" 
+              name={`${matchId}_awayScore`} 
+              defaultValue={awayScore ?? ''} 
+              className="w-12 h-10 text-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400"
+            />
+          </div>
+          
+          {/* Röda kort & Självmål */}
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-1" title="Antal röda kort">
+              <span className="text-xs select-none">🟥</span>
+              <input 
+                form="bulk-matches-form"
+                type="number" 
+                name={`${matchId}_redCards`} 
+                defaultValue={redCards ?? 0}
+                min={0}
+                className="w-9 h-7 text-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-zinc-700 dark:text-zinc-300 text-xs"
+              />
+            </div>
+            <div className="flex items-center gap-1" title="Antal självmål">
+              <span className="text-xs select-none">⚽</span>
+              <input 
+                form="bulk-matches-form"
+                type="number" 
+                name={`${matchId}_ownGoals`} 
+                defaultValue={ownGoals ?? 0}
+                min={0}
+                className="w-9 h-7 text-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-zinc-700 dark:text-zinc-300 text-xs"
+              />
+            </div>
+          </div>
         </div>
       </td>
       <td className="p-4">
