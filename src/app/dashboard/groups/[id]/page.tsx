@@ -191,9 +191,10 @@ export default async function GroupDetailPage({
           
           <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none snap-x snap-mandatory">
             {upcomingMatches.map((match: any) => (
-              <div
+              <Link
                 key={match.id}
-                className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 min-w-[280px] max-w-[320px] flex-1 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors shrink-0 group"
+                href={`/dashboard/groups/${groupId}/games/${match.game_id}/predictions?tab=upcoming#match-${match.id}`}
+                className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 min-w-[280px] max-w-[320px] flex-1 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors shrink-0 group cursor-pointer"
               >
                 {/* Teams */}
                 <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-3">
@@ -227,7 +228,7 @@ export default async function GroupDetailPage({
                     </div>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

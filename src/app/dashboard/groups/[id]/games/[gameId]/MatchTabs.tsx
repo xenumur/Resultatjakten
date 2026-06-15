@@ -40,7 +40,10 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
   const hasPoints = isFinished && prediction && prediction.points_awarded !== null
 
   return (
-    <li className="p-4 md:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-4">
+    <li
+      id={`match-${match.id}`}
+      className="scroll-mt-24 target:ring-2 target:ring-indigo-500 p-4 md:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-4"
+    >
       {/* Left: teams + meta */}
       <div className="flex flex-col items-center md:items-start w-full md:w-auto">
         <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-2 flex items-center gap-2 flex-wrap justify-center md:justify-start">

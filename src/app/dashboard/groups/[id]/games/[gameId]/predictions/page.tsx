@@ -122,7 +122,11 @@ export default async function PredictionsPage({
                     const isLocked = isManuallyLocked || isTimeLocked
 
                     return (
-                      <div key={match.id} className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 transition-all shadow-sm flex flex-col justify-between ${isLocked ? 'bg-zinc-50/50 dark:bg-zinc-900/30' : 'hover:border-indigo-500'}`}>
+                      <div
+                        key={match.id}
+                        id={`match-${match.id}`}
+                        className={`scroll-mt-24 target:ring-2 target:ring-indigo-500 target:border-indigo-500 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 transition-all shadow-sm flex flex-col justify-between ${isLocked ? 'bg-zinc-50/50 dark:bg-zinc-900/30' : 'hover:border-indigo-500'}`}
+                      >
 
                         <div className="flex justify-between items-start mb-6">
                           <div className="space-y-0.5">
