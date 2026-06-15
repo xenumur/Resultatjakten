@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Users, Plus, Trophy, ChevronRight, LayoutGrid, Info } from 'lucide-react'
+import { LastGroupRedirector } from '@/components/LastGroupRedirector'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -29,11 +30,13 @@ export default async function DashboardPage() {
       .single()
   ])
 
-  const groups = userGroups?.map(g => g.groups).filter(Boolean) || []
+  const groups = (userGroups?.map(g => g.groups).filter(Boolean) || []) as { id: string; name: string; description: string | null }[]
+  const validGroupIds = groups.map(g => g.id)
   const displayName = profile?.display_name || user.email?.split('@')[0] || 'Deltagare'
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-12">
+      <LastGroupRedirector validGroupIds={validGroupIds} />
       {/* Personalized Header Section */}
       <div className="pt-6 md:pt-4">
         <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight">
@@ -66,7 +69,7 @@ export default async function DashboardPage() {
         
         {groups.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groups.map((g: any) => (
+            {groups.map(g => (
               <Link 
                 key={g.id} 
                 href={`/dashboard/groups/${g.id}`} 

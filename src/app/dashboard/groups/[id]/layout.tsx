@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { SaveLastGroup } from '@/components/SaveLastGroup'
 
 export default async function GroupLayout({
   children,
@@ -39,5 +40,10 @@ export default async function GroupLayout({
     redirect('/dashboard')
   }
 
-  return <>{children}</>
+  return (
+    <>
+      <SaveLastGroup groupId={groupId} />
+      {children}
+    </>
+  )
 }
