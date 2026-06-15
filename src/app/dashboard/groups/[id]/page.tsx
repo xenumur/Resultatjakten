@@ -343,41 +343,6 @@ export default async function GroupDetailPage({
             </div>
           </div>
 
-          {/* Desktop-only Deadlines Widget */}
-          {filteredDeadlines.length > 0 && (
-            <div className="hidden lg:block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-indigo-500" />
-                <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">Viktiga Deadlines</h3>
-              </div>
-              <div className="space-y-5">
-                {filteredDeadlines.map(d => (
-                  <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
-                    <div className="flex flex-col gap-1.5 min-w-0">
-                      <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">{d.title}</span>
-                      <DeadlineCountdown date={d.deadline_at} />
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                        {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
-                          day: 'numeric', 
-                          month: 'short',
-                          timeZone: 'Europe/Stockholm'
-                        })}
-                      </div>
-                      <div className="text-[10px] font-bold text-zinc-400/60 uppercase tracking-widest">
-                        kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
-                          hour: '2-digit', 
-                          minute: '2-digit',
-                          timeZone: 'Europe/Stockholm'
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right Side: Consolidated Leaderboard */}
@@ -478,68 +443,66 @@ export default async function GroupDetailPage({
 
       </div>
 
-      {/* Group Info & Deadlines Widget */}
-      <section className={`order-last grid grid-cols-1 ${filteredDeadlines.length > 0 ? 'md:grid-cols-2 lg:grid-cols-1' : ''} gap-6 md:gap-10`}>
-        {/* Deadlines Card (if any) */}
-        {filteredDeadlines.length > 0 && (
-          <div className="lg:hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-indigo-500" />
-              <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">Viktiga Deadlines</h3>
-            </div>
-            <div className="space-y-5">
-              {filteredDeadlines.map(d => (
-                <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
-                  <div className="flex flex-col gap-1.5 min-w-0">
-                    <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">{d.title}</span>
-                    <DeadlineCountdown date={d.deadline_at} />
+      {/* Viktiga Deadlines Widget */}
+      {filteredDeadlines.length > 0 && (
+        <section className="order-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-indigo-500" />
+            <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">Viktiga Deadlines</h3>
+          </div>
+          <div className="space-y-5">
+            {filteredDeadlines.map(d => (
+              <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">{d.title}</span>
+                  <DeadlineCountdown date={d.deadline_at} />
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                    {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
+                      day: 'numeric', 
+                      month: 'short',
+                      timeZone: 'Europe/Stockholm'
+                    })}
                   </div>
-                  <div className="text-right shrink-0">
-                    <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                      {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
-                        day: 'numeric', 
-                        month: 'short',
-                        timeZone: 'Europe/Stockholm'
-                      })}
-                    </div>
-                    <div className="text-[10px] font-bold text-zinc-400/60 uppercase tracking-widest">
-                      kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        timeZone: 'Europe/Stockholm'
-                      })}
-                    </div>
+                  <div className="text-[10px] font-bold text-zinc-400/60 uppercase tracking-widest">
+                    kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      timeZone: 'Europe/Stockholm'
+                    })}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Users className="w-24 h-24 text-indigo-500" />
-          </div>
-          <h3 className="text-xl font-black uppercase tracking-tight text-indigo-900 dark:text-indigo-100 relative z-10">Gruppinfo</h3>
-          <div className="space-y-6 relative z-10">
-            <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
-              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
-              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.entry_fee} {group.currency}</span>
-            </div>
-            {group.payment_info && (
-              <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
-                <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Swish till</span>
-                <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.payment_info}</span>
               </div>
-            )}
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Group Info Widget */}
+      <section className="order-last bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <Users className="w-24 h-24 text-indigo-500" />
+        </div>
+        <h3 className="text-xl font-black uppercase tracking-tight text-indigo-900 dark:text-indigo-100 relative z-10">Gruppinfo</h3>
+        <div className="space-y-6 relative z-10">
+          <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
+            <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
+            <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.entry_fee} {group.currency}</span>
+          </div>
+          {group.payment_info && (
             <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
-              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
-              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white">{members.length}</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Swish till</span>
+              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.payment_info}</span>
             </div>
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Din Roll</span>
-              <span className="text-[10px] font-black bg-indigo-600 text-white px-3 py-1 rounded-full uppercase tracking-widest truncate">{userMember?.role}</span>
-            </div>
+          )}
+          <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
+            <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
+            <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white">{members.length}</span>
+          </div>
+          <div className="flex justify-between items-center gap-4">
+            <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Din Roll</span>
+            <span className="text-[10px] font-black bg-indigo-600 text-white px-3 py-1 rounded-full uppercase tracking-widest truncate">{userMember?.role}</span>
           </div>
         </div>
       </section>
