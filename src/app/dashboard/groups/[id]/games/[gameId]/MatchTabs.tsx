@@ -2,7 +2,7 @@
 
 import { formatInTimeZone } from 'date-fns-tz'
 import { countryToFlag } from '@/lib/utils/flags'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Clock, CheckCircle2, Flame } from 'lucide-react'
 import { compareStages } from '@/lib/utils/stages'
 
@@ -42,7 +42,7 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
   return (
     <li
       id={`match-${match.id}`}
-      className="scroll-mt-24 target:ring-2 target:ring-indigo-500 p-4 md:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-4"
+      className="scroll-mt-24 target:ring-2 target:ring-indigo-500 p-4 md:p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-all flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:justify-between gap-4"
     >
       {/* Left: teams + meta */}
       <div className="flex flex-col items-center md:items-start w-full md:w-auto">
@@ -138,6 +138,54 @@ export function MatchTabs({ matches, predictionMap }: MatchTabsProps) {
   // Split matches into upcoming (including live) and played
   const upcomingMatches = matches.filter(m => m.status === 'upcoming' || m.status === 'live')
   const playedMatches = matches.filter(m => m.status === 'finished')
+
+  // Auto-scroll and highlight when navigating to a match hash
+  useEffect(() => {
+    const handleScrollAndHighlight = () => {
+      if (typeof window === 'undefined') return
+      
+      const hash = window.location.hash
+      if (!hash.startsWith('#match-')) return
+
+      const matchId = hash.replace('#match-', '')
+      const targetMatch = matches.find(m => m.id === matchId)
+      if (!targetMatch) return
+
+      // Determine correct tab and switch if necessary
+      const correctTab = targetMatch.status === 'finished' ? 'played' : 'upcoming'
+      if (activeTab !== correctTab) {
+        setActiveTab(correctTab)
+        return // Let this effect re-run on the next activeTab render cycle
+      }
+
+      // Scroll to the element after DOM finishes rendering/updating
+      const scrollTimer = setTimeout(() => {
+        const element = document.getElementById(`match-${matchId}`)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          
+          // Apply highlight styling class
+          element.classList.add('highlighted-match')
+          
+          // Remove highlight styling after 3 seconds
+          const unhighlightTimer = setTimeout(() => {
+            element.classList.remove('highlighted-match')
+          }, 3000)
+          
+          return () => clearTimeout(unhighlightTimer)
+        }
+      }, 150)
+
+      return () => clearTimeout(scrollTimer)
+    }
+
+    handleScrollAndHighlight()
+
+    window.addEventListener('hashchange', handleScrollAndHighlight)
+    return () => {
+      window.removeEventListener('hashchange', handleScrollAndHighlight)
+    }
+  }, [matches, activeTab])
 
   // Group helper
   const groupMatches = (matchList: Match[]) =>
