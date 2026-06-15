@@ -193,7 +193,7 @@ export default async function GroupDetailPage({
             {upcomingMatches.map((match: any) => (
               <Link
                 key={match.id}
-                href={`/dashboard/groups/${groupId}/games/${match.game_id}/predictions?tab=upcoming#match-${match.id}`}
+                href={`/dashboard/groups/${groupId}/games/${match.game_id}#match-${match.id}`}
                 className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 min-w-[280px] max-w-[320px] flex-1 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors shrink-0 group cursor-pointer"
               >
                 {/* Teams */}
