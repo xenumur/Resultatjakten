@@ -343,6 +343,41 @@ export default async function GroupDetailPage({
             </div>
           </div>
 
+          {/* Viktiga Deadlines Widget */}
+          {filteredDeadlines.length > 0 && (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-indigo-500" />
+                <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">Viktiga Deadlines</h3>
+              </div>
+              <div className="space-y-5">
+                {filteredDeadlines.map(d => (
+                  <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                      <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">{d.title}</span>
+                      <DeadlineCountdown date={d.deadline_at} />
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                        {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
+                          day: 'numeric', 
+                          month: 'short',
+                          timeZone: 'Europe/Stockholm'
+                        })}
+                      </div>
+                      <div className="text-[10px] font-bold text-zinc-400/60 uppercase tracking-widest">
+                        kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
+                          hour: '2-digit', 
+                          minute: '2-digit',
+                          timeZone: 'Europe/Stockholm'
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Side: Consolidated Leaderboard */}
@@ -443,44 +478,8 @@ export default async function GroupDetailPage({
 
       </div>
 
-      {/* Viktiga Deadlines Widget */}
-      {filteredDeadlines.length > 0 && (
-        <section className="order-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-indigo-500" />
-            <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">Viktiga Deadlines</h3>
-          </div>
-          <div className="space-y-5">
-            {filteredDeadlines.map(d => (
-              <div key={d.id} className="flex justify-between items-center gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
-                <div className="flex flex-col gap-1.5 min-w-0">
-                  <span className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">{d.title}</span>
-                  <DeadlineCountdown date={d.deadline_at} />
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                    {new Date(d.deadline_at).toLocaleDateString('sv-SE', { 
-                      day: 'numeric', 
-                      month: 'short',
-                      timeZone: 'Europe/Stockholm'
-                    })}
-                  </div>
-                  <div className="text-[10px] font-bold text-zinc-400/60 uppercase tracking-widest">
-                    kl {new Date(d.deadline_at).toLocaleTimeString('sv-SE', { 
-                      hour: '2-digit', 
-                      minute: '2-digit',
-                      timeZone: 'Europe/Stockholm'
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Group Info Widget */}
-      <section className="order-last bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
+      {/* Group Info Widget (always at the very bottom) */}
+      <section className="order-[99] bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10">
           <Users className="w-24 h-24 text-indigo-500" />
         </div>
