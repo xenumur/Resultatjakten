@@ -32,6 +32,8 @@ export const viewport: Viewport = {
 import { PullToRefresh } from '@/components/PullToRefresh'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import NextTopLoader from 'nextjs-toploader'
+import { HapticFeedback } from '@/components/HapticFeedback'
 
 export default function RootLayout({
   children,
@@ -45,12 +47,24 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-[100dvh] flex flex-col text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 selection:bg-indigo-500/30">
+        <NextTopLoader
+          color="var(--color-indigo-500, #6366f1)"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px var(--color-indigo-500, #6366f1), 0 0 5px var(--color-indigo-500, #6366f1)"
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
+          <HapticFeedback />
           <PullToRefresh />
           {children}
           <Toaster position="bottom-center" richColors />
