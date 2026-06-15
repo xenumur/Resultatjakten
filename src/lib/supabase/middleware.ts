@@ -41,7 +41,15 @@ export async function updateSession(request: NextRequest) {
     // VIKTIGT: Skapa redirect-responsen men KOPIERA cookies från supabaseResponse
     const redirectResponse = NextResponse.redirect(url)
     supabaseResponse.cookies.getAll().forEach(cookie => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
+      redirectResponse.cookies.set(cookie.name, cookie.value, {
+        path: cookie.path,
+        domain: cookie.domain,
+        maxAge: cookie.maxAge,
+        expires: cookie.expires,
+        secure: cookie.secure,
+        httpOnly: cookie.httpOnly,
+        sameSite: cookie.sameSite,
+      })
     })
     return redirectResponse
   }
