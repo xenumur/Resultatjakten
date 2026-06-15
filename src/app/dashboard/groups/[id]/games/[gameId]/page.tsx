@@ -31,7 +31,16 @@ export default async function GameDetailPage({
         stage,
         group_name,
         venue,
-        broadcaster
+        broadcaster,
+        match_goals (
+          id,
+          player_name,
+          team_name,
+          minute,
+          offset_minute,
+          is_penalty,
+          is_own_goal
+        )
       )
     `)
     .eq('id', gameId)

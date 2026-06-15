@@ -8,6 +8,16 @@ import { compareStages } from '@/lib/utils/stages'
 
 const TIMEZONE = 'Europe/Stockholm'
 
+interface Goal {
+  id: string
+  player_name: string
+  team_name: string
+  minute: number | null
+  offset_minute: number | null
+  is_penalty: boolean
+  is_own_goal: boolean
+}
+
 interface Match {
   id: string
   home_team: string
@@ -20,6 +30,7 @@ interface Match {
   group_name: string | null
   venue: string | null
   broadcaster: string | null
+  match_goals?: Goal[]
 }
 
 interface Prediction {
@@ -38,6 +49,10 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
   const isFinished = match.status === 'finished'
   const isLive = match.status === 'live'
   const hasPoints = isFinished && prediction && prediction.points_awarded !== null
+
+  // Gruppera mål
+  const homeGoals = (match.match_goals || []).filter(g => g.team_name === match.home_team)
+  const awayGoals = (match.match_goals || []).filter(g => g.team_name === match.away_team)
 
   return (
     <li
@@ -66,6 +81,32 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
             {match.away_team}
           </span>
         </div>
+
+        {/* Målskyttar för spelad match */}
+        {isFinished && (homeGoals.length > 0 || awayGoals.length > 0) && (
+          <div className="mt-2.5 flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-4 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium justify-center md:justify-start w-full">
+            {homeGoals.length > 0 && (
+              <div className="flex items-center gap-1 flex-wrap justify-center md:justify-start">
+                <span className="text-[14px] leading-none shrink-0">{countryToFlag(match.home_team)}</span>
+                <span className="italic">
+                  {homeGoals.map(g => `${g.player_name} ${g.minute ? `${g.minute}'` : ''}${g.is_own_goal ? ' (självmål)' : ''}${g.is_penalty ? ' (str)' : ''}`).join(', ')}
+                </span>
+              </div>
+            )}
+            {homeGoals.length > 0 && awayGoals.length > 0 && (
+              <span className="hidden sm:inline text-zinc-300 dark:text-zinc-700">|</span>
+            )}
+            {awayGoals.length > 0 && (
+              <div className="flex items-center gap-1 flex-wrap justify-center md:justify-start">
+                <span className="text-[14px] leading-none shrink-0">{countryToFlag(match.away_team)}</span>
+                <span className="italic">
+                  {awayGoals.map(g => `${g.player_name} ${g.minute ? `${g.minute}'` : ''}${g.is_own_goal ? ' (självmål)' : ''}${g.is_penalty ? ' (str)' : ''}`).join(', ')}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Prediction tip (only shown, no duplicate points badge here) */}
         {prediction && (
           <div className="mt-2">

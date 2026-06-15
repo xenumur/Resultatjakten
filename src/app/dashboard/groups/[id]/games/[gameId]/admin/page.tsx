@@ -54,7 +54,7 @@ export default async function GameAdminPage({
 
   const { data: allMatches } = await supabase
     .from('matches')
-    .select('*')
+    .select('*, match_goals(*)')
     .eq('game_id', gameId)
     .order('kickoff_time', { ascending: true })
 
@@ -164,6 +164,7 @@ export default async function GameAdminPage({
                         teams={allTeams}
                         redCards={match.red_cards}
                         ownGoals={match.own_goals}
+                        matchGoals={match.match_goals}
                       />
 
                       <td className="p-4 text-right">

@@ -59,16 +59,49 @@ export async function createGame(groupId: string, prevState: any, formData: Form
         status: m.status,
         source_provider: providerId,
         api_match_num: m.api_match_num,
-        broadcaster: m.broadcaster
+        broadcaster: m.broadcaster,
+        provider_goals: m.goals || null
       }))
 
-      const { error: matchesError } = await supabase
+      const { data: insertedMatches, error: matchesError } = await supabase
         .from('matches')
         .insert(dbMatches)
+        .select('id, external_match_id')
 
       if (matchesError) {
         console.error('Kunde inte importera matcher:', matchesError)
         return { error: 'Matcher kunde inte infogas i databasen: ' + matchesError.message }
+      }
+
+      // Spara matchernas målskyttar om det finns några
+      if (insertedMatches && insertedMatches.length > 0) {
+        const dbGoals: any[] = []
+        for (const m of matches) {
+          if (m.goals && m.goals.length > 0) {
+            const inserted = insertedMatches.find(im => im.external_match_id === m.external_match_id)
+            if (inserted) {
+              m.goals.forEach(g => {
+                dbGoals.push({
+                  match_id: inserted.id,
+                  player_name: g.player_name,
+                  team_name: g.team_name,
+                  minute: g.minute,
+                  offset_minute: g.offset_minute ?? null,
+                  is_penalty: g.is_penalty ?? false,
+                  is_own_goal: g.is_own_goal ?? false
+                })
+              })
+            }
+          }
+        }
+        if (dbGoals.length > 0) {
+          const { error: goalsError } = await supabase
+            .from('match_goals')
+            .insert(dbGoals)
+          if (goalsError) {
+            console.error('Kunde inte importera målskyttar:', goalsError)
+          }
+        }
       }
     } else {
        return { error: 'Inga matcher hittades i valt API för denna turnering.' }

@@ -1,4 +1,4 @@
-import { TournamentProvider, MatchData } from './TournamentProvider';
+import { TournamentProvider, MatchData, GoalData } from './TournamentProvider';
 
 export class OpenFootballProvider implements TournamentProvider {
   getProviderId(): string {
@@ -146,6 +146,61 @@ export class OpenFootballProvider implements TournamentProvider {
         }
       }
 
+      // Mappa målskyttar
+      const goals: GoalData[] = [];
+      if (Array.isArray(item.goals1)) {
+        for (const g of item.goals1) {
+          let mainMinute = 0;
+          let offsetMinute = undefined;
+          
+          if (g.minute !== undefined && g.minute !== null) {
+            const minStr = String(g.minute);
+            if (minStr.includes('+')) {
+              const parts = minStr.split('+');
+              mainMinute = parseInt(parts[0], 10) || 0;
+              offsetMinute = parseInt(parts[1], 10) || undefined;
+            } else {
+              mainMinute = parseInt(minStr, 10) || 0;
+            }
+          }
+
+          goals.push({
+            player_name: g.name,
+            team_name: g.owngoal ? item.team2 : item.team1, // Invertera lag om självmål!
+            minute: mainMinute,
+            offset_minute: offsetMinute || g.offset,
+            is_penalty: !!g.penalty,
+            is_own_goal: !!g.owngoal
+          });
+        }
+      }
+      if (Array.isArray(item.goals2)) {
+        for (const g of item.goals2) {
+          let mainMinute = 0;
+          let offsetMinute = undefined;
+          
+          if (g.minute !== undefined && g.minute !== null) {
+            const minStr = String(g.minute);
+            if (minStr.includes('+')) {
+              const parts = minStr.split('+');
+              mainMinute = parseInt(parts[0], 10) || 0;
+              offsetMinute = parseInt(parts[1], 10) || undefined;
+            } else {
+              mainMinute = parseInt(minStr, 10) || 0;
+            }
+          }
+
+          goals.push({
+            player_name: g.name,
+            team_name: g.owngoal ? item.team1 : item.team2, // Invertera lag om självmål!
+            minute: mainMinute,
+            offset_minute: offsetMinute || g.offset,
+            is_penalty: !!g.penalty,
+            is_own_goal: !!g.owngoal
+          });
+        }
+      }
+
       return {
         external_match_id: `of-${tournamentId}-${index}`,
         home_team: item.team1,
@@ -158,7 +213,8 @@ export class OpenFootballProvider implements TournamentProvider {
         final_home_score: homeScore,
         final_away_score: awayScore,
         api_match_num: item.num,
-        broadcaster
+        broadcaster,
+        goals
       };
     });
   }

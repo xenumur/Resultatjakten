@@ -1,3 +1,12 @@
+export interface GoalData {
+  player_name: string;
+  team_name: string;
+  minute: number;
+  offset_minute?: number;
+  is_penalty?: boolean;
+  is_own_goal?: boolean;
+}
+
 export interface MatchData {
   external_match_id: string;
   home_team: string;
@@ -11,6 +20,7 @@ export interface MatchData {
   final_away_score?: number;
   api_match_num?: number;
   broadcaster?: string;
+  goals?: GoalData[];
 }
 
 export interface TournamentProvider {

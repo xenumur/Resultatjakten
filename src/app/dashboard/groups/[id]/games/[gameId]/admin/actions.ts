@@ -22,10 +22,10 @@ export async function bulkUpdateMatchResults(
   }
 
   try {
-    // Hämta befintliga matcher för att jämföra värden
+    // Hämta befintliga matcher för att jämföra värden samt deras målskyttar
     const { data: dbMatches } = await supabase
       .from('matches')
-      .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override, red_cards, own_goals')
+      .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override, red_cards, own_goals, match_goals(id, player_name, team_name, minute, is_penalty, is_own_goal)')
       .in('id', Array.from(matchIds))
 
     if (!dbMatches) return { success: false, error: 'Kunde inte hämta matcher för validering.' }
@@ -54,6 +54,46 @@ export async function bulkUpdateMatchResults(
       const newRedCards = isNaN(redCards) ? 0 : redCards
       const newOwnGoals = isNaN(ownGoals) ? 0 : ownGoals
 
+      // Hämta manuella målskyttar för matchen från formdatan
+      const matchGoals: any[] = []
+      let idx = 0
+      while (true) {
+        const nameKey = `${matchId}_goal_player_${idx}`
+        if (!formData.has(nameKey)) break
+        
+        const playerName = formData.get(nameKey) as string
+        if (playerName && playerName.trim()) {
+          const teamName = formData.get(`${matchId}_goal_team_${idx}`) as string
+          const minuteStr = formData.get(`${matchId}_goal_minute_${idx}`) as string
+          const isPenalty = formData.get(`${matchId}_goal_penalty_${idx}`) === 'on' || formData.get(`${matchId}_goal_penalty_${idx}`) === 'true'
+          const isOwnGoal = formData.get(`${matchId}_goal_owngoal_${idx}`) === 'on' || formData.get(`${matchId}_goal_owngoal_${idx}`) === 'true'
+          const minute = parseInt(minuteStr, 10)
+          
+          matchGoals.push({
+            match_id: matchId,
+            player_name: playerName.trim(),
+            team_name: teamName || (isOwnGoal ? (awayTeam || existing.away_team) : (homeTeam || existing.home_team)),
+            minute: isNaN(minute) ? null : minute,
+            is_penalty: isPenalty,
+            is_own_goal: isOwnGoal
+          })
+        }
+        idx++
+      }
+
+      // Jämför målskyttar
+      const existingGoals = (existing as any).match_goals || []
+      const goalsChanged = existingGoals.length !== matchGoals.length || 
+        matchGoals.some((g, i) => {
+          const eg = existingGoals[i]
+          if (!eg) return true
+          return g.player_name !== eg.player_name ||
+                 g.team_name !== eg.team_name ||
+                 g.minute !== eg.minute ||
+                 g.is_penalty !== eg.is_penalty ||
+                 g.is_own_goal !== eg.is_own_goal
+        })
+
       // Kolla om något faktiskt har ändrats
       const hasChanged = 
         newHomeScore !== existing.final_home_score ||
@@ -61,6 +101,7 @@ export async function bulkUpdateMatchResults(
         status !== existing.status ||
         newRedCards !== (existing.red_cards ?? 0) ||
         newOwnGoals !== (existing.own_goals ?? 0) ||
+        goalsChanged ||
         (homeTeam && homeTeam !== existing.home_team) ||
         (awayTeam && awayTeam !== existing.away_team)
 
@@ -82,6 +123,18 @@ export async function bulkUpdateMatchResults(
         .from('matches')
         .update(updateData)
         .eq('id', matchId)
+
+      // Uppdatera målskyttar: ta bort gamla och stoppa in nya
+      await supabase
+        .from('match_goals')
+        .delete()
+        .eq('match_id', matchId)
+        
+      if (matchGoals.length > 0) {
+        await supabase
+          .from('match_goals')
+          .insert(matchGoals)
+      }
     }
     
     // Automatisk omräkning av poäng efter bulk-uppdatering
@@ -126,6 +179,51 @@ export async function updateMatchResult(
     .from('matches')
     .update(updateData)
     .eq('id', matchId)
+
+  // Hämta manuella målskyttar för matchen från formdatan
+  const matchGoals: any[] = []
+  let idx = 0
+  while (true) {
+    const nameKey = `goal_player_${idx}`
+    const hasKey = formData.has(nameKey) || formData.has(`${matchId}_goal_player_${idx}`)
+    const keyToUse = formData.has(nameKey) ? nameKey : `${matchId}_goal_player_${idx}`
+    if (!hasKey) break
+    
+    const playerName = formData.get(keyToUse) as string
+    if (playerName && playerName.trim()) {
+      const teamPrefix = keyToUse.replace('_player_', '_team_')
+      const minutePrefix = keyToUse.replace('_player_', '_minute_')
+      const penaltyPrefix = keyToUse.replace('_player_', '_penalty_')
+      const owngoalPrefix = keyToUse.replace('_player_', '_owngoal_')
+      
+      const teamName = formData.get(teamPrefix) as string
+      const minuteStr = formData.get(minutePrefix) as string
+      const isPenalty = formData.get(penaltyPrefix) === 'on' || formData.get(penaltyPrefix) === 'true'
+      const isOwnGoal = formData.get(owngoalPrefix) === 'on' || formData.get(owngoalPrefix) === 'true'
+      const minute = parseInt(minuteStr, 10)
+      
+      matchGoals.push({
+        match_id: matchId,
+        player_name: playerName.trim(),
+        team_name: teamName || (isOwnGoal ? (awayTeam || '') : (homeTeam || '')),
+        minute: isNaN(minute) ? null : minute,
+        is_penalty: isPenalty,
+        is_own_goal: isOwnGoal
+      })
+    }
+    idx++
+  }
+
+  await supabase
+    .from('match_goals')
+    .delete()
+    .eq('match_id', matchId)
+
+  if (matchGoals.length > 0) {
+    await supabase
+      .from('match_goals')
+      .insert(matchGoals)
+  }
 
   // Automatisk omräkning av poäng efter individuell uppdatering
   await calculateScores(groupId, gameId)
@@ -335,7 +433,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
 
   const { data: dbMatches } = await supabase
     .from('matches')
-    .select('*')
+    .select('*, match_goals(*)')
     .eq('game_id', gameId)
 
   if (!dbMatches) {
@@ -450,16 +548,26 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           provider_status: liveMatch.status,
           provider_home_team: liveMatch.home_team,
           provider_away_team: liveMatch.away_team,
-          api_match_num: liveMatch.api_match_num
+          api_match_num: liveMatch.api_match_num,
+          provider_goals: liveMatch.goals || null
         }
 
         if (liveMatch.broadcaster) {
           updateData.broadcaster = liveMatch.broadcaster
         }
 
-        // IMPORTANT: If the match is not manually overridden, 
-        // update the final scores/status and teams (if they were placeholders)
-        if (!existingMatch.is_manual_override) {
+        // If the manual override matches the API score and status, we can safely clear the override
+        let isOverridden = existingMatch.is_manual_override
+        if (isOverridden && 
+            existingMatch.final_home_score === liveMatch.final_home_score && 
+            existingMatch.final_away_score === liveMatch.final_away_score && 
+            existingMatch.status === liveMatch.status) {
+          isOverridden = false
+          updateData.is_manual_override = false
+        }
+
+        // If the match is not overridden, we update teams/scores/status from the API
+        if (!isOverridden) {
           // If we had a placeholder but now have a real team, update it
           if (isPlaceholder(existingMatch.home_team) && !isPlaceholder(liveMatch.home_team)) {
             updateData.home_team = liveMatch.home_team
@@ -473,12 +581,34 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           updateData.status = liveMatch.status
         }
 
+        // We sync the goals if the match is not overridden, OR if it has NO active goals in the database yet
+        // (this automatically imports goals for previously played matches where goals were never registered).
+        const activeGoals = (existingMatch as any).match_goals || []
+        const shouldSyncGoals = !isOverridden || activeGoals.length === 0
+
+        if (shouldSyncGoals) {
+          // Synka målskyttar
+          await supabase.from('match_goals').delete().eq('match_id', existingMatch.id)
+          if (liveMatch.goals && liveMatch.goals.length > 0) {
+            const dbGoals = liveMatch.goals.map(g => ({
+              match_id: existingMatch.id,
+              player_name: g.player_name,
+              team_name: g.team_name,
+              minute: g.minute,
+              offset_minute: g.offset_minute ?? null,
+              is_penalty: g.is_penalty ?? false,
+              is_own_goal: g.is_own_goal ?? false
+            }))
+            await supabase.from('match_goals').insert(dbGoals)
+          }
+        }
+
         await supabase
           .from('matches')
           .update(updateData)
           .eq('id', existingMatch.id)
       } else {
-        await supabase
+        const { data: newMatch } = await supabase
           .from('matches')
           .insert({
             game_id: gameId,
@@ -499,8 +629,24 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
             provider_home_team: liveMatch.home_team,
             provider_away_team: liveMatch.away_team,
             api_match_num: liveMatch.api_match_num,
-            broadcaster: liveMatch.broadcaster
+            broadcaster: liveMatch.broadcaster,
+            provider_goals: liveMatch.goals || null
           })
+          .select('id')
+          .single()
+
+        if (newMatch && liveMatch.goals && liveMatch.goals.length > 0) {
+          const dbGoals = liveMatch.goals.map(g => ({
+            match_id: newMatch.id,
+            player_name: g.player_name,
+            team_name: g.team_name,
+            minute: g.minute,
+            offset_minute: g.offset_minute ?? null,
+            is_penalty: g.is_penalty ?? false,
+            is_own_goal: g.is_own_goal ?? false
+          }))
+          await supabase.from('match_goals').insert(dbGoals)
+        }
       }
     }
 
@@ -579,7 +725,7 @@ export async function acceptApiResult(groupId: string, gameId: string, matchId: 
 
   const { data: match } = await supabase
     .from('matches')
-    .select('provider_home_score, provider_away_score, provider_status, provider_home_team, provider_away_team')
+    .select('provider_home_score, provider_away_score, provider_status, provider_home_team, provider_away_team, provider_goals')
     .eq('id', matchId)
     .single()
 
@@ -596,6 +742,22 @@ export async function acceptApiResult(groupId: string, gameId: string, matchId: 
       is_manual_override: false
     })
     .eq('id', matchId)
+
+  // Återställ målskyttar från cached provider_goals
+  await supabase.from('match_goals').delete().eq('match_id', matchId)
+  const apiGoals = match.provider_goals as any[] | null
+  if (Array.isArray(apiGoals) && apiGoals.length > 0) {
+    const dbGoals = apiGoals.map(g => ({
+      match_id: matchId,
+      player_name: g.player_name,
+      team_name: g.team_name,
+      minute: g.minute,
+      offset_minute: g.offset_minute ?? null,
+      is_penalty: g.is_penalty ?? false,
+      is_own_goal: g.is_own_goal ?? false
+    }))
+    await supabase.from('match_goals').insert(dbGoals)
+  }
 
   await calculateScores(groupId, gameId)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)

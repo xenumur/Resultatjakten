@@ -62,7 +62,7 @@ export default async function GroupDetailPage({
   // Hämta de 4 närmaste kommande matcherna och turneringsstatistik för gruppens spel
   const gameIds = (games || []).map(g => g.id)
   
-  const [upcomingMatchesResult, statsResult] = gameIds.length > 0
+  const [upcomingMatchesResult, statsResult, goalsResult] = gameIds.length > 0
     ? await Promise.all([
         supabase
           .from('matches')
@@ -74,16 +74,55 @@ export default async function GroupDetailPage({
           .limit(4),
         supabase
           .from('matches')
-          .select('red_cards, own_goals')
-          .in('game_id', gameIds)
+          .select('home_team, away_team, final_home_score, final_away_score, status, red_cards, own_goals')
+          .in('game_id', gameIds),
+        supabase
+          .from('match_goals')
+          .select('player_name, team_name, is_own_goal, matches!inner(game_id)')
+          .in('matches.game_id', gameIds)
       ])
-    : [{ data: [] }, { data: [] }]
+    : [{ data: [] }, { data: [] }, { data: [] }]
 
   const upcomingMatches = upcomingMatchesResult?.data || []
   const matchStats = statsResult?.data || []
+  const matchGoals = goalsResult?.data || []
 
   const totalRedCards = matchStats.reduce((acc: number, m: any) => acc + (m.red_cards || 0), 0)
   const totalOwnGoals = matchStats.reduce((acc: number, m: any) => acc + (m.own_goals || 0), 0)
+
+  // Räkna ut Skytteligan (Topp 3 målskyttar, exkludera självmål)
+  const scorersMap: Record<string, { player_name: string; team_name: string; goals: number }> = {}
+  for (const g of matchGoals) {
+    if (g.is_own_goal) continue
+    const key = `${g.player_name}_${g.team_name}`
+    if (!scorersMap[key]) {
+      scorersMap[key] = { player_name: g.player_name, team_name: g.team_name, goals: 0 }
+    }
+    scorersMap[key].goals++
+  }
+
+  const topScorers = Object.values(scorersMap)
+    .sort((a, b) => b.goals - a.goals)
+    .slice(0, 3)
+
+  // Räkna ut målbästa länderna (Topp 3 länder som gjort flest mål)
+  const teamGoalsMap: Record<string, number> = {}
+  for (const m of matchStats) {
+    if (m.status === 'finished') {
+      if (m.final_home_score !== null && m.final_home_score !== undefined) {
+        teamGoalsMap[m.home_team] = (teamGoalsMap[m.home_team] || 0) + m.final_home_score
+      }
+      if (m.final_away_score !== null && m.final_away_score !== undefined) {
+        teamGoalsMap[m.away_team] = (teamGoalsMap[m.away_team] || 0) + m.final_away_score
+      }
+    }
+  }
+
+  const topTeams = Object.entries(teamGoalsMap)
+    .filter(([_, goals]) => goals > 0)
+    .map(([team_name, goals]) => ({ team_name, goals }))
+    .sort((a, b) => b.goals - a.goals)
+    .slice(0, 3)
 
   const now = new Date()
   const filteredDeadlines = (deadlines || []).filter(d => {
@@ -492,9 +531,9 @@ export default async function GroupDetailPage({
             )}
           </div>
 
-          {/* Turneringsstatistik */}
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-3xl shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          {/* Turneringsstatistik & Skytteliga */}
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4 text-indigo-500 shrink-0" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
@@ -514,6 +553,68 @@ export default async function GroupDetailPage({
                   <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider">Självmål</span>
                 </div>
               </div>
+            </div>
+
+            {/* Skytteliga (Topp 3) */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs select-none">🏆</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                  Skytteliga (Topp 3)
+                </span>
+              </div>
+              {topScorers.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {topScorers.map((scorer: any, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800/60 transition hover:border-indigo-500 dark:hover:border-indigo-500/50">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-lg leading-none shrink-0" role="img" aria-label={scorer.team_name}>
+                          {countryToFlag(scorer.team_name) || '🏳️'}
+                        </span>
+                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate" title={scorer.player_name}>
+                          {scorer.player_name}
+                        </span>
+                      </div>
+                      <span className="text-xs font-black bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full shrink-0">
+                        {scorer.goals} mål
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500 italic">Inga mål registrerade ännu.</div>
+              )}
+            </div>
+
+            {/* Målrikaste länder (Topp 3) */}
+            <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+              <div className="flex items-center gap-2">
+                <span className="text-xs select-none">🌍</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                  Målrikaste länder (Topp 3)
+                </span>
+              </div>
+              {topTeams.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {topTeams.map((team: any, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800/60 transition hover:border-indigo-500 dark:hover:border-indigo-500/50">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-lg leading-none shrink-0" role="img" aria-label={team.team_name}>
+                          {countryToFlag(team.team_name) || '🏳️'}
+                        </span>
+                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate" title={team.team_name}>
+                          {team.team_name}
+                        </span>
+                      </div>
+                      <span className="text-xs font-black bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full shrink-0">
+                        {team.goals} mål
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500 italic">Inga mål registrerade ännu.</div>
+              )}
             </div>
           </div>
         </div>
