@@ -30,7 +30,11 @@ export default async function DashboardPage() {
       .single()
   ])
 
-  const groups = (userGroups?.map(g => g.groups).filter(Boolean) || []) as { id: string; name: string; description: string | null }[]
+  const groups = (userGroups?.map(g => {
+    if (!g.groups) return null
+    if (Array.isArray(g.groups)) return g.groups[0]
+    return g.groups
+  }).filter(Boolean) || []) as unknown as { id: string; name: string; description: string | null }[]
   const validGroupIds = groups.map(g => g.id)
   const displayName = profile?.display_name || user.email?.split('@')[0] || 'Deltagare'
 
