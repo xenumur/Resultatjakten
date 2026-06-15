@@ -247,69 +247,57 @@ export default async function GroupDetailPage({
         </div>
       )}
 
-      {/* Prize Pool & Stats Summary */}
-      <section className="order-4 md:order-3 space-y-6">
-        <div className="flex items-center justify-center md:justify-start gap-2">
-          <Coins className="w-5 h-5 text-indigo-500 shrink-0" />
-          <h2 className="text-lg md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Prispott, Belöningar &amp; Statistik</h2>
+      {/* Prize Pool Summary */}
+      <section className="order-4 md:order-3 space-y-4">
+        <div className="flex items-center gap-2">
+          <Coins className="w-4 h-4 text-indigo-500 shrink-0" />
+          <h2 className="text-xs font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Prispott &amp; Fördelning</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-3xl shadow-xl shadow-indigo-600/20 text-white flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-70">Total Prispott</span>
-            <div className="mt-auto">
-              <div className="text-3xl md:text-4xl font-black leading-none">{formatMoney(totalPrizePool)}</div>
-              <p className="text-[9px] font-bold mt-2 opacity-60 uppercase tracking-wide">Baserat på {paidMembersCount} betalande</p>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 sm:p-5 rounded-3xl shadow-sm">
+          <div className="grid grid-cols-2 gap-4 items-center divide-x divide-zinc-100 dark:divide-zinc-800">
+            {/* Left: Total Prispott */}
+            <div className="pr-4 flex flex-col justify-center">
+              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-1">Total Prispott</span>
+              <div className="text-xl sm:text-2xl md:text-3xl font-black text-indigo-600 dark:text-indigo-400 leading-none">
+                {formatMoney(totalPrizePool)}
+              </div>
+              <span className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500 mt-1">
+                Baserat på {paidMembersCount} betalande
+              </span>
             </div>
-          </div>
 
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Prisfördelning</span>
-            <div className="space-y-3 mt-auto">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-amber-400/20">1</div>
-                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Guld (60%)</span>
-                </div>
-                <span className="font-black text-amber-600 dark:text-amber-400 text-base">{formatMoney(prizes.first)}</span>
+            {/* Right: Prisfördelning */}
+            <div className="pl-4 space-y-1.5 flex flex-col justify-center">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs">
+                <span className="font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-amber-400 text-white flex items-center justify-center text-[8px] font-black shrink-0">1</span>
+                  Guld (60%)
+                </span>
+                <span className="font-black text-zinc-900 dark:text-white">{formatMoney(prizes.first)}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-zinc-400 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-zinc-400/20">2</div>
-                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Silver (25%)</span>
-                </div>
-                <span className="font-black text-zinc-600 dark:text-zinc-400 text-base">{formatMoney(prizes.second)}</span>
+              <div className="flex items-center justify-between text-[11px] sm:text-xs">
+                <span className="font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-zinc-400 text-white flex items-center justify-center text-[8px] font-black shrink-0">2</span>
+                  Silver (25%)
+                </span>
+                <span className="font-black text-zinc-900 dark:text-white">{formatMoney(prizes.second)}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-black shadow-sm shadow-orange-500/20">3</div>
-                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Brons (10%)</span>
-                </div>
-                <span className="font-black text-orange-600 dark:text-orange-400 text-base">{formatMoney(prizes.third)}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm flex flex-col justify-between min-h-[140px] md:min-h-[160px]">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Turneringsstatistik</span>
-            <div className="grid grid-cols-2 gap-4 mt-auto">
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/20 hover:border-red-300 dark:hover:border-red-800 transition-colors">
-                <span className="text-xl mb-1 select-none">🟥</span>
-                <span className="text-2xl font-black text-red-600 dark:text-red-400 leading-none">{totalRedCards}</span>
-                <span className="text-[9px] font-extrabold uppercase text-red-500/70 tracking-wider mt-1 text-center">Röda kort</span>
-              </div>
-              <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
-                <span className="text-xl mb-1 select-none">⚽</span>
-                <span className="text-2xl font-black text-zinc-800 dark:text-zinc-200 leading-none">{totalOwnGoals}</span>
-                <span className="text-[9px] font-extrabold uppercase text-zinc-500 tracking-wider mt-1 text-center">Självmål</span>
+              <div className="flex items-center justify-between text-[11px] sm:text-xs">
+                <span className="font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-orange-500 text-white flex items-center justify-center text-[8px] font-black shrink-0">3</span>
+                  Brons (10%)
+                </span>
+                <span className="font-black text-zinc-900 dark:text-white">{formatMoney(prizes.third)}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-center md:justify-start">
-          <div className="text-center md:text-left flex items-center gap-2 text-[9px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800 max-w-full overflow-hidden">
-            <span className="shrink-0">🛡️</span> <span className="truncate">{formatMoney(prizes.reserved)} (5%) reserverat för admin</span>
+        <div className="flex items-center justify-start px-1">
+          <div className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
+            <span>🛡️</span>
+            <span>{formatMoney(prizes.reserved)} (5%) reserverat för admin</span>
           </div>
         </div>
       </section>
@@ -502,6 +490,31 @@ export default async function GroupDetailPage({
                 Ingen data ännu.
               </div>
             )}
+          </div>
+
+          {/* Turneringsstatistik */}
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-3xl shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-indigo-500 shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                  Turneringsstatistik
+                </span>
+              </div>
+              <div className="flex items-center gap-4 sm:gap-6">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm select-none">🟥</span>
+                  <span className="text-sm font-black text-red-600 dark:text-red-400">{totalRedCards}</span>
+                  <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider">Röda kort</span>
+                </div>
+                <div className="w-px h-3 bg-zinc-200 dark:bg-zinc-800" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm select-none">⚽</span>
+                  <span className="text-sm font-black text-zinc-800 dark:text-zinc-200">{totalOwnGoals}</span>
+                  <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider">Självmål</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
