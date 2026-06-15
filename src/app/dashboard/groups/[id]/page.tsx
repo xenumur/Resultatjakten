@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown, Calendar, Clock, Tv } from 'lucide-react'
+import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown, Calendar, Clock, Tv, Flame } from 'lucide-react'
 import { DeadlineCountdown } from '@/components/DeadlineCountdown'
 import { countryToFlag } from '@/lib/utils/flags'
 import { formatInTimeZone } from 'date-fns-tz'
@@ -59,33 +59,51 @@ export default async function GroupDetailPage({
     supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
 
-  // Hämta de 4 närmaste kommande matcherna och turneringsstatistik för gruppens spel
+  // Hämta alla matcher och turneringsstatistik för gruppens spel
   const gameIds = (games || []).map(g => g.id)
   
-  const [upcomingMatchesResult, statsResult, goalsResult] = gameIds.length > 0
+  const [matchesResult, goalsResult] = gameIds.length > 0
     ? await Promise.all([
         supabase
           .from('matches')
           .select('*')
           .in('game_id', gameIds)
-          .eq('status', 'upcoming')
-          .gte('kickoff_time', new Date().toISOString())
-          .order('kickoff_time', { ascending: true })
-          .limit(4),
-        supabase
-          .from('matches')
-          .select('home_team, away_team, final_home_score, final_away_score, status, red_cards, own_goals')
-          .in('game_id', gameIds),
+          .order('kickoff_time', { ascending: true }),
         supabase
           .from('match_goals')
           .select('player_name, team_name, is_own_goal, matches!inner(game_id)')
           .in('matches.game_id', gameIds)
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }]
+    : [{ data: [] }, { data: [] }]
 
-  const upcomingMatches = upcomingMatchesResult?.data || []
-  const matchStats = statsResult?.data || []
+  const allMatches = matchesResult?.data || []
+  const matchStats = allMatches
   const matchGoals = goalsResult?.data || []
+
+  // Filtrera kommande matcher: vi visar kommande matcher (kickoff >= nu),
+  // plus matchen/matcherna som spelas just nu eller startade senast (tills nästa match börjar).
+  const nowStr = new Date().toISOString()
+  const firstUpcomingIdx = allMatches.findIndex(m => m.kickoff_time >= nowStr)
+  
+  let selectedMatches: any[] = []
+  
+  if (firstUpcomingIdx === -1) {
+    if (allMatches.length > 0) {
+      const lastKickoff = allMatches[allMatches.length - 1].kickoff_time
+      selectedMatches = allMatches.filter(m => m.kickoff_time === lastKickoff)
+    }
+  } else {
+    const pastMatches = allMatches.slice(0, firstUpcomingIdx)
+    if (pastMatches.length > 0) {
+      const mostRecentPastKickoff = pastMatches[pastMatches.length - 1].kickoff_time
+      const mostRecentPastMatches = pastMatches.filter(m => m.kickoff_time === mostRecentPastKickoff)
+      selectedMatches = [...mostRecentPastMatches, ...allMatches.slice(firstUpcomingIdx)]
+    } else {
+      selectedMatches = allMatches.slice(firstUpcomingIdx)
+    }
+  }
+
+  const upcomingMatches = selectedMatches.slice(0, 4)
 
   const totalRedCards = matchStats.reduce((acc: number, m: any) => acc + (m.red_cards || 0), 0)
   const totalOwnGoals = matchStats.reduce((acc: number, m: any) => acc + (m.own_goals || 0), 0)
@@ -242,46 +260,76 @@ export default async function GroupDetailPage({
           </div>
           
           <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none snap-x snap-mandatory">
-            {upcomingMatches.map((match: any) => (
-              <Link
-                key={match.id}
-                href={`/dashboard/groups/${groupId}/games/${match.game_id}#match-${match.id}`}
-                className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 min-w-[280px] max-w-[320px] flex-1 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors shrink-0 group cursor-pointer"
-              >
-                {/* Teams */}
-                <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-lg leading-none shrink-0" role="img" aria-label={match.home_team}>
-                      {countryToFlag(match.home_team) || '🏳️'}
-                    </span>
-                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
-                      {match.home_team}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-lg leading-none shrink-0" role="img" aria-label={match.away_team}>
-                      {countryToFlag(match.away_team) || '🏳️'}
-                    </span>
-                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
-                      {match.away_team}
-                    </span>
-                  </div>
-                </div>
+            {upcomingMatches.map((match: any) => {
+              const hasScore = match.final_home_score !== null && match.final_away_score !== null;
+              const isLive = match.status === 'live';
+              const isFinished = match.status === 'finished';
 
-                {/* Time & Broadcaster Info */}
-                <div className="text-right flex flex-col items-end gap-1.5 shrink-0 pl-2">
-                  <span className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 tracking-wide">
-                    {formatKickoffTime(match.kickoff_time)}
-                  </span>
-                  {match.broadcaster && (
-                    <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 rounded text-[9px] font-extrabold tracking-tight uppercase">
-                      <Tv className="w-2.5 h-2.5 opacity-70 shrink-0" />
-                      <span>{match.broadcaster}</span>
+              return (
+                <Link
+                  key={match.id}
+                  href={`/dashboard/groups/${groupId}/games/${match.game_id}#match-${match.id}`}
+                  className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 min-w-[280px] max-w-[320px] flex-1 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors shrink-0 group cursor-pointer"
+                >
+                  {/* Teams */}
+                  <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-3">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-lg leading-none shrink-0" role="img" aria-label={match.home_team}>
+                          {countryToFlag(match.home_team) || '🏳️'}
+                        </span>
+                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
+                          {match.home_team}
+                        </span>
+                      </div>
+                      {hasScore && (
+                        <span className="text-xs font-black text-zinc-900 dark:text-white px-1">
+                          {match.final_home_score}
+                        </span>
+                      )}
                     </div>
-                  )}
-                </div>
-              </Link>
-            ))}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-lg leading-none shrink-0" role="img" aria-label={match.away_team}>
+                          {countryToFlag(match.away_team) || '🏳️'}
+                        </span>
+                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
+                          {match.away_team}
+                        </span>
+                      </div>
+                      {hasScore && (
+                        <span className="text-xs font-black text-zinc-900 dark:text-white px-1">
+                          {match.final_away_score}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Time & Broadcaster Info */}
+                  <div className="text-right flex flex-col items-end gap-1.5 shrink-0 pl-2">
+                    {isLive ? (
+                      <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-full border border-rose-100 dark:border-rose-900/30 animate-pulse uppercase tracking-wider flex items-center gap-1">
+                        <Flame className="w-2.5 h-2.5" /> Live
+                      </span>
+                    ) : isFinished ? (
+                      <span className="text-[9px] font-extrabold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                        Slut
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 tracking-wide">
+                        {formatKickoffTime(match.kickoff_time)}
+                      </span>
+                    )}
+                    {match.broadcaster && (
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 rounded text-[9px] font-extrabold tracking-tight uppercase">
+                        <Tv className="w-2.5 h-2.5 opacity-70 shrink-0" />
+                        <span>{match.broadcaster}</span>
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </div>
       )}
