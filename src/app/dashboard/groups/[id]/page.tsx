@@ -443,7 +443,7 @@ export default async function GroupDetailPage({
       </div>
 
       {/* Group Info & Deadlines Widget */}
-      <section className={`order-5 grid grid-cols-1 ${filteredDeadlines.length > 0 ? 'md:grid-cols-2' : ''} gap-6 md:gap-10`}>
+      <section className={`order-last grid grid-cols-1 ${filteredDeadlines.length > 0 ? 'md:grid-cols-2' : ''} gap-6 md:gap-10`}>
         {/* Deadlines Card (if any) */}
         {filteredDeadlines.length > 0 && (
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm space-y-6">
