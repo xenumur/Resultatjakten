@@ -1,14 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { updatePaymentStatus, updateGroupSettings } from './actions'
+import { updateGroupSettings } from './actions'
 import { GroupSettingsForm } from './GroupSettingsForm'
 import { PaymentStatusForm } from './PaymentStatusForm'
 import { DeleteGroupButton } from './DeleteGroupButton'
 import { RemoveMemberButton } from './RemoveMemberButton'
 import { DeadlineManagement } from './DeadlineManagement'
 import { StatusUpdateTrigger } from './StatusUpdateTrigger'
-import { Settings, Users, ArrowLeft, Calendar, Bell } from 'lucide-react'
+import { Settings, Users, ArrowLeft, Bell } from 'lucide-react'
 
 export default async function GroupAdminPage({
   params,
@@ -64,7 +64,8 @@ export default async function GroupAdminPage({
                 description: group.description,
                 entry_fee: group.entry_fee,
                 currency: group.currency,
-                payment_info: group.payment_info
+                payment_info: group.payment_info,
+                hide_group_info: group.hide_group_info
               }} 
             />
           </div>
@@ -103,7 +104,7 @@ export default async function GroupAdminPage({
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {members?.map(member => {
-                    const p = member.profiles as any
+                    const p = (member.profiles as unknown) as { display_name: string | null; email: string | null } | null
                     return (
                       <tr key={member.user_id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
                         <td className="p-5">

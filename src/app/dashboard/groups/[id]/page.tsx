@@ -622,35 +622,37 @@ export default async function GroupDetailPage({
       </div>
 
       {/* Group Info Widget (always at the very bottom) */}
-      <section 
-        style={{ order: 99 }}
-        className="bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Users className="w-24 h-24 text-indigo-500" />
-        </div>
-        <h3 className="text-xl font-black uppercase tracking-tight text-indigo-900 dark:text-indigo-100 relative z-10">Gruppinfo</h3>
-        <div className="space-y-6 relative z-10">
-          <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
-            <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
-            <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.entry_fee} {group.currency}</span>
+      {!group.hide_group_info && (
+        <section 
+          style={{ order: 99 }}
+          className="bg-indigo-50 dark:bg-indigo-900/10 border-2 border-indigo-100 dark:border-indigo-500/20 p-6 md:p-10 rounded-[32px] md:rounded-[40px] space-y-8 shadow-sm relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Users className="w-24 h-24 text-indigo-500" />
           </div>
-          {group.payment_info && (
+          <h3 className="text-xl font-black uppercase tracking-tight text-indigo-900 dark:text-indigo-100 relative z-10">Gruppinfo</h3>
+          <div className="space-y-6 relative z-10">
             <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
-              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Swish till</span>
-              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.payment_info}</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Insats</span>
+              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.entry_fee} {group.currency}</span>
             </div>
-          )}
-          <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
-            <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
-            <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white">{members.length}</span>
+            {group.payment_info && (
+              <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
+                <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Swish till</span>
+                <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white truncate">{group.payment_info}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pb-4 border-b border-indigo-200/50 dark:border-indigo-800/50 gap-4">
+              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Deltagare</span>
+              <span className="text-lg md:text-xl font-black text-indigo-900 dark:text-white">{members.length}</span>
+            </div>
+            <div className="flex justify-between items-center gap-4">
+              <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Din Roll</span>
+              <span className="text-[10px] font-black bg-indigo-600 text-white px-3 py-1 rounded-full uppercase tracking-widest truncate">{userMember?.role}</span>
+            </div>
           </div>
-          <div className="flex justify-between items-center gap-4">
-            <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest shrink-0">Din Roll</span>
-            <span className="text-[10px] font-black bg-indigo-600 text-white px-3 py-1 rounded-full uppercase tracking-widest truncate">{userMember?.role}</span>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   )
 }
