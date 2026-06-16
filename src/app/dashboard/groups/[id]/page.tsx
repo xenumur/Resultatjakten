@@ -82,28 +82,33 @@ export default async function GroupDetailPage({
 
   // Filtrera kommande matcher: vi visar kommande matcher (kickoff >= nu),
   // plus matchen/matcherna som spelas just nu eller startade senast (tills nästa match börjar).
+  // Vi döljer dock matcher där ett resultat redan har rapporterats in (dvs där final_home_score och final_away_score inte är null).
+  const matchesWithoutResult = allMatches.filter(
+    m => m.final_home_score === null || m.final_away_score === null
+  )
+
   const nowStr = new Date().toISOString()
-  const firstUpcomingIdx = allMatches.findIndex(m => m.kickoff_time >= nowStr)
+  const firstUpcomingIdx = matchesWithoutResult.findIndex(m => m.kickoff_time >= nowStr)
   
   let selectedMatches: any[] = []
   
   if (firstUpcomingIdx === -1) {
-    if (allMatches.length > 0) {
-      const lastKickoff = allMatches[allMatches.length - 1].kickoff_time
-      selectedMatches = allMatches.filter(m => m.kickoff_time === lastKickoff)
+    if (matchesWithoutResult.length > 0) {
+      const lastKickoff = matchesWithoutResult[matchesWithoutResult.length - 1].kickoff_time
+      selectedMatches = matchesWithoutResult.filter(m => m.kickoff_time === lastKickoff)
     }
   } else {
-    const pastMatches = allMatches.slice(0, firstUpcomingIdx)
+    const pastMatches = matchesWithoutResult.slice(0, firstUpcomingIdx)
     if (pastMatches.length > 0) {
       const mostRecentPastKickoff = pastMatches[pastMatches.length - 1].kickoff_time
       const mostRecentPastMatches = pastMatches.filter(m => m.kickoff_time === mostRecentPastKickoff)
-      selectedMatches = [...mostRecentPastMatches, ...allMatches.slice(firstUpcomingIdx)]
+      selectedMatches = [...mostRecentPastMatches, ...matchesWithoutResult.slice(firstUpcomingIdx)]
     } else {
-      selectedMatches = allMatches.slice(firstUpcomingIdx)
+      selectedMatches = matchesWithoutResult.slice(firstUpcomingIdx)
     }
   }
 
-  const upcomingMatches = selectedMatches.slice(0, 4)
+  const upcomingMatches = selectedMatches.slice(0, 8)
 
   const totalRedCards = matchStats.reduce((acc: number, m: any) => acc + (m.red_cards || 0), 0)
   const totalOwnGoals = matchStats.reduce((acc: number, m: any) => acc + (m.own_goals || 0), 0)
@@ -269,7 +274,7 @@ export default async function GroupDetailPage({
                 <Link
                   key={match.id}
                   href={`/dashboard/groups/${groupId}/games/${match.game_id}#match-${match.id}`}
-                  className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 min-w-[280px] max-w-[320px] flex-1 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors shrink-0 group cursor-pointer"
+                  className="flex items-center justify-between p-4 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 w-[280px] md:w-[300px] shrink-0 shadow-sm snap-start hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors group cursor-pointer"
                 >
                   {/* Teams */}
                   <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-3">
