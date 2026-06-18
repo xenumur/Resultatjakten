@@ -28,6 +28,17 @@ function formatKickoffTime(isoString: string) {
   }
 }
 
+function getPointBadgeColor(diff: number) {
+  if (diff >= 7) {
+    return "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 animate-pulse shadow-sm shadow-amber-500/10"
+  } else if (diff >= 5) {
+    return "text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 border-fuchsia-100 dark:border-fuchsia-500/20"
+  } else if (diff >= 3) {
+    return "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20"
+  } else {
+    return "text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border-sky-100 dark:border-sky-500/20"
+  }
+}
 
 export default async function GroupDetailPage({
   params,
@@ -560,8 +571,7 @@ export default async function GroupDetailPage({
                                   </div>
                                 )}
                                 {pointDiff > 0 && (
-                                  <div className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400 font-black text-[10px] bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-100 dark:border-amber-500/20 animate-pulse" title={`+${pointDiff} poäng sedan förra uppdateringen`}>
-                                    <Flame className="w-2.5 h-2.5 shrink-0 fill-amber-500 dark:fill-amber-400" />
+                                  <div className={`flex items-center font-black text-[10px] px-1.5 py-0.5 rounded-full border ${getPointBadgeColor(pointDiff)}`} title={`+${pointDiff} poäng sedan förra uppdateringen`}>
                                     <span>+{pointDiff}p</span>
                                   </div>
                                 )}
