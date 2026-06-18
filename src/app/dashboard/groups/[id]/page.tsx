@@ -221,10 +221,15 @@ export default async function GroupDetailPage({
   let currentRank = 1
   const rankedLeaderboard = leaderboard.map((entry, i) => {
     if (i > 0 && entry.total_points < leaderboard[i - 1].total_points) {
-      currentRank++
+      currentRank = i + 1
     }
     const memberObj = members.find((m: any) => m.user_id === entry.user_id)
-    return { ...entry, rank: currentRank, previous_rank: memberObj?.previous_rank }
+    return { 
+      ...entry, 
+      rank: currentRank, 
+      previous_rank: memberObj?.previous_rank,
+      previous_points: memberObj?.previous_points
+    }
   })
 
   const formatMoney = (amount: number) => `${amount} ${group.currency}`
@@ -513,6 +518,9 @@ export default async function GroupDetailPage({
                   {rankedLeaderboard.map((entry) => {
                     const isTop3 = entry.rank <= 3
                     const isMe = entry.user_id === user.id
+                    const pointDiff = entry.previous_points !== undefined && entry.previous_points !== null
+                      ? entry.total_points - entry.previous_points
+                      : 0
 
                     return (
                       <tr
@@ -549,6 +557,12 @@ export default async function GroupDetailPage({
                                   <div className="flex items-center gap-0.5 text-red-500 font-black text-[10px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
                                     <ArrowDown className="w-2.5 h-2.5 shrink-0" />
                                     <span>{entry.rank - entry.previous_rank}</span>
+                                  </div>
+                                )}
+                                {pointDiff > 0 && (
+                                  <div className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400 font-black text-[10px] bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-100 dark:border-amber-500/20 animate-pulse" title={`+${pointDiff} poäng sedan förra uppdateringen`}>
+                                    <Flame className="w-2.5 h-2.5 shrink-0 fill-amber-500 dark:fill-amber-400" />
+                                    <span>+{pointDiff}p</span>
                                   </div>
                                 )}
                                 {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}

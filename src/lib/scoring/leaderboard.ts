@@ -6,6 +6,7 @@ export interface LeaderboardEntry {
   total_points: number
   rank: number
   previous_rank?: number | null
+  previous_points?: number | null
 }
 
 /**
@@ -21,7 +22,7 @@ export async function getGroupLeaderboard(groupId: string): Promise<LeaderboardE
     { data: knockoutPredictions },
     { data: bonusAnswers }
   ] = await Promise.all([
-    supabase.from('group_members').select('user_id, previous_rank, profiles:user_id(display_name)').eq('group_id', groupId),
+    supabase.from('group_members').select('user_id, previous_rank, previous_points, profiles:user_id(display_name)').eq('group_id', groupId),
     supabase.from('predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('knockout_predictions').select('user_id, points_awarded').eq('group_id', groupId),
     supabase.from('bonus_answers').select('user_id, points_awarded, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId)
@@ -59,7 +60,8 @@ export async function getGroupLeaderboard(groupId: string): Promise<LeaderboardE
         user_id, 
         total_points,
         display_name: (member?.profiles as any)?.display_name || 'Okänd deltagare',
-        previous_rank: member?.previous_rank
+        previous_rank: member?.previous_rank,
+        previous_points: member?.previous_points
       }
     })
     .sort((a, b) => b.total_points - a.total_points)
@@ -67,7 +69,7 @@ export async function getGroupLeaderboard(groupId: string): Promise<LeaderboardE
   let currentRank = 1
   const rankedLeaderboard = leaderboard.map((entry, i) => {
     if (i > 0 && entry.total_points < leaderboard[i - 1].total_points) {
-      currentRank++
+      currentRank = i + 1
     }
     return { ...entry, rank: currentRank }
   })
@@ -83,11 +85,14 @@ export async function snapshotGroupLeaderboard(groupId: string) {
   const supabase = createAdminClient()
   const leaderboard = await getGroupLeaderboard(groupId)
 
-  // Batch update previous ranks
+  // Batch update previous ranks & points
   for (const entry of leaderboard) {
     await supabase
       .from('group_members')
-      .update({ previous_rank: entry.rank })
+      .update({ 
+        previous_rank: entry.rank,
+        previous_points: entry.total_points
+      })
       .eq('group_id', groupId)
       .eq('user_id', entry.user_id)
   }

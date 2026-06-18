@@ -51,8 +51,8 @@ export default async function BonusLeaderboardPage({
   // Rank assignment
   let currentRank = 1
   const rankedLeaderboard = leaderboard.map((entry, i) => {
-    if (i > 0 && (entry.points < leaderboard[i - 1].points)) {
-      currentRank++
+    if (i > 0 && (entry.points !== leaderboard[i - 1].points || entry.answered !== leaderboard[i - 1].answered)) {
+      currentRank = i + 1
     }
     return { ...entry, rank: currentRank }
   })

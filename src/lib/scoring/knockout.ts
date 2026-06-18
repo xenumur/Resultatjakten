@@ -107,7 +107,7 @@ export function calculateKnockoutLeaderboard(
   let currentRank = 1
   return scores.map((s, i) => {
     if (i > 0 && s.total_points < scores[i - 1].total_points) {
-      currentRank++
+      currentRank = i + 1
     }
     return { ...s, rank: currentRank }
   })
