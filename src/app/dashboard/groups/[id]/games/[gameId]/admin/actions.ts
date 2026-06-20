@@ -331,7 +331,10 @@ export async function calculateScores(groupId: string, gameId: string, _formData
       if (pred.points_awarded !== points) {
         await supabase
           .from('predictions')
-          .update({ points_awarded: points })
+          .update({ 
+            points_awarded: points,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', pred.id)
       }
     }
@@ -412,7 +415,10 @@ async function recalculateAllKnockoutScores(gameId: string, matches: any[], supa
     if (pred.points_awarded !== pts) {
       await supabase
         .from('knockout_predictions')
-        .update({ points_awarded: pts })
+        .update({ 
+          points_awarded: pts,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', pred.id)
     }
   }

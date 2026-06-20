@@ -250,7 +250,10 @@ export async function recalculateKnockoutPoints(gameId: string, supabase: any) {
     if ((pred as any).points_awarded !== pts) {
       await adminClient
         .from('knockout_predictions')
-        .update({ points_awarded: pts })
+        .update({ 
+          points_awarded: pts,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', pred.id)
     }
   }

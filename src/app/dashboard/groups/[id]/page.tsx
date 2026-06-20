@@ -63,7 +63,7 @@ export default async function GroupDetailPage({
   ] = await Promise.all([
     supabase.from('groups').select('*').eq('id', groupId).single(),
     supabase.from('group_members').select('*, profiles:user_id(display_name, email)').eq('group_id', groupId),
-    supabase.from('predictions').select('user_id, points_awarded, match_id').eq('group_id', groupId),
+    supabase.from('predictions').select('user_id, points_awarded, match_id, updated_at').eq('group_id', groupId),
     supabase.from('knockout_predictions').select('user_id, points_awarded, updated_at').eq('group_id', groupId),
     supabase.from('games').select('*').eq('group_id', groupId),
     supabase.from('bonus_answers').select('user_id, points_awarded, graded_at, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId),
@@ -206,16 +206,11 @@ export default async function GroupDetailPage({
   // Calculate 24h point window boundaries
   const nowMs = Date.now()
   const oneDayMs = 24 * 60 * 60 * 1000
-  const recentFinishedMatchIds = new Set(
-    allMatches
-      .filter(m => m.status === 'finished' && m.updated_at && (nowMs - new Date(m.updated_at).getTime()) <= oneDayMs)
-      .map(m => m.id)
-  )
 
   for (const p of matchPredictions || []) {
     if (userScores[p.user_id]) {
       userScores[p.user_id].match_points += (p.points_awarded || 0)
-      if (p.points_awarded && p.match_id && recentFinishedMatchIds.has(p.match_id)) {
+      if (p.points_awarded && p.updated_at && (nowMs - new Date(p.updated_at).getTime()) <= oneDayMs) {
         userScores[p.user_id].points_24h += p.points_awarded
       }
     }
@@ -615,8 +610,8 @@ export default async function GroupDetailPage({
                               {entry.total_points}
                             </span>
                             {!group.hide_24h_points && entry.points_24h > 0 && (
-                              <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/30 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 mt-0.5 select-none" title="Poäng intjänade senaste 24 timmarna">
-                                🔥 +{entry.points_24h}
+                              <span className="text-[9px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 px-1.5 py-0.5 rounded mt-0.5 select-none" title="Poäng intjänade senaste 24 timmarna">
+                                +{entry.points_24h}p senaste 24h
                               </span>
                             )}
                           </div>
