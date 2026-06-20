@@ -63,10 +63,10 @@ export default async function GroupDetailPage({
   ] = await Promise.all([
     supabase.from('groups').select('*').eq('id', groupId).single(),
     supabase.from('group_members').select('*, profiles:user_id(display_name, email)').eq('group_id', groupId),
-    supabase.from('predictions').select('user_id, points_awarded').eq('group_id', groupId),
-    supabase.from('knockout_predictions').select('user_id, points_awarded').eq('group_id', groupId),
+    supabase.from('predictions').select('user_id, points_awarded, match_id').eq('group_id', groupId),
+    supabase.from('knockout_predictions').select('user_id, points_awarded, updated_at').eq('group_id', groupId),
     supabase.from('games').select('*').eq('group_id', groupId),
-    supabase.from('bonus_answers').select('user_id, points_awarded, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId),
+    supabase.from('bonus_answers').select('user_id, points_awarded, graded_at, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId),
     supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
 
@@ -188,7 +188,7 @@ export default async function GroupDetailPage({
   }
 
   // --- Consolidated Leaderboard Logic ---
-  const userScores: Record<string, { display_name: string; match_points: number; knockout_points: number; bonus_points: number; total_points: number; is_paid: boolean }> = {}
+  const userScores: Record<string, { display_name: string; match_points: number; knockout_points: number; bonus_points: number; total_points: number; points_24h: number; is_paid: boolean }> = {}
 
   for (const m of members) {
     const p = m.profiles as any
@@ -198,25 +198,44 @@ export default async function GroupDetailPage({
       knockout_points: 0,
       bonus_points: 0,
       total_points: 0,
+      points_24h: 0,
       is_paid: m.payment_status === 'paid'
     }
   }
 
+  // Calculate 24h point window boundaries
+  const nowMs = Date.now()
+  const oneDayMs = 24 * 60 * 60 * 1000
+  const recentFinishedMatchIds = new Set(
+    allMatches
+      .filter(m => m.status === 'finished' && m.updated_at && (nowMs - new Date(m.updated_at).getTime()) <= oneDayMs)
+      .map(m => m.id)
+  )
+
   for (const p of matchPredictions || []) {
     if (userScores[p.user_id]) {
       userScores[p.user_id].match_points += (p.points_awarded || 0)
+      if (p.points_awarded && p.match_id && recentFinishedMatchIds.has(p.match_id)) {
+        userScores[p.user_id].points_24h += p.points_awarded
+      }
     }
   }
 
   for (const p of knockoutPredictions || []) {
     if (userScores[p.user_id]) {
       userScores[p.user_id].knockout_points += (p.points_awarded || 0)
+      if (p.points_awarded && p.updated_at && (nowMs - new Date(p.updated_at).getTime()) <= oneDayMs) {
+        userScores[p.user_id].points_24h += p.points_awarded
+      }
     }
   }
 
   for (const a of bonusAnswers || []) {
     if (userScores[a.user_id]) {
       userScores[a.user_id].bonus_points += (a.points_awarded || 0)
+      if (a.points_awarded && a.graded_at && (nowMs - new Date(a.graded_at).getTime()) <= oneDayMs) {
+        userScores[a.user_id].points_24h += a.points_awarded
+      }
     }
   }
 
@@ -239,7 +258,8 @@ export default async function GroupDetailPage({
       ...entry, 
       rank: currentRank, 
       previous_rank: memberObj?.previous_rank,
-      previous_points: memberObj?.previous_points
+      previous_points: memberObj?.previous_points,
+      points_24h: entry.points_24h
     }
   })
 
@@ -590,9 +610,16 @@ export default async function GroupDetailPage({
                         <td className="py-3 px-1.5 md:py-5 md:px-6 text-center font-bold text-zinc-500 text-[11px] md:text-xs">{entry.knockout_points}</td>
                         <td className="py-3 px-1.5 md:py-5 md:px-6 text-center font-bold text-amber-600 dark:text-amber-400 text-[11px] md:text-xs">{entry.bonus_points}</td>
                         <td className="py-3 pl-2 pr-4 md:py-5 md:px-6 text-right">
-                          <span className={`text-base md:text-xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
-                            {entry.total_points}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span className={`text-base md:text-xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
+                              {entry.total_points}
+                            </span>
+                            {!group.hide_24h_points && entry.points_24h > 0 && (
+                              <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/30 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 mt-0.5 select-none" title="Poäng intjänade senaste 24 timmarna">
+                                🔥 +{entry.points_24h}
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )

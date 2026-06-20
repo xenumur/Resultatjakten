@@ -65,7 +65,8 @@ export default async function GroupAdminPage({
                 entry_fee: group.entry_fee,
                 currency: group.currency,
                 payment_info: group.payment_info,
-                hide_group_info: group.hide_group_info
+                hide_group_info: group.hide_group_info,
+                hide_24h_points: group.hide_24h_points
               }} 
             />
           </div>
