@@ -99,3 +99,42 @@ export async function snapshotGroupLeaderboard(groupId: string) {
 
   return leaderboard
 }
+
+/**
+ * Prepares a leaderboard snapshot to detect changes.
+ * Returns a function that, when called, will save the snapshot as the previous state
+ * ONLY if the current leaderboard has actually changed.
+ */
+export async function prepareLeaderboardSnapshot(groupId: string) {
+  const supabase = createAdminClient()
+  const snapshot = await getGroupLeaderboard(groupId)
+
+  return async () => {
+    const currentLeaderboard = await getGroupLeaderboard(groupId)
+    
+    // Check if any user's points or rank has changed
+    let hasChanged = false
+    for (const entry of currentLeaderboard) {
+      const snapEntry = snapshot.find(s => s.user_id === entry.user_id)
+      if (!snapEntry || snapEntry.total_points !== entry.total_points || snapEntry.rank !== entry.rank) {
+        hasChanged = true
+        break
+      }
+    }
+
+    if (hasChanged) {
+      // Batch update previous ranks & points
+      for (const entry of snapshot) {
+        await supabase
+          .from('group_members')
+          .update({ 
+            previous_rank: entry.rank,
+            previous_points: entry.total_points
+          })
+          .eq('group_id', groupId)
+          .eq('user_id', entry.user_id)
+      }
+    }
+  }
+}
+

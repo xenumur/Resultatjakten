@@ -112,7 +112,7 @@ export async function toggleKnockoutLock(groupId: string, gameId: string) {
 
 // ─── Admin: Save actual teams per round ──────────────────────────────────────
 
-import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
+import { prepareLeaderboardSnapshot } from '@/lib/scoring/leaderboard'
 
 export async function saveActualTeams(
   groupId: string,
@@ -143,11 +143,14 @@ export async function saveActualTeams(
     }
   }
 
-  // Snapshot leaderboard before calculating new points
-  await snapshotGroupLeaderboard(groupId)
+  // Prepare leaderboard snapshot before calculating new points to detect changes
+  const commitSnapshot = await prepareLeaderboardSnapshot(groupId)
 
   // Recalculate all user points
   await recalculateKnockoutPoints(gameId, supabase)
+
+  // Commit snapshot if changes occurred
+  await commitSnapshot()
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout/admin`)
@@ -170,10 +173,13 @@ export async function forceRecalculateKnockoutPoints(groupId: string, gameId: st
     return { error: 'Åtkomst nekad.' }
   }
 
-  // Snapshot leaderboard before calculating new points
-  await snapshotGroupLeaderboard(groupId)
+  // Prepare leaderboard snapshot before calculating new points to detect changes
+  const commitSnapshot = await prepareLeaderboardSnapshot(groupId)
 
   await recalculateKnockoutPoints(gameId, supabase)
+
+  // Commit snapshot if changes occurred
+  await commitSnapshot()
 
   revalidatePath(`/dashboard/groups/${groupId}`)
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/knockout`)

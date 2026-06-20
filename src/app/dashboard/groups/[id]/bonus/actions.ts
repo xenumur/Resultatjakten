@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
+import { prepareLeaderboardSnapshot } from '@/lib/scoring/leaderboard'
 
 export async function createBonusQuestion(formData: FormData) {
   const supabase = await createClient()
@@ -97,8 +97,8 @@ export async function gradeBonusAnswer(formData: FormData) {
   const points = parseInt(formData.get('points') as string)
   const comment = formData.get('comment') as string
 
-  // Snapshot leaderboard before updating points
-  await snapshotGroupLeaderboard(groupId)
+  // Prepare leaderboard snapshot before updating points to detect changes
+  const commitSnapshot = await prepareLeaderboardSnapshot(groupId)
 
   const { error } = await supabase
     .from('bonus_answers')
@@ -111,6 +111,9 @@ export async function gradeBonusAnswer(formData: FormData) {
     .eq('id', answerId)
 
   if (error) throw error
+
+  // Commit snapshot if changes occurred
+  await commitSnapshot()
 
   revalidatePath(`/dashboard/groups/${groupId}/bonus`)
   revalidatePath(`/dashboard/groups/${groupId}/bonus/admin/grade/${questionId}`)

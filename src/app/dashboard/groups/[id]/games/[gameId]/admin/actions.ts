@@ -257,7 +257,7 @@ export async function updateGameName(groupId: string, gameId: string, prevState:
 
 
 import { KNOCKOUT_ROUNDS, KNOCKOUT_ROUND_POINTS } from '@/lib/scoring/knockout'
-import { snapshotGroupLeaderboard } from '@/lib/scoring/leaderboard'
+import { prepareLeaderboardSnapshot } from '@/lib/scoring/leaderboard'
 
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
   const supabase = await createClient()
@@ -299,8 +299,8 @@ export async function calculateScores(groupId: string, gameId: string, _formData
     return
   }
 
-  // Snapshot leaderboard before updating points
-  await snapshotGroupLeaderboard(groupId)
+  // Prepare leaderboard snapshot before updating points to detect changes
+  const commitSnapshot = await prepareLeaderboardSnapshot(groupId)
 
   // 1. Calculate Match Results Points
   for (const match of matches) {
@@ -339,6 +339,9 @@ export async function calculateScores(groupId: string, gameId: string, _formData
 
   // 2. Calculate Knockout Stage Points (Robust Automation)
   await recalculateAllKnockoutScores(gameId, matches, supabase)
+
+  // Commit snapshot if changes occurred
+  await commitSnapshot()
 
   revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/leaderboard`)
   return { success: true, message: 'Alla poäng (matcher & slutspel) har räknats om!' }
