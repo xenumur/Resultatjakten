@@ -40,20 +40,9 @@ interface LeaderboardClientProps {
   focusMatches: Match[]
   predictions: Prediction[]
   hide24hPoints: boolean
+  hideMeBadge: boolean
   isResetState: boolean
   focusDayLabel: string
-}
-
-function getPointBadgeColor(diff: number) {
-  if (diff >= 7) {
-    return "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 animate-pulse shadow-sm shadow-amber-500/10"
-  } else if (diff >= 5) {
-    return "text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10 border-fuchsia-100 dark:border-fuchsia-500/20"
-  } else if (diff >= 3) {
-    return "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20"
-  } else {
-    return "text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border-sky-100 dark:border-sky-500/20"
-  }
 }
 
 export function LeaderboardClient({
@@ -62,6 +51,7 @@ export function LeaderboardClient({
   focusMatches,
   predictions,
   hide24hPoints,
+  hideMeBadge,
   isResetState,
   focusDayLabel
 }: LeaderboardClientProps) {
@@ -90,9 +80,6 @@ export function LeaderboardClient({
               const isTop3 = entry.rank <= 3
               const isMe = entry.user_id === currentUserId
               const isExpanded = expandedUserId === entry.user_id
-              const pointDiff = entry.previous_points !== undefined && entry.previous_points !== null
-                ? entry.total_points - entry.previous_points
-                : 0
 
               return (
                 <Fragment key={entry.user_id}>
@@ -137,12 +124,7 @@ export function LeaderboardClient({
                                 <span>{entry.rank - entry.previous_rank}</span>
                               </div>
                             )}
-                            {pointDiff > 0 && (
-                              <div className={`flex items-center font-black text-[10px] px-1.5 py-0.5 rounded-full border ${getPointBadgeColor(pointDiff)}`} title={`+${pointDiff} poäng sedan förra uppdateringen`}>
-                                <span>+{pointDiff}p</span>
-                              </div>
-                            )}
-                            {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
+                            {isMe && !hideMeBadge && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                           </div>
                           <div className="flex items-center gap-1 md:gap-1.5">
                             <span className={`w-1 h-1 rounded-full shrink-0 ${entry.is_paid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>

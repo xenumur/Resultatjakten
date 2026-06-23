@@ -609,6 +609,7 @@ export default async function GroupDetailPage({
             focusMatches={focusMatches}
             predictions={focusPredictions}
             hide24hPoints={!!group.hide_24h_points}
+            hideMeBadge={!!group.hide_me_badge}
             isResetState={isResetState}
             focusDayLabel={focusDayLabel}
           />

@@ -72,6 +72,7 @@ export async function updateGroupSettings(groupId: string, formData: FormData) {
   const paymentInfo = formData.get('payment_info') as string
   const hideGroupInfo = formData.get('hide_group_info') === 'true' || formData.get('hide_group_info') === 'on'
   const hide24hPoints = formData.get('hide_24h_points') === 'true' || formData.get('hide_24h_points') === 'on'
+  const hideMeBadge = formData.get('hide_me_badge') === 'true' || formData.get('hide_me_badge') === 'on'
 
   if (!name || name.trim().length < 2) {
     return { error: 'Namnet måste vara minst 2 tecken.' }
@@ -86,7 +87,8 @@ export async function updateGroupSettings(groupId: string, formData: FormData) {
       currency: currency?.trim() || 'SEK',
       payment_info: paymentInfo?.trim() || null,
       hide_group_info: hideGroupInfo,
-      hide_24h_points: hide24hPoints
+      hide_24h_points: hide24hPoints,
+      hide_me_badge: hideMeBadge
     })
     .eq('id', groupId)
 
