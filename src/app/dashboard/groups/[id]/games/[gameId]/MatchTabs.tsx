@@ -46,8 +46,8 @@ interface MatchTabsProps {
 }
 
 function MatchItem({ match, prediction }: { match: Match; prediction?: Prediction }) {
-  const isFinished = match.status === 'finished'
-  const isLive = match.status === 'live'
+  const isFinished = match.status === 'finished' || (match.final_home_score !== null && match.final_away_score !== null)
+  const isLive = match.status === 'live' || (new Date(match.kickoff_time).getTime() <= Date.now() && !isFinished)
   const hasPoints = isFinished && prediction && prediction.points_awarded !== null
 
   // Gruppera mål
@@ -177,8 +177,11 @@ export function MatchTabs({ matches, predictionMap }: MatchTabsProps) {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'played'>('upcoming')
 
   // Split matches into upcoming (including live) and played
-  const upcomingMatches = matches.filter(m => m.status === 'upcoming' || m.status === 'live')
-  const playedMatches = matches.filter(m => m.status === 'finished')
+  const upcomingMatches = matches.filter(m => {
+    const isFinished = m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null)
+    return !isFinished
+  })
+  const playedMatches = matches.filter(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
 
   // Auto-scroll and highlight when navigating to a match hash
   useEffect(() => {

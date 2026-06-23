@@ -175,8 +175,8 @@ export function LeaderboardClient({
                               {focusMatches.map(match => {
                                 const pred = predictions.find(p => p.user_id === entry.user_id && p.match_id === match.id)
                                 const points = pred?.points_awarded ?? 0
-                                const isFinished = match.status === 'finished'
-                                const isLive = match.status === 'live'
+                                const isFinished = match.status === 'finished' || (match.final_home_score !== null && match.final_away_score !== null)
+                                const isLive = match.status === 'live' || (new Date(match.kickoff_time).getTime() <= Date.now() && !isFinished)
 
                                 const rowContent = (
                                   <>

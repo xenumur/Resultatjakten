@@ -202,9 +202,10 @@ export default async function GroupDetailPage({
   }
 
   const dayInfos = Object.entries(matchesByDay).map(([dayStr, dayMatches]) => {
-    const hasLive = dayMatches.some(m => m.status === 'live')
-    const hasFinished = dayMatches.some(m => m.status === 'finished')
-    const allFinished = dayMatches.every(m => m.status === 'finished')
+    const nowTime = now.getTime()
+    const hasLive = dayMatches.some(m => m.status === 'live' || (new Date(m.kickoff_time).getTime() <= nowTime && !(m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))))
+    const hasFinished = dayMatches.some(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
+    const allFinished = dayMatches.every(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
     const status = hasLive ? 'live' : (allFinished && hasFinished ? 'finished' : 'upcoming')
     return { dayStr, status, matches: dayMatches }
   })
@@ -359,8 +360,8 @@ export default async function GroupDetailPage({
           <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none snap-x snap-mandatory">
             {upcomingMatches.map((match: any) => {
               const hasScore = match.final_home_score !== null && match.final_away_score !== null;
-              const isLive = match.status === 'live';
-              const isFinished = match.status === 'finished';
+              const isFinished = match.status === 'finished' || hasScore;
+              const isLive = match.status === 'live' || (new Date(match.kickoff_time).getTime() <= nowTimestamp && !isFinished);
 
               return (
                 <Link
