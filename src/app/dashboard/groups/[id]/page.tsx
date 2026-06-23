@@ -612,6 +612,7 @@ export default async function GroupDetailPage({
             hideMeBadge={!!group.hide_me_badge}
             isResetState={isResetState}
             focusDayLabel={focusDayLabel}
+            groupId={groupId}
           />
 
           {/* Turneringsstatistik & Skytteliga */}

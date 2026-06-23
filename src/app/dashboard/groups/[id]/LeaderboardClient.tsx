@@ -3,6 +3,7 @@
 import { useState, Fragment } from 'react'
 import { ArrowUp, ArrowDown, ChevronDown, ChevronUp } from 'lucide-react'
 import { countryToFlag } from '@/lib/utils/flags'
+import Link from 'next/link'
 
 interface LeaderboardEntry {
   user_id: string
@@ -20,6 +21,7 @@ interface LeaderboardEntry {
 
 interface Match {
   id: string
+  game_id: string
   home_team: string
   away_team: string
   kickoff_time: string
@@ -43,7 +45,10 @@ interface LeaderboardClientProps {
   hideMeBadge: boolean
   isResetState: boolean
   focusDayLabel: string
+  groupId: string
 }
+
+const ENABLE_MATCH_LINKS = true
 
 export function LeaderboardClient({
   rankedLeaderboard,
@@ -53,7 +58,8 @@ export function LeaderboardClient({
   hide24hPoints,
   hideMeBadge,
   isResetState,
-  focusDayLabel
+  focusDayLabel,
+  groupId
 }: LeaderboardClientProps) {
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null)
 
@@ -171,19 +177,19 @@ export function LeaderboardClient({
                                 const points = pred?.points_awarded ?? 0
                                 const isFinished = match.status === 'finished'
                                 const isLive = match.status === 'live'
-                                
-                                return (
-                                  <div key={match.id} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+
+                                const rowContent = (
+                                  <>
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                       <span className="shrink-0 text-base" role="img" aria-label={match.home_team}>
                                         {countryToFlag(match.home_team) || '🏳️'}
                                       </span>
-                                      <span className="truncate max-w-[80px] sm:max-w-none">{match.home_team}</span>
+                                      <span className={`truncate max-w-[80px] sm:max-w-none ${ENABLE_MATCH_LINKS ? 'group-hover/match:text-indigo-600 dark:group-hover/match:text-indigo-400 transition-colors' : ''}`}>{match.home_team}</span>
                                       <span className="text-zinc-400 font-normal">vs</span>
                                       <span className="shrink-0 text-base" role="img" aria-label={match.away_team}>
                                         {countryToFlag(match.away_team) || '🏳️'}
                                       </span>
-                                      <span className="truncate max-w-[80px] sm:max-w-none">{match.away_team}</span>
+                                      <span className={`truncate max-w-[80px] sm:max-w-none ${ENABLE_MATCH_LINKS ? 'group-hover/match:text-indigo-600 dark:group-hover/match:text-indigo-400 transition-colors' : ''}`}>{match.away_team}</span>
                                     </div>
                                     
                                     <div className="flex items-center gap-3 shrink-0">
@@ -209,6 +215,27 @@ export function LeaderboardClient({
                                         {points > 0 ? `+${points}p` : '0p'}
                                       </div>
                                     </div>
+                                  </>
+                                )
+
+                                if (ENABLE_MATCH_LINKS) {
+                                  return (
+                                    <Link
+                                      key={match.id}
+                                      href={`/dashboard/groups/${groupId}/games/${match.game_id}#match-${match.id}`}
+                                      className="py-2.5 px-3 -mx-3 rounded-xl flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 cursor-pointer group/match"
+                                    >
+                                      {rowContent}
+                                    </Link>
+                                  )
+                                }
+
+                                return (
+                                  <div
+                                    key={match.id}
+                                    className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
+                                  >
+                                    {rowContent}
                                   </div>
                                 )
                               })}
