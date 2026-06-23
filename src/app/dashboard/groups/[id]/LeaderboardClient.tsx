@@ -162,7 +162,7 @@ export function LeaderboardClient({
                           {entry.total_points}
                         </span>
                         {!hide24hPoints && !isResetState && entry.points_24h > 0 && (
-                          <span className="text-[9px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 px-1.5 py-0.5 rounded mt-0.5 select-none" title={`Poäng intjänade ${focusDayLabel}`}>
+                          <span className="text-[9px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 px-1.5 py-0.5 rounded mt-0.5 select-none whitespace-nowrap" title={`Poäng intjänade ${focusDayLabel}`}>
                             +{entry.points_24h}p {focusDayLabel}
                           </span>
                         )}
