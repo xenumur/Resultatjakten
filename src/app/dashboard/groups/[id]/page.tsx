@@ -206,7 +206,8 @@ export default async function GroupDetailPage({
     const hasLive = dayMatches.some(m => m.status === 'live' || (new Date(m.kickoff_time).getTime() <= nowTime && !(m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))))
     const hasFinished = dayMatches.some(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
     const allFinished = dayMatches.every(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
-    const status = hasLive ? 'live' : (allFinished && hasFinished ? 'finished' : 'upcoming')
+    const anyStarted = dayMatches.some(m => m.status === 'live' || m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null) || new Date(m.kickoff_time).getTime() <= nowTime)
+    const status = hasLive || (anyStarted && !allFinished) ? 'live' : (allFinished && hasFinished ? 'finished' : 'upcoming')
     return { dayStr, status, matches: dayMatches }
   })
 
