@@ -148,7 +148,7 @@ export function LeaderboardClient({
                                     : entry.last_match_points >= 5
                                       ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20'
                                       : entry.last_match_points >= 3
-                                        ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20'
+                                        ? 'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20'
                                         : entry.last_match_points >= 2
                                           ? 'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20'
                                           : 'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/20'
