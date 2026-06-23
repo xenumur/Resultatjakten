@@ -118,26 +118,20 @@ export function LeaderboardClient({
                             ) : (
                               <ChevronDown className="w-3.5 h-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                             )}
-                            {entry.previous_rank && entry.rank < entry.previous_rank && (
-                              <div className="flex items-center gap-0.5 text-emerald-500 font-black text-[10px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
-                                <ArrowUp className="w-2.5 h-2.5 shrink-0" />
-                                <span>{entry.previous_rank - entry.rank}</span>
-                              </div>
-                            )}
-                            {entry.previous_rank && entry.rank > entry.previous_rank && (
-                              <div className="flex items-center gap-0.5 text-red-500 font-black text-[10px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
-                                <ArrowDown className="w-2.5 h-2.5 shrink-0" />
-                                <span>{entry.rank - entry.previous_rank}</span>
-                              </div>
-                            )}
                             {isMe && !hideMeBadge && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                           </div>
-                          <div className="flex items-center gap-1 md:gap-1.5">
-                            <span className={`w-1 h-1 rounded-full shrink-0 ${entry.is_paid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-                            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest truncate">
-                              {entry.is_paid ? 'Paid' : 'Unpaid'}
-                            </span>
-                          </div>
+                          {entry.previous_rank && entry.rank < entry.previous_rank && (
+                            <div className="flex items-center gap-0.5 text-emerald-500 font-black text-[9px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-100 dark:border-emerald-500/20 shrink-0 w-fit mt-0.5">
+                              <ArrowUp className="w-2 h-2 shrink-0" />
+                              <span>{entry.previous_rank - entry.rank}</span>
+                            </div>
+                          )}
+                          {entry.previous_rank && entry.rank > entry.previous_rank && (
+                            <div className="flex items-center gap-0.5 text-red-500 font-black text-[9px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.2 rounded border border-red-100 dark:border-red-500/20 shrink-0 w-fit mt-0.5">
+                              <ArrowDown className="w-2 h-2 shrink-0" />
+                              <span>{entry.rank - entry.previous_rank}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
