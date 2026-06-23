@@ -3,9 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatInTimeZone } from 'date-fns-tz'
-import { updateMatchResult, calculateScores, syncMatchesWithProvider, acceptApiResult, deleteMatch } from './actions'
+import { syncMatchesWithProvider, syncSingleMatchWithProvider, acceptApiResult, deleteMatch } from './actions'
 import { AlertTriangle, RefreshCw, Check, ArrowLeft, Lock, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { DeleteMatchButton } from './DeleteMatchButton'
+import { SyncMatchButton } from './SyncMatchButton'
 import { AdminActionButton } from './AdminActionButtons'
 import { BulkMatchSaveButton } from './BulkMatchSaveButton'
 import { MatchResultForm } from './MatchResultForm'
@@ -58,7 +59,6 @@ export default async function GameAdminPage({
     .eq('game_id', gameId)
     .order('kickoff_time', { ascending: true })
 
-  const bindedCalculateScores = calculateScores.bind(null, groupId, gameId)
   const bindedSync = syncMatchesWithProvider.bind(null, groupId, gameId)
 
   const allTeams = Array.from(new Set(
@@ -169,6 +169,7 @@ export default async function GameAdminPage({
 
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-2">
+                          <SyncMatchButton syncAction={syncSingleMatchWithProvider.bind(null, groupId, gameId, match.id)} />
                           <form action={deleteMatch.bind(null, groupId, gameId, match.id)}>
                             <DeleteMatchButton />
                           </form>

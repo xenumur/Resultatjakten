@@ -729,6 +729,246 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
   }
 }
 
+export async function syncSingleMatchWithProvider(
+  groupId: string,
+  gameId: string,
+  matchId: string
+) {
+  const supabase = await createClient()
+
+  // Verify that the current user is an admin of the group
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Ej inloggad.' }
+
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || member.role !== 'admin') {
+    return { error: 'Ej behörig att synka matcher.' }
+  }
+
+  const { data: game } = await supabase
+    .from('games')
+    .select('tournament_type, id')
+    .eq('id', gameId)
+    .single()
+
+  if (!game) {
+    return { error: 'Spelet hittades inte.' }
+  }
+
+  // Get the single match from DB
+  const { data: dbMatch } = await supabase
+    .from('matches')
+    .select('*, match_goals(*)')
+    .eq('id', matchId)
+    .eq('game_id', gameId)
+    .single()
+
+  if (!dbMatch) {
+    return { error: 'Matchen hittades inte.' }
+  }
+
+  const sourceProvider = dbMatch.source_provider || 'open_football'
+
+  try {
+    const provider = getProvider(sourceProvider)
+    const allLiveMatches = await provider.fetchMatches(game.tournament_type)
+
+    const isPlaceholder = (name: string) => {
+      if (!name) return true
+      const n = name.toLowerCase()
+      return n.includes('winner') || 
+             n.includes('loser') || 
+             n.includes('tbd') || 
+             /^w\d+$/.test(n) || 
+             /^l\d+$/.test(n) ||
+             n.includes('match')
+    }
+
+    // Match logic corresponding to syncMatchesWithProvider
+    const liveMatch = allLiveMatches.find(m => {
+      const normalize = (s: string | null | undefined) => s?.trim().toLowerCase() || ''
+      const isKnockout = m.stage && (
+        m.stage.toLowerCase().includes('round') || 
+        m.stage.toLowerCase().includes('final') || 
+        m.stage.toLowerCase().includes('quarter') || 
+        m.stage.toLowerCase().includes('semi') ||
+        m.stage.toLowerCase().includes('play-off')
+      )
+
+      if (isKnockout && m.api_match_num && dbMatch.api_match_num === m.api_match_num) {
+        return true
+      }
+
+      if (dbMatch.external_match_id === m.external_match_id) {
+        return true
+      }
+
+      if (normalize(dbMatch.home_team) === normalize(m.home_team) && 
+          normalize(dbMatch.away_team) === normalize(m.away_team)) {
+        return true
+      }
+
+      if (isKnockout && normalize(dbMatch.stage) === normalize(m.stage)) {
+        if (normalize(dbMatch.home_team) === normalize(m.home_team) && 
+            normalize(dbMatch.away_team) === normalize(m.away_team)) {
+          return true
+        }
+      }
+
+      if (isKnockout && normalize(dbMatch.stage) === normalize(m.stage)) {
+        const dbTime = new Date(dbMatch.kickoff_time).getTime()
+        const liveTime = new Date(m.kickoff_time).getTime()
+        
+        if (Math.abs(dbTime - liveTime) < 60 * 1000) {
+          const wHome = `w${m.api_match_num}`
+          const wAway = `w${m.api_match_num}`
+          if (normalize(dbMatch.home_team) === wHome || normalize(dbMatch.away_team) === wAway) {
+             return true
+          }
+        }
+      }
+
+      return false
+    })
+
+    if (!liveMatch) {
+      return { error: 'Kunde inte hitta motsvarande match hos leverantören.' }
+    }
+
+    const updateData: Record<string, unknown> = {
+      kickoff_time: liveMatch.kickoff_time,
+      venue: liveMatch.venue,
+      provider_home_score: liveMatch.final_home_score,
+      provider_away_score: liveMatch.final_away_score,
+      provider_status: liveMatch.status,
+      provider_home_team: liveMatch.home_team,
+      provider_away_team: liveMatch.away_team,
+      api_match_num: liveMatch.api_match_num,
+      provider_goals: liveMatch.goals || null
+    }
+
+    let updatedBroadcaster = dbMatch.broadcaster || 'TV4'
+    try {
+      const svtData = await fetchSvtBroadcasters()
+      if (svtData) {
+        const { svtMatches, svtPlaceholders } = svtData
+        
+        const teamMap: Record<string, string> = {
+          "Mexiko": "Mexico", "Sydafrika": "South Africa", "Sydkorea": "South Korea",
+          "Tjeckien": "Czech Republic", "Kanada": "Canada", "Bosnien och Hercegovina": "Bosnia & Herzegovina",
+          "USA": "USA", "Paraguay": "Paraguay", "Qatar": "Qatar", "Schweiz": "Switzerland",
+          "Brasilien": "Brazil", "Marocko": "Morocco", "Skottland": "Scotland", "Haiti": "Haiti",
+          "Australien": "Australia", "Turkiet": "Turkey", "Tyskland": "Germany", "Curacao": "Curaçao",
+          "Nederländerna": "Netherlands", "Japan": "Japan", "Elfenbenskusten": "Ivory Coast",
+          "Ecuador": "Ecuador", "Sverige": "Sweden", "Tunisien": "Tunisia", "Spanien": "Spain",
+          "Kap Verde": "Cape Verde", "Belgien": "Belgium", "Egypten": "Egypt", "Saudiarabien": "Saudi Arabia",
+          "Uruguay": "Uruguay", "Iran": "Iran", "Nya Zeeland": "New Zealand", "Frankrike": "France",
+          "Senegal": "Senegal", "Irak": "Iraq", "Norge": "Norway", "Argentina": "Argentina",
+          "Algeriet": "Algeria", "Österrike": "Austria", "Jordanien": "Jordan", "Portugal": "Portugal",
+          "DR Kongo": "DR Congo", "England": "England", "Kroatien": "Croatia", "Ghana": "Ghana",
+          "Panama": "Panama", "Uzbekistan": "Uzbekistan", "Colombia": "Colombia"
+        }
+
+        const h = liveMatch.home_team
+        const a = liveMatch.away_team
+        const normH = h?.toLowerCase().trim()
+        const normA = a?.toLowerCase().trim()
+
+        const isSvt = svtMatches.some(([t1, t2]) => {
+          const t1En = (teamMap[t1] || t1).toLowerCase().trim()
+          const t2En = (teamMap[t2] || t2).toLowerCase().trim()
+          const t1Sv = t1.toLowerCase().trim()
+          const t2Sv = t2.toLowerCase().trim()
+
+          return (
+            (t1En === normH && t2En === normA) || (t1En === normA && t2En === normH) ||
+            (t1Sv === normH && t2Sv === normA) || (t1Sv === normA && t2Sv === normH)
+          )
+        })
+
+        const isSvtKnockout = svtPlaceholders.some(p => {
+          const [ph, pa] = p.split(/[–-]/).map(s => s.trim().toLowerCase())
+          return (
+            (ph === normH && pa === normA) || (ph === normA && pa === normH)
+          )
+        })
+
+        if (isSvt || isSvtKnockout) {
+          updatedBroadcaster = 'SVT'
+        } else {
+          updatedBroadcaster = 'TV4'
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching SVT channel for single match:', e)
+    }
+
+    updateData.broadcaster = updatedBroadcaster
+
+    let isOverridden = dbMatch.is_manual_override
+    if (isOverridden && 
+        dbMatch.final_home_score === liveMatch.final_home_score && 
+        dbMatch.final_away_score === liveMatch.final_away_score && 
+        dbMatch.status === liveMatch.status) {
+      isOverridden = false
+      updateData.is_manual_override = false
+    }
+
+    if (!isOverridden) {
+      if (isPlaceholder(dbMatch.home_team) && !isPlaceholder(liveMatch.home_team)) {
+        updateData.home_team = liveMatch.home_team
+      }
+      if (isPlaceholder(dbMatch.away_team) && !isPlaceholder(liveMatch.away_team)) {
+        updateData.away_team = liveMatch.away_team
+      }
+
+      updateData.final_home_score = liveMatch.final_home_score
+      updateData.final_away_score = liveMatch.final_away_score
+      updateData.status = liveMatch.status
+    }
+
+    const activeGoals = dbMatch.match_goals || []
+    const shouldSyncGoals = !isOverridden || activeGoals.length === 0
+
+    if (shouldSyncGoals) {
+      await supabase.from('match_goals').delete().eq('match_id', dbMatch.id)
+      if (liveMatch.goals && liveMatch.goals.length > 0) {
+        const dbGoals = liveMatch.goals.map(g => ({
+          match_id: dbMatch.id,
+          player_name: g.player_name,
+          team_name: g.team_name,
+          minute: g.minute,
+          offset_minute: g.offset_minute ?? null,
+          is_penalty: g.is_penalty ?? false,
+          is_own_goal: g.is_own_goal ?? false
+        }))
+        await supabase.from('match_goals').insert(dbGoals)
+      }
+    }
+
+    await supabase
+      .from('matches')
+      .update(updateData)
+      .eq('id', dbMatch.id)
+
+    await calculateScores(groupId, gameId)
+
+    revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+
+    return { success: true, message: `Matchen ${liveMatch.home_team} - ${liveMatch.away_team} har synkats!` }
+  } catch (err: unknown) {
+    console.error('Single match sync error:', err)
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    return { error: 'Synkning misslyckades: ' + errorMessage }
+  }
+}
+
 export async function acceptApiResult(groupId: string, gameId: string, matchId: string, _formData: FormData) {
   const supabase = await createClient()
 
