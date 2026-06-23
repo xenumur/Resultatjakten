@@ -5,6 +5,7 @@ import { Trophy, Coins, Target, Users, Medal, ArrowUp, ArrowDown, Calendar, Cloc
 import { DeadlineCountdown } from '@/components/DeadlineCountdown'
 import { countryToFlag } from '@/lib/utils/flags'
 import { formatInTimeZone } from 'date-fns-tz'
+import { getLogicalMatchday, formatLogicalMatchdayLabel } from '@/lib/utils/time'
 const TIMEZONE = 'Europe/Stockholm'
 
 function formatKickoffTime(isoString: string) {
@@ -188,7 +189,7 @@ export default async function GroupDetailPage({
   }
 
   // --- Consolidated Leaderboard Logic ---
-  const userScores: Record<string, { display_name: string; match_points: number; knockout_points: number; bonus_points: number; total_points: number; points_24h: number; is_paid: boolean }> = {}
+  const userScores: Record<string, { display_name: string; match_points: number; knockout_points: number; bonus_points: number; total_points: number; points_matchday: number; is_paid: boolean }> = {}
 
   for (const m of members) {
     const p = m.profiles as any
@@ -198,20 +199,80 @@ export default async function GroupDetailPage({
       knockout_points: 0,
       bonus_points: 0,
       total_points: 0,
-      points_24h: 0,
+      points_matchday: 0,
       is_paid: m.payment_status === 'paid'
     }
   }
 
-  // Calculate 24h point window boundaries
-  const nowMs = Date.now()
-  const oneDayMs = 24 * 60 * 60 * 1000
+  // 1. Gruppera matcher efter logisk matchdag
+  const matchesByDay: Record<string, typeof allMatches> = {}
+  for (const m of allMatches) {
+    const day = getLogicalMatchday(m.kickoff_time)
+    if (!matchesByDay[day]) matchesByDay[day] = []
+    matchesByDay[day].push(m)
+  }
 
+  const dayInfos = Object.entries(matchesByDay).map(([dayStr, dayMatches]) => {
+    const hasLive = dayMatches.some(m => m.status === 'live')
+    const hasFinished = dayMatches.some(m => m.status === 'finished')
+    const allFinished = dayMatches.every(m => m.status === 'finished')
+    const status = hasLive ? 'live' : (allFinished && hasFinished ? 'finished' : 'upcoming')
+    return { dayStr, status, matches: dayMatches }
+  })
+
+  // Sortera matchdagar kronologiskt
+  dayInfos.sort((a, b) => a.dayStr.localeCompare(b.dayStr))
+
+  // Hitta fokus-matchdag (live först, annars senaste finished, annars första upcoming)
+  let focusDayInfo = dayInfos.find(d => d.status === 'live')
+  if (!focusDayInfo) {
+    const finishedDays = dayInfos.filter(d => d.status === 'finished')
+    if (finishedDays.length > 0) {
+      focusDayInfo = finishedDays[finishedDays.length - 1]
+    }
+  }
+  if (!focusDayInfo && dayInfos.length > 0) {
+    focusDayInfo = dayInfos[0]
+  }
+
+  const focusMatchday = focusDayInfo?.dayStr || null
+  const focusMatchdayStatus = focusDayInfo?.status || 'upcoming'
+
+  // Kontrollera om vi ska nollställa inför nästa matchdag (reset-tillstånd)
+  let isResetState = false
+  let nextMatchTimeStr = ''
+  
+  // Använd pre-beräknade 'now'-datumet (rad 161) för att hålla renderingen ren
+  const nowTimestamp = now.getTime()
+  
+  const futureMatches = allMatches
+    .filter(m => m.status === 'upcoming' && new Date(m.kickoff_time).getTime() > nowTimestamp)
+    .sort((a, b) => a.kickoff_time.localeCompare(b.kickoff_time))
+
+  if (futureMatches.length > 0) {
+    const nextMatch = futureMatches[0]
+    const nextMatchDay = getLogicalMatchday(nextMatch.kickoff_time)
+    
+    if (nextMatchDay !== focusMatchday && focusMatchdayStatus === 'finished') {
+      const timeToNextMatch = new Date(nextMatch.kickoff_time).getTime() - nowTimestamp
+      if (timeToNextMatch <= 6 * 60 * 60 * 1000) {
+        isResetState = true
+        nextMatchTimeStr = formatInTimeZone(new Date(nextMatch.kickoff_time), TIMEZONE, 'HH:mm')
+      }
+    }
+  }
+
+  const focusDayLabel = focusMatchday ? formatLogicalMatchdayLabel(focusMatchday) : ''
+
+  // 2. Beräkna poäng för fokus-matchdagen
   for (const p of matchPredictions || []) {
     if (userScores[p.user_id]) {
       userScores[p.user_id].match_points += (p.points_awarded || 0)
-      if (p.points_awarded && p.updated_at && (nowMs - new Date(p.updated_at).getTime()) <= oneDayMs) {
-        userScores[p.user_id].points_24h += p.points_awarded
+      if (p.points_awarded && p.match_id) {
+        const match = allMatches.find(m => m.id === p.match_id)
+        if (match && getLogicalMatchday(match.kickoff_time) === focusMatchday) {
+          userScores[p.user_id].points_matchday += p.points_awarded
+        }
       }
     }
   }
@@ -219,8 +280,8 @@ export default async function GroupDetailPage({
   for (const p of knockoutPredictions || []) {
     if (userScores[p.user_id]) {
       userScores[p.user_id].knockout_points += (p.points_awarded || 0)
-      if (p.points_awarded && p.updated_at && (nowMs - new Date(p.updated_at).getTime()) <= oneDayMs) {
-        userScores[p.user_id].points_24h += p.points_awarded
+      if (p.points_awarded && p.updated_at && getLogicalMatchday(p.updated_at) === focusMatchday) {
+        userScores[p.user_id].points_matchday += p.points_awarded
       }
     }
   }
@@ -228,8 +289,8 @@ export default async function GroupDetailPage({
   for (const a of bonusAnswers || []) {
     if (userScores[a.user_id]) {
       userScores[a.user_id].bonus_points += (a.points_awarded || 0)
-      if (a.points_awarded && a.graded_at && (nowMs - new Date(a.graded_at).getTime()) <= oneDayMs) {
-        userScores[a.user_id].points_24h += a.points_awarded
+      if (a.points_awarded && a.graded_at && getLogicalMatchday(a.graded_at) === focusMatchday) {
+        userScores[a.user_id].points_matchday += a.points_awarded
       }
     }
   }
@@ -242,19 +303,20 @@ export default async function GroupDetailPage({
     }))
     .sort((a, b) => b.total_points - a.total_points)
 
-  // Rank assignment
-  let currentRank = 1
+  // Rank assignment (pure calculation)
   const rankedLeaderboard = leaderboard.map((entry, i) => {
-    if (i > 0 && entry.total_points < leaderboard[i - 1].total_points) {
-      currentRank = i + 1
+    let rank = 1
+    if (i > 0) {
+      const firstSamePointsIdx = leaderboard.findIndex(e => e.total_points === entry.total_points)
+      rank = firstSamePointsIdx + 1
     }
     const memberObj = members.find((m: any) => m.user_id === entry.user_id)
     return { 
       ...entry, 
-      rank: currentRank, 
+      rank, 
       previous_rank: memberObj?.previous_rank,
       previous_points: memberObj?.previous_points,
-      points_24h: entry.points_24h
+      points_24h: entry.points_matchday
     }
   })
 
@@ -522,9 +584,24 @@ export default async function GroupDetailPage({
 
         {/* Right Side: Consolidated Leaderboard */}
         <div className="lg:col-span-2 space-y-6 min-w-0 order-1 lg:order-2">
-          <div className="flex items-center gap-2">
-            <Medal className="w-5 h-5 text-indigo-500 shrink-0" />
-            <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Leaderboard</h2>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Medal className="w-5 h-5 text-indigo-500 shrink-0" />
+              <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Leaderboard</h2>
+            </div>
+            {!group.hide_24h_points && focusMatchday && (
+              <span className="text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 pb-1">
+                {isResetState ? (
+                  <span className="flex items-center gap-1">
+                    ⏱️ Återställd inför nästa omgång {nextMatchTimeStr && `(avspark kl ${nextMatchTimeStr})`}
+                  </span>
+                ) : (
+                  <span>
+                    Poängökning visas för: <span className="text-indigo-600 dark:text-indigo-400 capitalize">{focusDayLabel}</span>
+                  </span>
+                )}
+              </span>
+            )}
           </div>
 
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
@@ -609,9 +686,9 @@ export default async function GroupDetailPage({
                             <span className={`text-base md:text-xl font-black ${isTop3 ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-900 dark:text-white'}`}>
                               {entry.total_points}
                             </span>
-                            {!group.hide_24h_points && entry.points_24h > 0 && (
-                              <span className="text-[9px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 px-1.5 py-0.5 rounded mt-0.5 select-none" title="Poäng intjänade senaste 24 timmarna">
-                                +{entry.points_24h}p senaste 24h
+                            {!group.hide_24h_points && !isResetState && entry.points_24h > 0 && (
+                              <span className="text-[9px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 px-1.5 py-0.5 rounded mt-0.5 select-none" title={`Poäng intjänade ${focusDayLabel}`}>
+                                +{entry.points_24h}p {focusDayLabel}
                               </span>
                             )}
                           </div>

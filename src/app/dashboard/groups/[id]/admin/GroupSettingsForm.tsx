@@ -129,10 +129,10 @@ export function GroupSettingsForm({ action, initialData }: GroupSettingsFormProp
         <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 transition hover:border-zinc-300 dark:hover:border-zinc-700">
           <div className="space-y-1 pr-4">
             <label htmlFor="hide_24h_points_toggle" className="text-sm font-black uppercase tracking-widest text-zinc-400 cursor-pointer select-none">
-              Dölj poängökning senaste 24h
+              Dölj poängökning per matchdag
             </label>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Döljer flam-badgen (🔥 +X) som visar intjänade poäng under det senaste dygnet på leaderboarden.
+              Döljer badgen som visar intjänade poäng under den aktuella matchdagen på leaderboarden.
             </p>
           </div>
           <button
