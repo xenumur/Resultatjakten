@@ -969,6 +969,43 @@ export async function syncSingleMatchWithProvider(
   }
 }
 
+export async function toggleMatchAutoSync(
+  groupId: string,
+  gameId: string,
+  matchId: string,
+  currentDisabledState: boolean
+) {
+  const supabase = await createClient()
+
+  // Verify that the current user is an admin of the group
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Ej inloggad.' }
+
+  const { data: member } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!member || member.role !== 'admin') {
+    return { error: 'Ej behörig.' }
+  }
+
+  const { error } = await supabase
+    .from('matches')
+    .update({ disable_auto_sync: !currentDisabledState })
+    .eq('id', matchId)
+    .eq('game_id', gameId)
+
+  if (error) {
+    return { error: 'Kunde inte uppdatera synk-inställning: ' + error.message }
+  }
+
+  revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+  return { success: true, message: `Auto-synk har ${!currentDisabledState ? 'inaktiverats' : 'aktiverats'} för matchen.` }
+}
+
 export async function acceptApiResult(groupId: string, gameId: string, matchId: string, _formData: FormData) {
   const supabase = await createClient()
 

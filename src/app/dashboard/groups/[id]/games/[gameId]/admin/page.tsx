@@ -3,10 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatInTimeZone } from 'date-fns-tz'
-import { syncMatchesWithProvider, syncSingleMatchWithProvider, acceptApiResult, deleteMatch } from './actions'
+import { syncMatchesWithProvider, syncSingleMatchWithProvider, toggleMatchAutoSync, acceptApiResult, deleteMatch } from './actions'
 import { AlertTriangle, RefreshCw, Check, ArrowLeft, Lock, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { DeleteMatchButton } from './DeleteMatchButton'
 import { SyncMatchButton } from './SyncMatchButton'
+import { AutoSyncStatusBadge } from './AutoSyncStatusBadge'
+import { LiveSyncMonitor } from './LiveSyncMonitor'
 import { AdminActionButton } from './AdminActionButtons'
 import { BulkMatchSaveButton } from './BulkMatchSaveButton'
 import { MatchResultForm } from './MatchResultForm'
@@ -110,6 +112,13 @@ export default async function GameAdminPage({
         />
       </div>
 
+      <LiveSyncMonitor 
+        matches={allMatches || []} 
+        groupId={groupId} 
+        gameId={gameId} 
+        syncAction={syncSingleMatchWithProvider} 
+      />
+
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm overflow-x-auto">
         {matches.length === 0 ? (
           <div className="p-16 text-center text-zinc-400 font-bold italic">
@@ -143,13 +152,26 @@ export default async function GameAdminPage({
                   <Fragment key={match.id}>
                     <tr className={hasConflict ? 'bg-amber-50/60 dark:bg-amber-900/10' : ''}>
                       <td className="p-4">
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1.5 items-start">
                           <span className="text-zinc-500 dark:text-zinc-400 text-sm">
                             {formatInTimeZone(new Date(match.kickoff_time), TIMEZONE, 'yyyy-MM-dd HH:mm')}
                           </span>
-                          {match.is_manual_override && (
-                            <span className="w-fit text-[10px] font-black uppercase tracking-widest bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded">Manuell</span>
-                          )}
+                          <div className="flex flex-wrap gap-1">
+                            {match.is_manual_override && (
+                              <span className="w-fit text-[10px] font-black uppercase tracking-widest bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded leading-none">Manuell</span>
+                            )}
+                            <AutoSyncStatusBadge 
+                              groupId={groupId}
+                              gameId={gameId}
+                              matchId={match.id}
+                              disableAutoSync={match.disable_auto_sync}
+                              kickoffTime={match.kickoff_time}
+                              status={match.status}
+                              isManualOverride={match.is_manual_override}
+                              hasConflict={hasConflict}
+                              toggleAction={toggleMatchAutoSync}
+                            />
+                          </div>
                         </div>
                       </td>
 
