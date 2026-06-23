@@ -16,6 +16,7 @@ interface GroupSettingsFormProps {
     hide_group_info: boolean | null
     hide_24h_points: boolean | null
     hide_me_badge: boolean | null
+    hide_last_match_points: boolean | null
   }
 }
 
@@ -23,6 +24,7 @@ export function GroupSettingsForm({ action, initialData }: GroupSettingsFormProp
   const [hideGroupInfo, setHideGroupInfo] = useState(initialData.hide_group_info || false)
   const [hide24hPoints, setHide24hPoints] = useState(initialData.hide_24h_points || false)
   const [hideMeBadge, setHideMeBadge] = useState(initialData.hide_me_badge || false)
+  const [hideLastMatchPoints, setHideLastMatchPoints] = useState(initialData.hide_last_match_points || false)
 
   const [state, formAction] = useActionState(async (_state: { success?: boolean; message?: string; error?: string } | null, formData: FormData) => {
     return (await action(formData)) as { success?: boolean; message?: string; error?: string } | null
@@ -159,14 +161,46 @@ export function GroupSettingsForm({ action, initialData }: GroupSettingsFormProp
           />
         </div>
 
+        {/* Toggle option for hiding last match points */}
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 transition hover:border-zinc-300 dark:hover:border-zinc-700">
+          <div className="space-y-1 pr-4">
+            <label htmlFor="hide_last_match_points_toggle" className="text-sm font-black uppercase tracking-widest text-zinc-400 cursor-pointer select-none">
+              Dölj senaste matchens poäng
+            </label>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Döljer badgen bredvid namnet som visar hur många poäng deltagaren fick i den senast spelade matchen.
+            </p>
+          </div>
+          <button
+            id="hide_last_match_points_toggle"
+            type="button"
+            onClick={() => setHideLastMatchPoints(!hideLastMatchPoints)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+              hideLastMatchPoints ? 'bg-indigo-600' : 'bg-zinc-200 dark:bg-zinc-800'
+            }`}
+          >
+            <span
+              style={{
+                transform: hideLastMatchPoints ? 'translateX(20px)' : 'translateX(0px)'
+              }}
+              className="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+            />
+          </button>
+          <input
+            type="hidden"
+            name="hide_last_match_points"
+            value={hideLastMatchPoints ? 'true' : 'false'}
+          />
+        </div>
+
         {/* Toggle option for hiding "Du" badge */}
         <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 transition hover:border-zinc-300 dark:hover:border-zinc-700">
           <div className="space-y-1 pr-4">
             <label htmlFor="hide_me_badge_toggle" className="text-sm font-black uppercase tracking-widest text-zinc-400 cursor-pointer select-none">
-              Dölj "Du"-badgen
+              Dölj &ldquo;Du&rdquo;-badgen
             </label>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Döljer badgen som visar "Du" på din egen rad i leaderboarden.
+              Döljer badgen som visar &ldquo;Du&rdquo; på din egen rad i leaderboarden.
             </p>
           </div>
           <button

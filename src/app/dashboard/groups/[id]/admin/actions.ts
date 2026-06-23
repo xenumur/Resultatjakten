@@ -73,6 +73,7 @@ export async function updateGroupSettings(groupId: string, formData: FormData) {
   const hideGroupInfo = formData.get('hide_group_info') === 'true' || formData.get('hide_group_info') === 'on'
   const hide24hPoints = formData.get('hide_24h_points') === 'true' || formData.get('hide_24h_points') === 'on'
   const hideMeBadge = formData.get('hide_me_badge') === 'true' || formData.get('hide_me_badge') === 'on'
+  const hideLastMatchPoints = formData.get('hide_last_match_points') === 'true' || formData.get('hide_last_match_points') === 'on'
 
   if (!name || name.trim().length < 2) {
     return { error: 'Namnet måste vara minst 2 tecken.' }
@@ -88,7 +89,8 @@ export async function updateGroupSettings(groupId: string, formData: FormData) {
       payment_info: paymentInfo?.trim() || null,
       hide_group_info: hideGroupInfo,
       hide_24h_points: hide24hPoints,
-      hide_me_badge: hideMeBadge
+      hide_me_badge: hideMeBadge,
+      hide_last_match_points: hideLastMatchPoints
     })
     .eq('id', groupId)
 

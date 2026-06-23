@@ -67,7 +67,8 @@ export default async function GroupAdminPage({
                 payment_info: group.payment_info,
                 hide_group_info: group.hide_group_info,
                 hide_24h_points: group.hide_24h_points,
-                hide_me_badge: group.hide_me_badge
+                hide_me_badge: group.hide_me_badge,
+                hide_last_match_points: group.hide_last_match_points
               }} 
             />
           </div>

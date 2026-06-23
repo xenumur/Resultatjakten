@@ -17,6 +17,8 @@ interface LeaderboardEntry {
   rank: number
   previous_rank?: number | null
   previous_points?: number | null
+  last_match_points?: number
+  has_last_match?: boolean
 }
 
 interface Match {
@@ -43,6 +45,7 @@ interface LeaderboardClientProps {
   predictions: Prediction[]
   hide24hPoints: boolean
   hideMeBadge: boolean
+  hideLastMatchPoints: boolean
   isResetState: boolean
   focusDayLabel: string
   groupId: string
@@ -57,6 +60,7 @@ export function LeaderboardClient({
   predictions,
   hide24hPoints,
   hideMeBadge,
+  hideLastMatchPoints,
   isResetState,
   focusDayLabel,
   groupId
@@ -120,18 +124,40 @@ export function LeaderboardClient({
                             )}
                             {isMe && !hideMeBadge && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                           </div>
-                          {entry.previous_rank && entry.rank < entry.previous_rank && (
-                            <div className="flex items-center gap-0.5 text-emerald-500 font-black text-[9px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-100 dark:border-emerald-500/20 shrink-0 w-fit mt-0.5">
-                              <ArrowUp className="w-2 h-2 shrink-0" />
-                              <span>{entry.previous_rank - entry.rank}</span>
+                          {((entry.previous_rank && entry.rank !== entry.previous_rank) || (!hideLastMatchPoints && entry.has_last_match && entry.last_match_points !== undefined)) ? (
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              {/* Rank change badge */}
+                              {entry.previous_rank && entry.rank < entry.previous_rank && (
+                                <div className="flex items-center gap-0.5 text-emerald-500 font-black text-[9px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-100 dark:border-emerald-500/20 shrink-0">
+                                  <ArrowUp className="w-2 h-2 shrink-0" />
+                                  <span>{entry.previous_rank - entry.rank}</span>
+                                </div>
+                              )}
+                              {entry.previous_rank && entry.rank > entry.previous_rank && (
+                                <div className="flex items-center gap-0.5 text-red-500 font-black text-[9px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.2 rounded border border-red-100 dark:border-red-500/20 shrink-0">
+                                  <ArrowDown className="w-2 h-2 shrink-0" />
+                                  <span>{entry.rank - entry.previous_rank}</span>
+                                </div>
+                              )}
+
+                              {/* Latest match points badge */}
+                              {!hideLastMatchPoints && entry.has_last_match && entry.last_match_points !== undefined && (
+                                <div className={`flex items-center justify-center font-black text-[9px] px-1.5 py-0.2 rounded border shrink-0 select-none ${
+                                  entry.last_match_points >= 7
+                                    ? 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20'
+                                    : entry.last_match_points >= 5
+                                      ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20'
+                                      : entry.last_match_points >= 3
+                                        ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20'
+                                        : entry.last_match_points >= 2
+                                          ? 'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20'
+                                          : 'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/20'
+                                }`} title={`Senaste matchen: +${entry.last_match_points}p`}>
+                                  {entry.last_match_points > 0 ? `+${entry.last_match_points}p` : '0p'}
+                                </div>
+                              )}
                             </div>
-                          )}
-                          {entry.previous_rank && entry.rank > entry.previous_rank && (
-                            <div className="flex items-center gap-0.5 text-red-500 font-black text-[9px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.2 rounded border border-red-100 dark:border-red-500/20 shrink-0 w-fit mt-0.5">
-                              <ArrowDown className="w-2 h-2 shrink-0" />
-                              <span>{entry.rank - entry.previous_rank}</span>
-                            </div>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                     </td>

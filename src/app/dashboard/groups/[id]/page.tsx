@@ -294,6 +294,18 @@ export default async function GroupDetailPage({
     }))
     .sort((a, b) => b.total_points - a.total_points)
 
+  // 3. Hitta poäng för den senast färdigspelade matchen
+  const finishedMatches = allMatches.filter(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
+  let latestMatchIds: string[] = []
+  let hasLastMatch = false
+
+  if (finishedMatches.length > 0) {
+    hasLastMatch = true
+    const latestKickoff = finishedMatches.reduce((max, m) => m.kickoff_time > max ? m.kickoff_time : max, finishedMatches[0].kickoff_time)
+    const latestMatches = finishedMatches.filter(m => m.kickoff_time === latestKickoff)
+    latestMatchIds = latestMatches.map(m => m.id)
+  }
+
   // Rank assignment (pure calculation)
   const rankedLeaderboard = leaderboard.map((entry, i) => {
     let rank = 1
@@ -302,12 +314,23 @@ export default async function GroupDetailPage({
       rank = firstSamePointsIdx + 1
     }
     const memberObj = members.find((m: any) => m.user_id === entry.user_id)
+
+    let lastMatchPoints = 0
+    if (hasLastMatch && latestMatchIds.length > 0) {
+      const userPreds = (matchPredictions || []).filter(
+        p => p.user_id === entry.user_id && latestMatchIds.includes(p.match_id)
+      )
+      lastMatchPoints = userPreds.reduce((sum, p) => sum + (p.points_awarded || 0), 0)
+    }
+
     return { 
       ...entry, 
       rank, 
       previous_rank: memberObj?.previous_rank,
       previous_points: memberObj?.previous_points,
-      points_24h: entry.points_matchday
+      points_24h: entry.points_matchday,
+      last_match_points: lastMatchPoints,
+      has_last_match: hasLastMatch
     }
   })
 
@@ -612,6 +635,7 @@ export default async function GroupDetailPage({
             predictions={focusPredictions}
             hide24hPoints={!!group.hide_24h_points}
             hideMeBadge={!!group.hide_me_badge}
+            hideLastMatchPoints={!!group.hide_last_match_points}
             isResetState={isResetState}
             focusDayLabel={focusDayLabel}
             groupId={groupId}
