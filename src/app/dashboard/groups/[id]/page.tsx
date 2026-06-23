@@ -244,7 +244,7 @@ export default async function GroupDetailPage({
     
     if (nextMatchDay !== focusMatchday && focusMatchdayStatus === 'finished') {
       const timeToNextMatch = new Date(nextMatch.kickoff_time).getTime() - nowTimestamp
-      if (timeToNextMatch <= 6 * 60 * 60 * 1000) {
+      if (timeToNextMatch <= 2 * 60 * 60 * 1000) {
         isResetState = true
         nextMatchTimeStr = formatInTimeZone(new Date(nextMatch.kickoff_time), TIMEZONE, 'HH:mm')
       }
