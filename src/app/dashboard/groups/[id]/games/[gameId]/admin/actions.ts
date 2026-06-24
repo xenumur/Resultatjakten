@@ -576,6 +576,8 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
         }
 
         // If the match is not overridden, we update teams/scores/status from the API
+        const ownGoalsCount = (liveMatch.goals || []).filter(g => g.is_own_goal).length
+
         if (!isOverridden) {
           // If we had a placeholder but now have a real team, update it
           if (isPlaceholder(existingMatch.home_team) && !isPlaceholder(liveMatch.home_team)) {
@@ -588,6 +590,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           updateData.final_home_score = liveMatch.final_home_score
           updateData.final_away_score = liveMatch.final_away_score
           updateData.status = liveMatch.status
+          updateData.own_goals = ownGoalsCount
         }
 
         // We sync the goals if the match is not overridden, OR if it has NO active goals in the database yet
@@ -617,6 +620,8 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           .update(updateData)
           .eq('id', existingMatch.id)
       } else {
+        const ownGoalsCount = (liveMatch.goals || []).filter(g => g.is_own_goal).length
+
         const { data: newMatch } = await supabase
           .from('matches')
           .insert({
@@ -631,6 +636,7 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
             status: liveMatch.status,
             final_home_score: liveMatch.final_home_score,
             final_away_score: liveMatch.final_away_score,
+            own_goals: ownGoalsCount,
             source_provider: sourceProvider,
             provider_home_score: liveMatch.final_home_score,
             provider_away_score: liveMatch.final_away_score,
@@ -911,6 +917,8 @@ export async function syncSingleMatchWithProvider(
 
     updateData.broadcaster = updatedBroadcaster
 
+    const ownGoalsCount = (liveMatch.goals || []).filter(g => g.is_own_goal).length
+
     let isOverridden = dbMatch.is_manual_override
     if (isOverridden && 
         dbMatch.final_home_score === liveMatch.final_home_score && 
@@ -931,6 +939,7 @@ export async function syncSingleMatchWithProvider(
       updateData.final_home_score = liveMatch.final_home_score
       updateData.final_away_score = liveMatch.final_away_score
       updateData.status = liveMatch.status
+      updateData.own_goals = ownGoalsCount
     }
 
     const activeGoals = dbMatch.match_goals || []
@@ -960,6 +969,7 @@ export async function syncSingleMatchWithProvider(
     await calculateScores(groupId, gameId)
 
     revalidatePath(`/dashboard/groups/${groupId}/games/${gameId}/admin`)
+    revalidatePath(`/dashboard/groups/${groupId}`)
 
     return { success: true, message: `Matchen ${liveMatch.home_team} - ${liveMatch.away_team} har synkats!` }
   } catch (err: unknown) {
@@ -1017,6 +1027,9 @@ export async function acceptApiResult(groupId: string, gameId: string, matchId: 
 
   if (!match) return;
 
+  const apiGoals = match.provider_goals as any[] | null
+  const ownGoalsCount = Array.isArray(apiGoals) ? apiGoals.filter(g => g.is_own_goal).length : 0
+
   await supabase
     .from('matches')
     .update({
@@ -1025,13 +1038,13 @@ export async function acceptApiResult(groupId: string, gameId: string, matchId: 
       status: match.provider_status ?? 'finished',
       home_team: match.provider_home_team,
       away_team: match.provider_away_team,
+      own_goals: ownGoalsCount,
       is_manual_override: false
     })
     .eq('id', matchId)
 
   // Återställ målskyttar från cached provider_goals
   await supabase.from('match_goals').delete().eq('match_id', matchId)
-  const apiGoals = match.provider_goals as any[] | null
   if (Array.isArray(apiGoals) && apiGoals.length > 0) {
     const dbGoals = apiGoals.map(g => ({
       match_id: matchId,

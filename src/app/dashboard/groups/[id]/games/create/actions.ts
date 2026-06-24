@@ -57,6 +57,7 @@ export async function createGame(groupId: string, prevState: any, formData: Form
         group_name: m.group_name,
         venue: m.venue,
         status: m.status,
+        own_goals: (m.goals || []).filter(g => g.is_own_goal).length,
         source_provider: providerId,
         api_match_num: m.api_match_num,
         broadcaster: m.broadcaster,

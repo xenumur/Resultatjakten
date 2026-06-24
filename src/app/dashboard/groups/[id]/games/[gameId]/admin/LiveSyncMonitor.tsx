@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { isMatchActivelyPolling } from './AutoSyncStatusBadge'
+import { isMatchActivelyPolling, checkMatchConflict } from '@/lib/utils/sync'
 import { RefreshCw } from 'lucide-react'
 
 interface Match {
@@ -16,9 +16,10 @@ interface Match {
   provider_away_score?: number | null
   final_home_score?: number | null
   final_away_score?: number | null
-  provider_status?: string
-  provider_home_team?: string
-  provider_away_team?: string
+  provider_status?: string | null
+  provider_home_team?: string | null
+  provider_away_team?: string | null
+  game_id: string
 }
 
 interface LiveSyncMonitorProps {
@@ -39,16 +40,7 @@ export function LiveSyncMonitor({ matches, groupId, gameId, syncAction }: LiveSy
   // Filtrera fram aktiva matcher direkt under renderingen med useMemo för att undvika setState i en useEffect
   const activeMatches = useMemo(() => {
     return matches.filter(match => {
-      const hasScoreConflict = match.provider_home_score !== null && (
-        match.final_home_score !== match.provider_home_score ||
-        match.final_away_score !== match.provider_away_score
-      )
-      const hasStatusConflict = match.provider_status && match.status !== match.provider_status
-      const hasTeamConflict = match.provider_home_team && (
-        match.home_team !== match.provider_home_team ||
-        match.away_team !== match.provider_away_team
-      )
-      const hasConflict = !!hasScoreConflict || !!hasStatusConflict || !!hasTeamConflict
+      const hasConflict = checkMatchConflict(match)
 
       return isMatchActivelyPolling({
         kickoff_time: match.kickoff_time,

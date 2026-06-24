@@ -88,8 +88,22 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
             {homeGoals.length > 0 && (
               <div className="flex items-center gap-1 flex-wrap justify-center md:justify-start">
                 <span className="text-[14px] leading-none shrink-0">{countryToFlag(match.home_team)}</span>
-                <span className="italic">
-                  {homeGoals.map(g => `${g.player_name} ${g.minute ? `${g.minute}'` : ''}${g.is_own_goal ? ' (självmål)' : ''}${g.is_penalty ? ' (str)' : ''}`).join(', ')}
+                <span className="italic flex items-center gap-1.5 flex-wrap">
+                  {homeGoals.map((g, idx) => (
+                    <span key={g.id || idx} className="inline-flex items-center gap-0.5">
+                      <span>{g.player_name}</span>
+                      <span className="text-[10px] text-zinc-450 dark:text-zinc-550 font-normal">
+                        {g.minute ? ` ${g.minute}'` : ''}
+                        {g.is_penalty && ' (str)'}
+                        {g.is_own_goal && (
+                          <span className="ml-1 text-[9px] font-bold text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 px-1 py-0.2 rounded border border-rose-100 dark:border-rose-900/30">
+                            självmål
+                          </span>
+                        )}
+                      </span>
+                      {idx < homeGoals.length - 1 && <span className="mr-1 text-zinc-300 dark:text-zinc-700">,</span>}
+                    </span>
+                  ))}
                 </span>
               </div>
             )}
@@ -99,8 +113,22 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
             {awayGoals.length > 0 && (
               <div className="flex items-center gap-1 flex-wrap justify-center md:justify-start">
                 <span className="text-[14px] leading-none shrink-0">{countryToFlag(match.away_team)}</span>
-                <span className="italic">
-                  {awayGoals.map(g => `${g.player_name} ${g.minute ? `${g.minute}'` : ''}${g.is_own_goal ? ' (självmål)' : ''}${g.is_penalty ? ' (str)' : ''}`).join(', ')}
+                <span className="italic flex items-center gap-1.5 flex-wrap">
+                  {awayGoals.map((g, idx) => (
+                    <span key={g.id || idx} className="inline-flex items-center gap-0.5">
+                      <span>{g.player_name}</span>
+                      <span className="text-[10px] text-zinc-450 dark:text-zinc-550 font-normal">
+                        {g.minute ? ` ${g.minute}'` : ''}
+                        {g.is_penalty && ' (str)'}
+                        {g.is_own_goal && (
+                          <span className="ml-1 text-[9px] font-bold text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 px-1 py-0.2 rounded border border-rose-100 dark:border-rose-900/30">
+                            självmål
+                          </span>
+                        )}
+                      </span>
+                      {idx < awayGoals.length - 1 && <span className="mr-1 text-zinc-300 dark:text-zinc-700">,</span>}
+                    </span>
+                  ))}
                 </span>
               </div>
             )}

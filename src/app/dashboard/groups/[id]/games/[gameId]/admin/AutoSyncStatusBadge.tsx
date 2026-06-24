@@ -3,6 +3,7 @@
 import { useTransition, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { isMatchActivelyPolling } from '@/lib/utils/sync'
 
 interface AutoSyncStatusBadgeProps {
   groupId: string
@@ -19,29 +20,6 @@ interface AutoSyncStatusBadgeProps {
     matchId: string,
     currentDisabledState: boolean
   ) => Promise<{ success?: boolean; error?: string; message?: string }>
-}
-
-export function isMatchActivelyPolling(
-  match: {
-    kickoff_time: string
-    status: string
-    disable_auto_sync: boolean
-    is_manual_override?: boolean
-    hasConflict?: boolean
-  },
-  now: number
-) {
-  if (match.disable_auto_sync) return false
-
-  const kickoff = new Date(match.kickoff_time).getTime()
-
-  // Kriterie 1: Matchen startade för minst 2 timmar sedan och är inte markerad som avslutad
-  const isLiveOrRecentlyStarted = (now - kickoff >= 2 * 60 * 60 * 1000) && (match.status !== 'finished')
-
-  // Kriterie 2: Matchen har manuell override men är out-of-sync med API:et (konflikt)
-  const isOutOfSync = !!match.is_manual_override && !!match.hasConflict
-
-  return isLiveOrRecentlyStarted || isOutOfSync
 }
 
 export function AutoSyncStatusBadge({
