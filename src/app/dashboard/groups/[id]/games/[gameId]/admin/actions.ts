@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { fetchSvtBroadcasters } from '@/lib/utils/svtScraper'
 import { calculatePoints, DEFAULT_RULES } from '@/lib/scoring/engine'
@@ -262,28 +262,7 @@ import { prepareLeaderboardSnapshot } from '@/lib/scoring/leaderboard'
 export async function calculateScores(groupId: string, gameId: string, _formData?: FormData) {
   const supabase = await createClient()
 
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('id, final_home_score, final_away_score, status, home_team, away_team, stage')
-    .eq('game_id', gameId)
-
-  if (!matches || matches.length === 0) {
-    console.error('Inga matcher hittades.')
-    return
-  }
-
-  const matchIds = matches.map(m => m.id)
-  const { data: predictions } = await supabase
-    .from('predictions')
-    .select('*')
-    .in('match_id', matchIds)
-
-  if (!predictions) {
-    console.error('Inga tips hittades.')
-    return
-  }
-
-  // Verify that the current user is an admin of the group
+  // Verify that the current user is a member of the group
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
@@ -294,8 +273,32 @@ export async function calculateScores(groupId: string, gameId: string, _formData
     .eq('user_id', user.id)
     .single()
 
-  if (!member || member.role !== 'admin') {
+  if (!member) {
     console.error('Ej behörig att beräkna poäng.')
+    return
+  }
+
+  // Create admin client to bypass RLS and perform score calculation for all users
+  const supabaseAdmin = createAdminClient()
+
+  const { data: matches } = await supabaseAdmin
+    .from('matches')
+    .select('id, final_home_score, final_away_score, status, home_team, away_team, stage')
+    .eq('game_id', gameId)
+
+  if (!matches || matches.length === 0) {
+    console.error('Inga matcher hittades.')
+    return
+  }
+
+  const matchIds = matches.map(m => m.id)
+  const { data: predictions } = await supabaseAdmin
+    .from('predictions')
+    .select('*')
+    .in('match_id', matchIds)
+
+  if (!predictions) {
+    console.error('Inga tips hittades.')
     return
   }
 
@@ -329,7 +332,7 @@ export async function calculateScores(groupId: string, gameId: string, _formData
       }
 
       if (pred.points_awarded !== points) {
-        await supabase
+        await supabaseAdmin
           .from('predictions')
           .update({ 
             points_awarded: points,
@@ -341,7 +344,7 @@ export async function calculateScores(groupId: string, gameId: string, _formData
   }
 
   // 2. Calculate Knockout Stage Points (Robust Automation)
-  await recalculateAllKnockoutScores(gameId, matches, supabase)
+  await recalculateAllKnockoutScores(gameId, matches, supabaseAdmin)
 
   // Commit snapshot if changes occurred
   await commitSnapshot()
@@ -742,7 +745,7 @@ export async function syncSingleMatchWithProvider(
 ) {
   const supabase = await createClient()
 
-  // Verify that the current user is an admin of the group
+  // Verify that the current user is a member of the group
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Ej inloggad.' }
 
@@ -753,11 +756,14 @@ export async function syncSingleMatchWithProvider(
     .eq('user_id', user.id)
     .single()
 
-  if (!member || member.role !== 'admin') {
+  if (!member) {
     return { error: 'Ej behörig att synka matcher.' }
   }
 
-  const { data: game } = await supabase
+  // Use the admin client to bypass RLS for match updates
+  const supabaseAdmin = createAdminClient()
+
+  const { data: game } = await supabaseAdmin
     .from('games')
     .select('tournament_type, id')
     .eq('id', gameId)
@@ -768,7 +774,7 @@ export async function syncSingleMatchWithProvider(
   }
 
   // Get the single match from DB
-  const { data: dbMatch } = await supabase
+  const { data: dbMatch } = await supabaseAdmin
     .from('matches')
     .select('*, match_goals(*)')
     .eq('id', matchId)
@@ -946,7 +952,7 @@ export async function syncSingleMatchWithProvider(
     const shouldSyncGoals = !isOverridden || activeGoals.length === 0
 
     if (shouldSyncGoals) {
-      await supabase.from('match_goals').delete().eq('match_id', dbMatch.id)
+      await supabaseAdmin.from('match_goals').delete().eq('match_id', dbMatch.id)
       if (liveMatch.goals && liveMatch.goals.length > 0) {
         const dbGoals = liveMatch.goals.map(g => ({
           match_id: dbMatch.id,
@@ -957,11 +963,11 @@ export async function syncSingleMatchWithProvider(
           is_penalty: g.is_penalty ?? false,
           is_own_goal: g.is_own_goal ?? false
         }))
-        await supabase.from('match_goals').insert(dbGoals)
+        await supabaseAdmin.from('match_goals').insert(dbGoals)
       }
     }
 
-    await supabase
+    await supabaseAdmin
       .from('matches')
       .update(updateData)
       .eq('id', dbMatch.id)

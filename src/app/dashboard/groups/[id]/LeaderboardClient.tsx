@@ -124,16 +124,16 @@ export function LeaderboardClient({
                             )}
                             {isMe && !hideMeBadge && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-600 text-white px-1.5 py-0.5 rounded shrink-0">Du</span>}
                           </div>
-                          {((entry.previous_rank && entry.rank !== entry.previous_rank) || (!hideLastMatchPoints && entry.has_last_match && entry.last_match_points !== undefined)) ? (
+                          {((!isResetState && entry.previous_rank && entry.rank !== entry.previous_rank) || (!hideLastMatchPoints && entry.has_last_match && entry.last_match_points !== undefined)) ? (
                             <div className="flex items-center gap-1.5 mt-0.5">
                               {/* Rank change badge */}
-                              {entry.previous_rank && entry.rank < entry.previous_rank && (
+                              {!isResetState && entry.previous_rank && entry.rank < entry.previous_rank && (
                                 <div className="flex items-center gap-0.5 text-emerald-500 font-black text-[9px] bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-100 dark:border-emerald-500/20 shrink-0">
                                   <ArrowUp className="w-2 h-2 shrink-0" />
                                   <span>{entry.previous_rank - entry.rank}</span>
                                 </div>
                               )}
-                              {entry.previous_rank && entry.rank > entry.previous_rank && (
+                              {!isResetState && entry.previous_rank && entry.rank > entry.previous_rank && (
                                 <div className="flex items-center gap-0.5 text-red-500 font-black text-[9px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.2 rounded border border-red-100 dark:border-red-500/20 shrink-0">
                                   <ArrowDown className="w-2 h-2 shrink-0" />
                                   <span>{entry.rank - entry.previous_rank}</span>
@@ -141,7 +141,7 @@ export function LeaderboardClient({
                               )}
 
                               {/* Latest match points badge */}
-                              {!hideLastMatchPoints && entry.has_last_match && entry.last_match_points !== undefined && (
+                              {!isResetState && !hideLastMatchPoints && entry.has_last_match && entry.last_match_points !== undefined && (
                                 <div className={`flex items-center justify-center font-black text-[9px] px-1.5 py-0.2 rounded border shrink-0 select-none ${
                                   entry.last_match_points >= 7
                                     ? 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20'

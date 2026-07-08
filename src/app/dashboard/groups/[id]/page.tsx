@@ -294,7 +294,7 @@ export default async function GroupDetailPage({
     }))
     .sort((a, b) => b.total_points - a.total_points)
 
-  // 3. Hitta poäng för den senast färdigspelade matchen
+  // 3. Hitta poäng för den senast färdigspelade matchen (eller matcherna som har samma avsparkstid)
   const finishedMatches = allMatches.filter(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
   let latestMatchIds: string[] = []
   let hasLastMatch = false
@@ -306,15 +306,11 @@ export default async function GroupDetailPage({
     latestMatchIds = latestMatches.map(m => m.id)
   }
 
-  // Rank assignment (pure calculation)
-  const rankedLeaderboard = leaderboard.map((entry, i) => {
-    let rank = 1
-    if (i > 0) {
-      const firstSamePointsIdx = leaderboard.findIndex(e => e.total_points === entry.total_points)
-      rank = firstSamePointsIdx + 1
-    }
-    const memberObj = members.find((m: any) => m.user_id === entry.user_id)
-
+  // 1. Beräkna poäng för senaste matchen samt föregående poäng för varje deltagare
+  const lastMatchPointsMap = new Map<string, number>()
+  const previousPointsMap = new Map<string, number>()
+  
+  for (const entry of leaderboard) {
     let lastMatchPoints = 0
     if (hasLastMatch && latestMatchIds.length > 0) {
       const userPreds = (matchPredictions || []).filter(
@@ -322,12 +318,47 @@ export default async function GroupDetailPage({
       )
       lastMatchPoints = userPreds.reduce((sum, p) => sum + (p.points_awarded || 0), 0)
     }
+    lastMatchPointsMap.set(entry.user_id, lastMatchPoints)
+    previousPointsMap.set(entry.user_id, entry.total_points - lastMatchPoints)
+  }
+
+  // 2. Sortera deltagarna efter föregående poäng för att kunna beräkna föregående placeringar
+  const sortedByPrevious = [...leaderboard].sort((a, b) => {
+    const pointsA = previousPointsMap.get(a.user_id) ?? 0
+    const pointsB = previousPointsMap.get(b.user_id) ?? 0
+    return pointsB - pointsA
+  })
+
+  // 3. Tilldela föregående placeringar
+  const previousRanksMap = new Map<string, number>()
+  sortedByPrevious.forEach((entry, i) => {
+    let prevRank = 1
+    if (i > 0) {
+      const firstSamePrevPointsIdx = sortedByPrevious.findIndex(e => {
+        const pointsE = previousPointsMap.get(e.user_id) ?? 0
+        const pointsEntry = previousPointsMap.get(entry.user_id) ?? 0
+        return pointsE === pointsEntry
+      })
+      prevRank = firstSamePrevPointsIdx + 1
+    }
+    previousRanksMap.set(entry.user_id, prevRank)
+  })
+
+  // Rank assignment (pure calculation)
+  const rankedLeaderboard = leaderboard.map((entry, i) => {
+    let rank = 1
+    if (i > 0) {
+      const firstSamePointsIdx = leaderboard.findIndex(e => e.total_points === entry.total_points)
+      rank = firstSamePointsIdx + 1
+    }
+
+    const lastMatchPoints = lastMatchPointsMap.get(entry.user_id) ?? 0
 
     return { 
       ...entry, 
       rank, 
-      previous_rank: memberObj?.previous_rank,
-      previous_points: memberObj?.previous_points,
+      previous_rank: previousRanksMap.get(entry.user_id) ?? null,
+      previous_points: previousPointsMap.get(entry.user_id) ?? null,
       points_24h: entry.points_matchday,
       last_match_points: lastMatchPoints,
       has_last_match: hasLastMatch
