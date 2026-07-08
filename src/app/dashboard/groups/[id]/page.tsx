@@ -55,9 +55,9 @@ export default async function GroupDetailPage({
     supabase.from('groups').select('*').eq('id', groupId).single(),
     supabase.from('group_members').select('*, profiles:user_id(display_name, email)').eq('group_id', groupId),
     supabase.from('predictions').select('user_id, points_awarded, match_id, updated_at').eq('group_id', groupId),
-    supabase.from('knockout_predictions').select('user_id, points_awarded, updated_at').eq('group_id', groupId),
+    supabase.from('knockout_predictions').select('user_id, points_awarded, updated_at, round, team_name').eq('group_id', groupId),
     supabase.from('games').select('*').eq('group_id', groupId),
-    supabase.from('bonus_answers').select('user_id, points_awarded, graded_at, bonus_questions!inner(group_id)').eq('bonus_questions.group_id', groupId),
+    supabase.from('bonus_answers').select('user_id, points_awarded, graded_at, bonus_questions!inner(group_id, question_text)').eq('bonus_questions.group_id', groupId),
     supabase.from('group_deadlines').select('*').eq('group_id', groupId).order('deadline_at', { ascending: true })
   ])
 
@@ -366,6 +366,23 @@ export default async function GroupDetailPage({
       points_awarded: p.points_awarded
     }))
 
+  const focusBonusAnswers = (bonusAnswers || [])
+    .filter(a => a.points_awarded !== null && a.points_awarded > 0 && a.graded_at && getLogicalMatchday(a.graded_at) === focusMatchday)
+    .map(a => ({
+      user_id: a.user_id,
+      question_text: (a.bonus_questions as any)?.question_text || 'Bonusfråga',
+      points_awarded: a.points_awarded as number
+    }))
+
+  const focusKnockoutPredictions = (knockoutPredictions || [])
+    .filter(p => p.points_awarded !== null && p.points_awarded > 0 && p.updated_at && getLogicalMatchday(p.updated_at) === focusMatchday)
+    .map(p => ({
+      user_id: p.user_id,
+      round: (p as any).round || '',
+      team_name: (p as any).team_name || '',
+      points_awarded: p.points_awarded as number
+    }))
+
   const formatMoney = (amount: number) => `${amount} ${group.currency}`
 
   return (
@@ -655,6 +672,8 @@ export default async function GroupDetailPage({
             currentUserId={user.id}
             focusMatches={focusMatches}
             predictions={focusPredictions}
+            focusBonusAnswers={focusBonusAnswers}
+            focusKnockoutPredictions={focusKnockoutPredictions}
             hide24hPoints={!!group.hide_24h_points}
             hideMeBadge={!!group.hide_me_badge}
             hideLastMatchPoints={!!group.hide_last_match_points}

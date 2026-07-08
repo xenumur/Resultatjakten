@@ -38,11 +38,26 @@ interface Prediction {
   points_awarded: number | null
 }
 
+interface FocusBonusAnswer {
+  user_id: string
+  question_text: string
+  points_awarded: number
+}
+
+interface FocusKnockoutPrediction {
+  user_id: string
+  round: string
+  team_name: string
+  points_awarded: number
+}
+
 interface LeaderboardClientProps {
   rankedLeaderboard: LeaderboardEntry[]
   currentUserId: string
   focusMatches: Match[]
   predictions: Prediction[]
+  focusBonusAnswers: FocusBonusAnswer[]
+  focusKnockoutPredictions: FocusKnockoutPrediction[]
   hide24hPoints: boolean
   hideMeBadge: boolean
   hideLastMatchPoints: boolean
@@ -58,6 +73,8 @@ export function LeaderboardClient({
   currentUserId,
   focusMatches,
   predictions,
+  focusBonusAnswers,
+  focusKnockoutPredictions,
   hide24hPoints,
   hideMeBadge,
   hideLastMatchPoints,
@@ -90,6 +107,26 @@ export function LeaderboardClient({
               const isTop3 = entry.rank <= 3
               const isMe = entry.user_id === currentUserId
               const isExpanded = expandedUserId === entry.user_id
+              const userBonus = focusBonusAnswers.filter(b => b.user_id === entry.user_id)
+              const userKnockout = focusKnockoutPredictions.filter(k => k.user_id === entry.user_id)
+              
+              // Group knockout predictions by round
+              const groupedKnockout = userKnockout.reduce((acc, current) => {
+                const existing = acc.find(item => item.round === current.round)
+                if (existing) {
+                  existing.teams.push(current.team_name)
+                  existing.points += current.points_awarded
+                } else {
+                  acc.push({
+                    round: current.round,
+                    teams: [current.team_name],
+                    points: current.points_awarded
+                  })
+                }
+                return acc
+              }, [] as { round: string; teams: string[]; points: number }[])
+
+              const hasItems = focusMatches.length > 0 || userBonus.length > 0 || groupedKnockout.length > 0
 
               return (
                 <Fragment key={entry.user_id}>
@@ -188,8 +225,8 @@ export function LeaderboardClient({
                                 ? 'Gårdagens matcher & poäng'
                                 : `Matcher & poäng (${focusDayLabel})`}
                           </div>
-                          {focusMatches.length === 0 ? (
-                            <div className="text-xs italic text-zinc-400 p-2">Inga matcher registrerade för denna matchdag.</div>
+                          {!hasItems ? (
+                            <div className="text-xs italic text-zinc-400 p-2">Inga matcher eller poäng registrerade för denna matchdag.</div>
                           ) : (
                             <div className="divide-y divide-zinc-200/40 dark:divide-zinc-800/40">
                               {focusMatches.map(match => {
@@ -256,6 +293,64 @@ export function LeaderboardClient({
                                     className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
                                   >
                                     {rowContent}
+                                  </div>
+                                )
+                              })}
+
+                              {userBonus.map((b, idx) => (
+                                <div
+                                  key={`bonus-${idx}`}
+                                  className="py-2.5 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <span className="shrink-0 text-sm">🏆</span>
+                                    <span className="truncate text-zinc-400 dark:text-zinc-500 font-normal">Bonus:</span>
+                                    <span className="truncate" title={b.question_text}>{b.question_text}</span>
+                                  </div>
+                                  <div className="text-[10px] font-black px-2 py-0.5 rounded-full border bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30 shrink-0">
+                                    +{b.points_awarded}p
+                                  </div>
+                                </div>
+                              ))}
+
+                              {groupedKnockout.map((g, idx) => {
+                                const roundLabel = g.round === 'round_of_16'
+                                  ? 'Åttondel'
+                                  : g.round === 'quarter_final'
+                                    ? 'Kvartsfinal'
+                                    : g.round === 'semi_final'
+                                      ? 'Semifinal'
+                                      : g.round === 'third_place'
+                                        ? 'Bronsmatch'
+                                        : g.round === 'final'
+                                          ? 'Final'
+                                          : g.round;
+
+                                return (
+                                  <div
+                                    key={`ko-${idx}`}
+                                    className="py-2.5 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <span className="shrink-0 text-sm">🏅</span>
+                                      <span className="truncate text-zinc-400 dark:text-zinc-500 font-normal shrink-0">{roundLabel}:</span>
+                                      <span className="flex items-center gap-1.5 flex-wrap min-w-0">
+                                        {g.teams.map((team, tIdx) => (
+                                          <span
+                                            key={tIdx}
+                                            className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 border border-zinc-200/50 dark:border-zinc-700/50"
+                                          >
+                                            <span className="text-xs leading-none shrink-0" role="img" aria-label={team}>
+                                              {countryToFlag(team) || '🏳️'}
+                                            </span>
+                                            {team}
+                                          </span>
+                                        ))}
+                                      </span>
+                                    </div>
+                                    <div className="text-[10px] font-black px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/30 shrink-0">
+                                      +{g.points}p
+                                    </div>
                                   </div>
                                 )
                               })}
