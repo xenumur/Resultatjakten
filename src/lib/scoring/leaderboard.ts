@@ -100,15 +100,44 @@ export async function snapshotGroupLeaderboard(groupId: string) {
   return leaderboard
 }
 
-/**
- * Prepares a leaderboard snapshot to detect changes.
- * Returns a function that, when called, will save the snapshot as the previous state
- * ONLY if the current leaderboard has actually changed.
- */
 export async function prepareLeaderboardSnapshot(groupId: string) {
+  // 1. Fetch the leaderboard before any points are updated
+  const beforeLeaderboard = await getGroupLeaderboard(groupId)
+
   return async () => {
-    // No-op: ranks and points changes are now calculated dynamically in the UI
-    // to avoid expensive database writes and fix the moving baseline bugs.
+    // 2. Fetch the leaderboard after points have been updated
+    const afterLeaderboard = await getGroupLeaderboard(groupId)
+
+    // Check if points or ranks changed for anyone
+    let hasChanged = false
+    if (beforeLeaderboard.length !== afterLeaderboard.length) {
+      hasChanged = true
+    } else {
+      for (const afterEntry of afterLeaderboard) {
+        const beforeEntry = beforeLeaderboard.find(b => b.user_id === afterEntry.user_id)
+        if (!beforeEntry || beforeEntry.total_points !== afterEntry.total_points || beforeEntry.rank !== afterEntry.rank) {
+          hasChanged = true
+          break
+        }
+      }
+    }
+
+    if (!hasChanged) {
+      return
+    }
+
+    // 3. Save the old ranks and points as 'previous_rank' and 'previous_points'
+    const supabase = createAdminClient()
+    for (const beforeEntry of beforeLeaderboard) {
+      await supabase
+        .from('group_members')
+        .update({
+          previous_rank: beforeEntry.rank,
+          previous_points: beforeEntry.total_points
+        })
+        .eq('group_id', groupId)
+        .eq('user_id', beforeEntry.user_id)
+    }
   }
 }
 
