@@ -7,6 +7,7 @@ import { countryToFlag } from '@/lib/utils/flags'
 import { formatInTimeZone } from 'date-fns-tz'
 import { getLogicalMatchday, formatLogicalMatchdayLabel } from '@/lib/utils/time'
 import { LeaderboardClient } from './LeaderboardClient'
+import { TournamentStatsWidget } from './TournamentStatsWidget'
 const TIMEZONE = 'Europe/Stockholm'
 
 function formatKickoffTime(isoString: string) {
@@ -72,7 +73,7 @@ export default async function GroupDetailPage({
           .order('kickoff_time', { ascending: true }),
         supabase
           .from('match_goals')
-          .select('player_name, team_name, is_own_goal, matches!inner(game_id)')
+          .select('player_name, team_name, is_own_goal, minute, match_id, matches!inner(id, game_id, home_team, away_team)')
           .in('matches.game_id', gameIds)
       ])
     : [{ data: [] }, { data: [] }]
@@ -113,6 +114,18 @@ export default async function GroupDetailPage({
 
   const totalRedCards = matchStats.reduce((acc: number, m: any) => acc + (m.red_cards || 0), 0)
   const totalOwnGoals = matchStats.reduce((acc: number, m: any) => acc + (m.own_goals || 0), 0)
+
+  const ownGoalDetails = matchGoals
+    .filter((g: any) => g.is_own_goal)
+    .map((g: any) => ({
+      player_name: g.player_name,
+      team_name: g.team_name,
+      minute: g.minute,
+      match_home: (g.matches as any)?.home_team || 'Okänd',
+      match_away: (g.matches as any)?.away_team || 'Okänd',
+      match_id: g.match_id,
+      game_id: (g.matches as any)?.game_id || '',
+    }))
 
   // Räkna ut Skytteligan (Topp 3 målskyttar, exkludera självmål)
   const scorersMap: Record<string, { player_name: string; team_name: string; goals: number }> = {}
@@ -681,19 +694,13 @@ export default async function GroupDetailPage({
                   Turneringsstatistik
                 </span>
               </div>
-              <div className="flex items-center gap-4 sm:gap-6">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm select-none">🟥</span>
-                  <span className="text-sm font-black text-red-600 dark:text-red-400">{totalRedCards}</span>
-                  <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider">Röda kort</span>
-                </div>
-                <div className="w-px h-3 bg-zinc-200 dark:bg-zinc-800" />
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm select-none">⚽</span>
-                  <span className="text-sm font-black text-zinc-800 dark:text-zinc-200">{totalOwnGoals}</span>
-                  <span className="text-[9px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider">Självmål</span>
-                </div>
-              </div>
+              <TournamentStatsWidget
+                totalRedCards={totalRedCards}
+                totalOwnGoals={totalOwnGoals}
+                matches={allMatches}
+                ownGoalDetails={ownGoalDetails}
+                groupId={groupId}
+              />
             </div>
 
             {/* Skytteliga (Topp 3) */}
