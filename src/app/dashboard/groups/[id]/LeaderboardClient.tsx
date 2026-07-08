@@ -228,132 +228,159 @@ export function LeaderboardClient({
                           {!hasItems ? (
                             <div className="text-xs italic text-zinc-400 p-2">Inga matcher eller poäng registrerade för denna matchdag.</div>
                           ) : (
-                            <div className="divide-y divide-zinc-200/40 dark:divide-zinc-800/40">
-                              {focusMatches.map(match => {
-                                const pred = predictions.find(p => p.user_id === entry.user_id && p.match_id === match.id)
-                                const points = pred?.points_awarded ?? 0
-                                const isFinished = match.status === 'finished' || (match.final_home_score !== null && match.final_away_score !== null)
-                                const isLive = match.status === 'live' || (new Date(match.kickoff_time).getTime() <= Date.now() && !isFinished)
-
-                                const rowContent = (
-                                  <>
-                                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                                      <span className="shrink-0 text-base" role="img" aria-label={match.home_team}>
-                                        {countryToFlag(match.home_team) || '🏳️'}
-                                      </span>
-                                      <span className={`truncate max-w-[80px] sm:max-w-none ${ENABLE_MATCH_LINKS ? 'group-hover/match:text-indigo-600 dark:group-hover/match:text-indigo-400 transition-colors' : ''}`}>{match.home_team}</span>
-                                      <span className="text-zinc-400 font-normal">vs</span>
-                                      <span className="shrink-0 text-base" role="img" aria-label={match.away_team}>
-                                        {countryToFlag(match.away_team) || '🏳️'}
-                                      </span>
-                                      <span className={`truncate max-w-[80px] sm:max-w-none ${ENABLE_MATCH_LINKS ? 'group-hover/match:text-indigo-600 dark:group-hover/match:text-indigo-400 transition-colors' : ''}`}>{match.away_team}</span>
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-3 shrink-0">
-                                      {isFinished ? (
-                                        <span className="font-black bg-zinc-200/60 dark:bg-zinc-800/60 px-2 py-0.5 rounded text-[11px]">
-                                          {match.final_home_score} – {match.final_away_score}
-                                        </span>
-                                      ) : isLive ? (
-                                        <span className="text-[9px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded animate-pulse uppercase tracking-wider">
-                                          Live
-                                        </span>
-                                      ) : (
-                                        <span className="text-[9px] font-extrabold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase">
-                                          Kommande
-                                        </span>
-                                      )}
-                                      
-                                      <div className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
-                                        points > 0
-                                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/30'
-                                          : 'bg-zinc-50 text-zinc-400 border-zinc-100 dark:bg-zinc-900/20 dark:text-zinc-500 dark:border-zinc-800/30'
-                                      }`}>
-                                        {points > 0 ? `+${points}p` : '0p'}
-                                      </div>
-                                    </div>
-                                  </>
-                                )
-
-                                if (ENABLE_MATCH_LINKS) {
-                                  return (
-                                    <Link
-                                      key={match.id}
-                                      href={`/dashboard/groups/${groupId}/games/${match.game_id}#match-${match.id}`}
-                                      className="py-2.5 px-3 -mx-3 rounded-xl flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 cursor-pointer group/match"
-                                    >
-                                      {rowContent}
-                                    </Link>
-                                  )
-                                }
-
-                                return (
-                                  <div
-                                    key={match.id}
-                                    className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
-                                  >
-                                    {rowContent}
+                            <div className="space-y-4">
+                              {/* Matcher Sektion */}
+                              {focusMatches.length > 0 && (
+                                <div className="space-y-1.5">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 flex items-center gap-1 select-none">
+                                    <span>⚽</span> Matcher
                                   </div>
-                                )
-                              })}
+                                  <div className="divide-y divide-zinc-200/40 dark:divide-zinc-800/40">
+                                    {focusMatches.map(match => {
+                                      const pred = predictions.find(p => p.user_id === entry.user_id && p.match_id === match.id)
+                                      const points = pred?.points_awarded ?? 0
+                                      const isFinished = match.status === 'finished' || (match.final_home_score !== null && match.final_away_score !== null)
+                                      const isLive = match.status === 'live' || (new Date(match.kickoff_time).getTime() <= Date.now() && !isFinished)
 
-                              {userBonus.map((b, idx) => (
-                                <div
-                                  key={`bonus-${idx}`}
-                                  className="py-2.5 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
-                                >
-                                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <span className="shrink-0 text-sm">🏆</span>
-                                    <span className="truncate text-zinc-400 dark:text-zinc-500 font-normal">Bonus:</span>
-                                    <span className="truncate" title={b.question_text}>{b.question_text}</span>
-                                  </div>
-                                  <div className="text-[10px] font-black px-2 py-0.5 rounded-full border bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30 shrink-0">
-                                    +{b.points_awarded}p
+                                      const rowContent = (
+                                        <>
+                                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                                            <span className="shrink-0 text-base" role="img" aria-label={match.home_team}>
+                                              {countryToFlag(match.home_team) || '🏳️'}
+                                            </span>
+                                            <span className={`truncate max-w-[80px] sm:max-w-none ${ENABLE_MATCH_LINKS ? 'group-hover/match:text-indigo-600 dark:group-hover/match:text-indigo-400 transition-colors' : ''}`}>{match.home_team}</span>
+                                            <span className="text-zinc-400 font-normal">vs</span>
+                                            <span className="shrink-0 text-base" role="img" aria-label={match.away_team}>
+                                              {countryToFlag(match.away_team) || '🏳️'}
+                                            </span>
+                                            <span className={`truncate max-w-[80px] sm:max-w-none ${ENABLE_MATCH_LINKS ? 'group-hover/match:text-indigo-600 dark:group-hover/match:text-indigo-400 transition-colors' : ''}`}>{match.away_team}</span>
+                                          </div>
+                                          
+                                          <div className="flex items-center gap-3 shrink-0">
+                                            {isFinished ? (
+                                              <span className="font-black bg-zinc-200/60 dark:bg-zinc-800/60 px-2 py-0.5 rounded text-[11px]">
+                                                {match.final_home_score} – {match.final_away_score}
+                                              </span>
+                                            ) : isLive ? (
+                                              <span className="text-[9px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded animate-pulse uppercase tracking-wider">
+                                                Live
+                                              </span>
+                                            ) : (
+                                              <span className="text-[9px] font-extrabold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase">
+                                                Kommande
+                                              </span>
+                                            )}
+                                            
+                                            <div className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                                              points > 0
+                                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/30'
+                                                : 'bg-zinc-50 text-zinc-400 border-zinc-100 dark:bg-zinc-900/20 dark:text-zinc-500 dark:border-zinc-800/30'
+                                            }`}>
+                                              {points > 0 ? `+${points}p` : '0p'}
+                                            </div>
+                                          </div>
+                                        </>
+                                      )
+
+                                      if (ENABLE_MATCH_LINKS) {
+                                        return (
+                                          <Link
+                                            key={match.id}
+                                            href={`/dashboard/groups/${groupId}/games/${match.game_id}#match-${match.id}`}
+                                            className="py-2.5 px-3 -mx-3 rounded-xl flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-200/50 dark:hover:bg-zinc-800/40 cursor-pointer group/match"
+                                          >
+                                            {rowContent}
+                                          </Link>
+                                        )
+                                      }
+
+                                      return (
+                                        <div
+                                          key={match.id}
+                                          className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
+                                        >
+                                          {rowContent}
+                                        </div>
+                                      )
+                                    })}
                                   </div>
                                 </div>
-                              ))}
+                              )}
 
-                              {groupedKnockout.map((g, idx) => {
-                                const roundLabel = g.round === 'round_of_16'
-                                  ? 'Åttondel'
-                                  : g.round === 'quarter_final'
-                                    ? 'Kvartsfinal'
-                                    : g.round === 'semi_final'
-                                      ? 'Semifinal'
-                                      : g.round === 'third_place'
-                                        ? 'Bronsmatch'
-                                        : g.round === 'final'
-                                          ? 'Final'
-                                          : g.round;
-
-                                return (
-                                  <div
-                                    key={`ko-${idx}`}
-                                    className="py-2.5 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
-                                  >
-                                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                                      <span className="shrink-0 text-sm">🏅</span>
-                                      <span className="truncate text-zinc-400 dark:text-zinc-500 font-normal shrink-0">{roundLabel}:</span>
-                                      <span className="flex items-center gap-1.5 flex-wrap min-w-0">
-                                        {g.teams.map((team, tIdx) => (
-                                          <span
-                                            key={tIdx}
-                                            className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 border border-zinc-200/50 dark:border-zinc-700/50"
-                                          >
-                                            <span className="text-xs leading-none shrink-0" role="img" aria-label={team}>
-                                              {countryToFlag(team) || '🏳️'}
-                                            </span>
-                                            {team}
-                                          </span>
-                                        ))}
-                                      </span>
-                                    </div>
-                                    <div className="text-[10px] font-black px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/30 shrink-0">
-                                      +{g.points}p
-                                    </div>
+                              {/* Slutspelstips Sektion */}
+                              {groupedKnockout.length > 0 && (
+                                <div className="space-y-1.5 pt-3 border-t border-zinc-200/40 dark:border-zinc-800/40 first:pt-0 first:border-t-0">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-indigo-500 dark:text-indigo-400 flex items-center gap-1 select-none">
+                                    <span>🏅</span> Slutspelstips
                                   </div>
-                                )
-                              })}
+                                  <div className="divide-y divide-zinc-200/40 dark:divide-zinc-800/40">
+                                    {groupedKnockout.map((g, idx) => {
+                                      const roundLabel = g.round === 'round_of_16'
+                                        ? 'Åttondel'
+                                        : g.round === 'quarter_final'
+                                          ? 'Kvartsfinal'
+                                          : g.round === 'semi_final'
+                                            ? 'Semifinal'
+                                            : g.round === 'third_place'
+                                              ? 'Bronsmatch'
+                                              : g.round === 'final'
+                                                ? 'Final'
+                                                : g.round;
+
+                                      return (
+                                        <div
+                                          key={`ko-${idx}`}
+                                          className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
+                                        >
+                                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                                            <span className="truncate text-zinc-400 dark:text-zinc-500 font-normal shrink-0">{roundLabel}:</span>
+                                            <span className="flex items-center gap-1.5 flex-wrap min-w-0">
+                                              {g.teams.map((team, tIdx) => (
+                                                <span
+                                                  key={tIdx}
+                                                  className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-lg text-[10px] font-bold text-zinc-700 dark:text-zinc-300 border border-zinc-200/50 dark:border-zinc-700/50"
+                                                >
+                                                  <span className="text-xs leading-none shrink-0" role="img" aria-label={team}>
+                                                    {countryToFlag(team) || '🏳️'}
+                                                  </span>
+                                                  {team}
+                                                </span>
+                                              ))}
+                                            </span>
+                                          </div>
+                                          <div className="text-[10px] font-black px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900/30 shrink-0">
+                                            +{g.points}p
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Bonusfrågor Sektion */}
+                              {userBonus.length > 0 && (
+                                <div className="space-y-1.5 pt-3 border-t border-zinc-200/40 dark:border-zinc-800/40 first:pt-0 first:border-t-0">
+                                  <div className="text-[9px] font-black uppercase tracking-widest text-amber-500 dark:text-amber-400 flex items-center gap-1 select-none">
+                                    <span>🏆</span> Bonusfrågor
+                                  </div>
+                                  <div className="divide-y divide-zinc-200/40 dark:divide-zinc-800/40">
+                                    {userBonus.map((b, idx) => (
+                                      <div
+                                        key={`bonus-${idx}`}
+                                        className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs font-bold text-zinc-800 dark:text-zinc-200"
+                                      >
+                                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                                          <span className="truncate" title={b.question_text}>{b.question_text}</span>
+                                        </div>
+                                        <div className="text-[10px] font-black px-2 py-0.5 rounded-full border bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30 shrink-0">
+                                          +{b.points_awarded}p
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
