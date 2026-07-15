@@ -3,7 +3,7 @@
 import { formatInTimeZone } from 'date-fns-tz'
 import { countryToFlag } from '@/lib/utils/flags'
 import { useState, useEffect } from 'react'
-import { Clock, CheckCircle2, Flame } from 'lucide-react'
+import { Clock, CheckCircle2, Flame, Search, X } from 'lucide-react'
 import { compareStages } from '@/lib/utils/stages'
 
 const TIMEZONE = 'Europe/Stockholm'
@@ -47,7 +47,16 @@ interface MatchTabsProps {
 
 function MatchItem({ match, prediction }: { match: Match; prediction?: Prediction }) {
   const isFinished = match.status === 'finished' || (match.final_home_score !== null && match.final_away_score !== null)
-  const isLive = match.status === 'live' || (new Date(match.kickoff_time).getTime() <= Date.now() && !isFinished)
+  const [isLive, setIsLive] = useState(match.status === 'live')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const live = match.status === 'live' || (new Date(match.kickoff_time).getTime() <= Date.now() && !isFinished)
+      setIsLive(live)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [match.status, match.kickoff_time, isFinished])
+
   const hasPoints = isFinished && prediction && prediction.points_awarded !== null
 
   // Gruppera mål
@@ -203,13 +212,24 @@ function GroupSection({ groupName, matches, predictionMap }: {
 
 export function MatchTabs({ matches, predictionMap }: MatchTabsProps) {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'played'>('upcoming')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter matches based on search query (home team or away team)
+  const filteredMatches = matches.filter(m => {
+    const query = searchQuery.toLowerCase().trim()
+    if (!query) return true
+    return (
+      m.home_team.toLowerCase().includes(query) ||
+      m.away_team.toLowerCase().includes(query)
+    )
+  })
 
   // Split matches into upcoming (including live) and played
-  const upcomingMatches = matches.filter(m => {
+  const upcomingMatches = filteredMatches.filter(m => {
     const isFinished = m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null)
     return !isFinished
   })
-  const playedMatches = matches.filter(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
+  const playedMatches = filteredMatches.filter(m => m.status === 'finished' || (m.final_home_score !== null && m.final_away_score !== null))
 
   // Auto-scroll and highlight when navigating to a match hash
   useEffect(() => {
@@ -239,6 +259,11 @@ export function MatchTabs({ matches, predictionMap }: MatchTabsProps) {
           // Apply highlight styling class
           element.classList.add('highlighted-match')
           
+          // Clean up the hash in the URL to allow normal tab switching
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search)
+          }
+
           // Remove highlight styling after 3 seconds
           const unhighlightTimer = setTimeout(() => {
             element.classList.remove('highlighted-match')
@@ -291,6 +316,27 @@ export function MatchTabs({ matches, predictionMap }: MatchTabsProps) {
 
   return (
     <div className="space-y-6">
+      {/* Sökfält */}
+      <div className="w-full max-w-md flex items-center bg-zinc-100 dark:bg-zinc-800/60 rounded-2xl border border-transparent focus-within:border-indigo-500 focus-within:bg-white dark:focus-within:bg-zinc-900 transition-all shadow-sm px-4">
+        <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
+        <input
+          type="text"
+          placeholder="Sök på land (t.ex. Sverige, Belgien)..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-3 pr-2 py-3 bg-transparent text-zinc-900 dark:text-white outline-none text-sm font-medium"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700/60 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-all shrink-0"
+            title="Rensa sökning"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
       {/* Tab Bar */}
       <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded-2xl w-fit">
         {tabs.map(tab => (
@@ -318,8 +364,20 @@ export function MatchTabs({ matches, predictionMap }: MatchTabsProps) {
 
       {/* Content */}
       {isEmpty ? (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-16 text-center text-zinc-400 font-bold italic">
-          {activeTab === 'upcoming' ? 'Inga kommande matcher.' : 'Inga spelade matcher ännu.'}
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-16 text-center text-zinc-400 font-bold italic flex flex-col items-center justify-center gap-2">
+          {searchQuery ? (
+            <>
+              <span>Inga matcher hittades för &quot;{searchQuery}&quot;.</span>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 rounded-xl text-xs font-bold border border-indigo-100 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all"
+              >
+                Rensa sökning
+              </button>
+            </>
+          ) : (
+            activeTab === 'upcoming' ? 'Inga kommande matcher.' : 'Inga spelade matcher ännu.'
+          )}
         </div>
       ) : (
         <div className="space-y-8">

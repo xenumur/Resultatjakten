@@ -62,3 +62,21 @@ export async function logout() {
   await supabase.auth.signOut()
   redirect('/login')
 }
+
+export async function requestPasswordReset(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+
+  const { headers } = await import('next/headers')
+  const origin = (await headers()).get('origin')
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
+  })
+
+  if (error) {
+    return redirect('/login?mode=forgot&error=' + encodeURIComponent(error.message))
+  }
+
+  return redirect('/login?message=reset_sent')
+}
