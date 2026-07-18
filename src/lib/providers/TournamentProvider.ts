@@ -18,6 +18,10 @@ export interface MatchData {
   status: 'upcoming' | 'live' | 'finished';
   final_home_score?: number;
   final_away_score?: number;
+  ot_home_score?: number;
+  ot_away_score?: number;
+  penalty_home_score?: number;
+  penalty_away_score?: number;
   api_match_num?: number;
   broadcaster?: string;
   goals?: GoalData[];

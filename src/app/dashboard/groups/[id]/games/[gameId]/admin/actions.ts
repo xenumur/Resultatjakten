@@ -25,7 +25,7 @@ export async function bulkUpdateMatchResults(
     // Hämta befintliga matcher för att jämföra värden samt deras målskyttar
     const { data: dbMatches } = await supabase
       .from('matches')
-      .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override, red_cards, own_goals, match_goals(id, player_name, team_name, minute, is_penalty, is_own_goal)')
+      .select('id, final_home_score, final_away_score, status, home_team, away_team, is_manual_override, red_cards, own_goals, ot_home_score, ot_away_score, penalty_home_score, penalty_away_score, match_goals(id, player_name, team_name, minute, is_penalty, is_own_goal)')
       .in('id', Array.from(matchIds))
 
     if (!dbMatches) return { success: false, error: 'Kunde inte hämta matcher för validering.' }
@@ -41,6 +41,10 @@ export async function bulkUpdateMatchResults(
       const awayTeam = formData.get(`${matchId}_awayTeam`) as string
       const redCardsStr = formData.get(`${matchId}_redCards`) as string
       const ownGoalsStr = formData.get(`${matchId}_ownGoals`) as string
+      const otHomeScoreStr = formData.get(`${matchId}_otHomeScore`) as string
+      const otAwayScoreStr = formData.get(`${matchId}_otAwayScore`) as string
+      const penaltyHomeScoreStr = formData.get(`${matchId}_penaltyHomeScore`) as string
+      const penaltyAwayScoreStr = formData.get(`${matchId}_penaltyAwayScore`) as string
 
       if (homeScoreStr === null || awayScoreStr === null) continue
 
@@ -53,6 +57,16 @@ export async function bulkUpdateMatchResults(
       const newAwayScore = isNaN(awayScore) ? null : awayScore
       const newRedCards = isNaN(redCards) ? 0 : redCards
       const newOwnGoals = isNaN(ownGoals) ? 0 : ownGoals
+
+      const otHomeScore = parseInt(otHomeScoreStr, 10)
+      const otAwayScore = parseInt(otAwayScoreStr, 10)
+      const penaltyHomeScore = parseInt(penaltyHomeScoreStr, 10)
+      const penaltyAwayScore = parseInt(penaltyAwayScoreStr, 10)
+
+      const newOtHomeScore = isNaN(otHomeScore) ? null : otHomeScore
+      const newOtAwayScore = isNaN(otAwayScore) ? null : otAwayScore
+      const newPenaltyHomeScore = isNaN(penaltyHomeScore) ? null : penaltyHomeScore
+      const newPenaltyAwayScore = isNaN(penaltyAwayScore) ? null : penaltyAwayScore
 
       // Hämta manuella målskyttar för matchen från formdatan
       const matchGoals: any[] = []
@@ -98,6 +112,10 @@ export async function bulkUpdateMatchResults(
       const hasChanged = 
         newHomeScore !== existing.final_home_score ||
         newAwayScore !== existing.final_away_score ||
+        newOtHomeScore !== existing.ot_home_score ||
+        newOtAwayScore !== existing.ot_away_score ||
+        newPenaltyHomeScore !== existing.penalty_home_score ||
+        newPenaltyAwayScore !== existing.penalty_away_score ||
         status !== existing.status ||
         newRedCards !== (existing.red_cards ?? 0) ||
         newOwnGoals !== (existing.own_goals ?? 0) ||
@@ -110,6 +128,10 @@ export async function bulkUpdateMatchResults(
       const updateData: any = {
         final_home_score: newHomeScore,
         final_away_score: newAwayScore,
+        ot_home_score: newOtHomeScore,
+        ot_away_score: newOtAwayScore,
+        penalty_home_score: newPenaltyHomeScore,
+        penalty_away_score: newPenaltyAwayScore,
         status: status,
         red_cards: newRedCards,
         own_goals: newOwnGoals,
@@ -594,6 +616,10 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
           updateData.final_away_score = liveMatch.final_away_score
           updateData.status = liveMatch.status
           updateData.own_goals = ownGoalsCount
+          updateData.ot_home_score = liveMatch.ot_home_score ?? null
+          updateData.ot_away_score = liveMatch.ot_away_score ?? null
+          updateData.penalty_home_score = liveMatch.penalty_home_score ?? null
+          updateData.penalty_away_score = liveMatch.penalty_away_score ?? null
         }
 
         // We sync the goals if the match is not overridden, OR if it has NO active goals in the database yet
@@ -639,6 +665,10 @@ export async function syncMatchesWithProvider(groupId: string, gameId: string, _
             status: liveMatch.status,
             final_home_score: liveMatch.final_home_score,
             final_away_score: liveMatch.final_away_score,
+            ot_home_score: liveMatch.ot_home_score ?? null,
+            ot_away_score: liveMatch.ot_away_score ?? null,
+            penalty_home_score: liveMatch.penalty_home_score ?? null,
+            penalty_away_score: liveMatch.penalty_away_score ?? null,
             own_goals: ownGoalsCount,
             source_provider: sourceProvider,
             provider_home_score: liveMatch.final_home_score,
@@ -946,6 +976,10 @@ export async function syncSingleMatchWithProvider(
       updateData.final_away_score = liveMatch.final_away_score
       updateData.status = liveMatch.status
       updateData.own_goals = ownGoalsCount
+      updateData.ot_home_score = liveMatch.ot_home_score ?? null
+      updateData.ot_away_score = liveMatch.ot_away_score ?? null
+      updateData.penalty_home_score = liveMatch.penalty_home_score ?? null
+      updateData.penalty_away_score = liveMatch.penalty_away_score ?? null
     }
 
     const activeGoals = dbMatch.match_goals || []

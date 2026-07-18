@@ -26,6 +26,10 @@ interface Match {
   status: string
   final_home_score: number | null
   final_away_score: number | null
+  ot_home_score?: number | null
+  ot_away_score?: number | null
+  penalty_home_score?: number | null
+  penalty_away_score?: number | null
   stage: string | null
   group_name: string | null
   venue: string | null
@@ -162,8 +166,20 @@ function MatchItem({ match, prediction }: { match: Match; prediction?: Predictio
           </span>
         ) : isFinished ? (
           <>
-            <div className="text-center font-black text-xl md:text-2xl bg-zinc-100 dark:bg-zinc-800 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm min-w-[100px]">
-              {match.final_home_score} – {match.final_away_score}
+            <div className="text-center font-black text-xl md:text-2xl bg-zinc-100 dark:bg-zinc-800 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm min-w-[100px] flex flex-col justify-center items-center gap-0.5">
+              <span className="leading-tight">
+                {match.final_home_score} – {match.final_away_score}
+              </span>
+              {match.penalty_home_score !== null && match.penalty_home_score !== undefined && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-450 font-bold uppercase tracking-tight block">
+                  {match.penalty_home_score}–{match.penalty_away_score} str
+                </span>
+              )}
+              {match.ot_home_score !== null && match.ot_home_score !== undefined && (match.penalty_home_score === null || match.penalty_home_score === undefined) && (
+                <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-tight block">
+                  {match.ot_home_score}–{match.ot_away_score} e.f.
+                </span>
+              )}
             </div>
             {hasPoints && (
               <div className={`text-sm font-black px-3 py-1 rounded-xl border ${

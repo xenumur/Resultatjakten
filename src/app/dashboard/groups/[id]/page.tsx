@@ -146,11 +146,13 @@ export default async function GroupDetailPage({
   const teamGoalsMap: Record<string, number> = {}
   for (const m of matchStats) {
     if (m.status === 'finished') {
-      if (m.final_home_score !== null && m.final_home_score !== undefined) {
-        teamGoalsMap[m.home_team] = (teamGoalsMap[m.home_team] || 0) + m.final_home_score
+      const homeScore = m.ot_home_score !== null && m.ot_home_score !== undefined ? m.ot_home_score : m.final_home_score;
+      const awayScore = m.ot_away_score !== null && m.ot_away_score !== undefined ? m.ot_away_score : m.final_away_score;
+      if (homeScore !== null && homeScore !== undefined) {
+        teamGoalsMap[m.home_team] = (teamGoalsMap[m.home_team] || 0) + homeScore
       }
-      if (m.final_away_score !== null && m.final_away_score !== undefined) {
-        teamGoalsMap[m.away_team] = (teamGoalsMap[m.away_team] || 0) + m.final_away_score
+      if (awayScore !== null && awayScore !== undefined) {
+        teamGoalsMap[m.away_team] = (teamGoalsMap[m.away_team] || 0) + awayScore
       }
     }
   }

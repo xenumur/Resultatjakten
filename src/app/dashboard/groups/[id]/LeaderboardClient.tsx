@@ -30,6 +30,10 @@ interface Match {
   status: string
   final_home_score: number | null
   final_away_score: number | null
+  ot_home_score?: number | null
+  ot_away_score?: number | null
+  penalty_home_score?: number | null
+  penalty_away_score?: number | null
 }
 
 interface Prediction {
@@ -258,8 +262,18 @@ export function LeaderboardClient({
                                           
                                           <div className="flex items-center gap-3 shrink-0">
                                             {isFinished ? (
-                                              <span className="font-black bg-zinc-200/60 dark:bg-zinc-800/60 px-2 py-0.5 rounded text-[11px]">
+                                              <span className="font-black bg-zinc-200/60 dark:bg-zinc-800/60 px-2 py-0.5 rounded text-[11px] whitespace-nowrap">
                                                 {match.final_home_score} – {match.final_away_score}
+                                                {match.penalty_home_score !== null && match.penalty_home_score !== undefined && (
+                                                  <span className="text-[9px] text-emerald-600 dark:text-emerald-450 ml-1 font-bold">
+                                                    ({match.penalty_home_score}–{match.penalty_away_score} str)
+                                                  </span>
+                                                )}
+                                                {match.ot_home_score !== null && match.ot_home_score !== undefined && (match.penalty_home_score === null || match.penalty_home_score === undefined) && (
+                                                  <span className="text-[9px] text-zinc-450 dark:text-zinc-550 ml-1 font-bold">
+                                                    ({match.ot_home_score}–{match.ot_away_score} e.f.)
+                                                  </span>
+                                                )}
                                               </span>
                                             ) : isLive ? (
                                               <span className="text-[9px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded animate-pulse uppercase tracking-wider">

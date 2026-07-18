@@ -76,6 +76,20 @@ export class OpenFootballProvider implements TournamentProvider {
         homeScore = item.score1 ?? null;
         awayScore = item.score2 ?? null;
       }
+
+      let otHomeScore = null;
+      let otAwayScore = null;
+      if (item.score && Array.isArray(item.score.et) && item.score.et.length >= 2) {
+        otHomeScore = item.score.et[0] !== undefined ? item.score.et[0] : null;
+        otAwayScore = item.score.et[1] !== undefined ? item.score.et[1] : null;
+      }
+
+      let penaltyHomeScore = null;
+      let penaltyAwayScore = null;
+      if (item.score && Array.isArray(item.score.p) && item.score.p.length >= 2) {
+        penaltyHomeScore = item.score.p[0] !== undefined ? item.score.p[0] : null;
+        penaltyAwayScore = item.score.p[1] !== undefined ? item.score.p[1] : null;
+      }
       
       let status = 'upcoming';
       if (homeScore !== null && awayScore !== null) {
@@ -212,6 +226,10 @@ export class OpenFootballProvider implements TournamentProvider {
         status: status as 'upcoming' | 'live' | 'finished',
         final_home_score: homeScore,
         final_away_score: awayScore,
+        ot_home_score: otHomeScore,
+        ot_away_score: otAwayScore,
+        penalty_home_score: penaltyHomeScore,
+        penalty_away_score: penaltyAwayScore,
         api_match_num: item.num,
         broadcaster,
         goals

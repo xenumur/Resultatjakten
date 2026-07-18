@@ -10,6 +10,10 @@ interface Match {
   away_team: string
   final_home_score: number | null
   final_away_score: number | null
+  ot_home_score?: number | null
+  ot_away_score?: number | null
+  penalty_home_score?: number | null
+  penalty_away_score?: number | null
   status: string
   api_match_num: number | null
 }
@@ -43,9 +47,28 @@ function isPlaceholder(name: string) {
 }
 
 function getWinner(match: Match): string | null {
-  if (match.status !== 'finished' || match.final_home_score === null || match.final_away_score === null) return null
-  if (match.final_home_score > match.final_away_score) return match.home_team
-  if (match.final_away_score > match.final_home_score) return match.away_team
+  if (match.status !== 'finished') return null
+
+  // 1. Check extra time score if available (overrides regulation time)
+  if (match.ot_home_score !== null && match.ot_home_score !== undefined &&
+      match.ot_away_score !== null && match.ot_away_score !== undefined) {
+    if (match.ot_home_score > match.ot_away_score) return match.home_team
+    if (match.ot_away_score > match.ot_home_score) return match.away_team
+  }
+
+  // 2. Check penalty shootout score if available (if regulation/OT score was a draw)
+  if (match.penalty_home_score !== null && match.penalty_home_score !== undefined &&
+      match.penalty_away_score !== null && match.penalty_away_score !== undefined) {
+    if (match.penalty_home_score > match.penalty_away_score) return match.home_team
+    if (match.penalty_away_score > match.penalty_home_score) return match.away_team
+  }
+
+  // 3. Fallback to final regulation score (90 min)
+  if (match.final_home_score !== null && match.final_away_score !== null) {
+    if (match.final_home_score > match.final_away_score) return match.home_team
+    if (match.final_away_score > match.final_home_score) return match.away_team
+  }
+
   return null
 }
 
@@ -54,8 +77,24 @@ function MatchCard({ match }: { match: Match }) {
   const winner = getWinner(match)
   const isFinished = match.status === 'finished'
 
-  const renderTeam = (team: string, score: number | null, isWon: boolean | null) => {
+  const renderTeam = (
+    team: string, 
+    score: number | null, 
+    otScore: number | null, 
+    penaltyScore: number | null, 
+    isWon: boolean | null
+  ) => {
     const isPholder = isPlaceholder(team)
+    let scoreDisplay = score !== null ? String(score) : '-'
+    
+    if (isFinished) {
+      if (penaltyScore !== null && penaltyScore !== undefined) {
+        scoreDisplay = `${score} (${penaltyScore})`
+      } else if (otScore !== null && otScore !== undefined) {
+        scoreDisplay = `${otScore}`
+      }
+    }
+
     return (
       <div className={`flex items-center gap-2 px-2.5 py-2 ${
         isWon === true ? 'bg-emerald-50 dark:bg-emerald-900/20' : isWon === false ? 'opacity-40' : ''
@@ -73,10 +112,10 @@ function MatchCard({ match }: { match: Match }) {
           {isPholder ? '—' : team}
         </span>
         {isFinished && (
-          <span className={`text-sm font-black min-w-[20px] text-right ${
+          <span className={`text-xs font-black min-w-[30px] text-right whitespace-nowrap ${
             isWon === true ? 'text-emerald-700 dark:text-emerald-300' : 'text-zinc-400'
           }`}>
-            {score ?? '-'}
+            {scoreDisplay}
           </span>
         )}
       </div>
@@ -98,9 +137,9 @@ function MatchCard({ match }: { match: Match }) {
       } bg-white dark:bg-zinc-900`}
       style={{ width: CARD_W, height: CARD_H }}
     >
-      {renderTeam(match.home_team, match.final_home_score, homeWon)}
+      {renderTeam(match.home_team, match.final_home_score, match.ot_home_score ?? null, match.penalty_home_score ?? null, homeWon)}
       <div className="border-t border-zinc-100 dark:border-zinc-800" />
-      {renderTeam(match.away_team, match.final_away_score, awayWon)}
+      {renderTeam(match.away_team, match.final_away_score, match.ot_away_score ?? null, match.penalty_away_score ?? null, awayWon)}
     </div>
   )
 }

@@ -70,6 +70,13 @@ export class ApiFootballProvider implements TournamentProvider {
         status = 'finished';
       }
 
+      const isAetOrPen = ['AET', 'PEN'].includes(statusCode);
+      const otHomeScore = isAetOrPen ? item.goals.home : null;
+      const otAwayScore = isAetOrPen ? item.goals.away : null;
+
+      const penaltyHomeScore = statusCode === 'PEN' ? (item.score.penalty?.home ?? null) : null;
+      const penaltyAwayScore = statusCode === 'PEN' ? (item.score.penalty?.away ?? null) : null;
+
       return {
         external_match_id: item.fixture.id.toString(),
         home_team: item.teams.home.name,
@@ -78,8 +85,12 @@ export class ApiFootballProvider implements TournamentProvider {
         stage: item.league.round,
         venue: item.fixture.venue?.name || '',
         status: status,
-        final_home_score: item.goals.home,
-        final_away_score: item.goals.away,
+        final_home_score: item.score.fulltime?.home ?? item.goals.home,
+        final_away_score: item.score.fulltime?.away ?? item.goals.away,
+        ot_home_score: otHomeScore ?? undefined,
+        ot_away_score: otAwayScore ?? undefined,
+        penalty_home_score: penaltyHomeScore ?? undefined,
+        penalty_away_score: penaltyAwayScore ?? undefined,
       };
     });
   }

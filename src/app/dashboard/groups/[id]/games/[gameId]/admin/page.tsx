@@ -179,6 +179,10 @@ export default async function GameAdminPage({
                         matchId={match.id}
                         homeScore={match.final_home_score}
                         awayScore={match.final_away_score}
+                        otHomeScore={match.ot_home_score}
+                        otAwayScore={match.ot_away_score}
+                        penaltyHomeScore={match.penalty_home_score}
+                        penaltyAwayScore={match.penalty_away_score}
                         status={match.status}
                         homeTeam={match.home_team}
                         awayTeam={match.away_team}

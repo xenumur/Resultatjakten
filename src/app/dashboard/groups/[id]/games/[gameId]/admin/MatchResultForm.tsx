@@ -6,6 +6,10 @@ interface MatchResultFormProps {
   matchId: string
   homeScore: number | null
   awayScore: number | null
+  otHomeScore?: number | null
+  otAwayScore?: number | null
+  penaltyHomeScore?: number | null
+  penaltyAwayScore?: number | null
   status: string
   homeTeam: string
   awayTeam: string
@@ -20,6 +24,10 @@ export function MatchResultForm({
   matchId, 
   homeScore, 
   awayScore, 
+  otHomeScore = null,
+  otAwayScore = null,
+  penaltyHomeScore = null,
+  penaltyAwayScore = null,
   status,
   homeTeam,
   awayTeam,
@@ -136,6 +144,54 @@ export function MatchResultForm({
               className="w-12 h-10 text-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400"
             />
           </div>
+
+          {isKnockout && (
+            <div className="flex flex-col gap-1.5 mt-1 border-t border-zinc-100 dark:border-zinc-900 pt-1.5">
+              {/* Förlängning */}
+              <div className="flex gap-2 items-center">
+                <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 min-w-[28px]">Förl:</span>
+                <input 
+                  form="bulk-matches-form"
+                  type="number" 
+                  name={`${matchId}_otHomeScore`} 
+                  defaultValue={otHomeScore ?? ''} 
+                  placeholder="-"
+                  className="w-9 h-7 text-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400 text-xs"
+                />
+                <span className="text-zinc-400 text-xs">-</span>
+                <input 
+                  form="bulk-matches-form"
+                  type="number" 
+                  name={`${matchId}_otAwayScore`} 
+                  defaultValue={otAwayScore ?? ''} 
+                  placeholder="-"
+                  className="w-9 h-7 text-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-indigo-600 dark:text-indigo-400 text-xs"
+                />
+              </div>
+
+              {/* Straffar */}
+              <div className="flex gap-2 items-center">
+                <span className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-500 min-w-[28px]">Str:</span>
+                <input 
+                  form="bulk-matches-form"
+                  type="number" 
+                  name={`${matchId}_penaltyHomeScore`} 
+                  defaultValue={penaltyHomeScore ?? ''} 
+                  placeholder="-"
+                  className="w-9 h-7 text-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-emerald-600 dark:text-emerald-400 text-xs"
+                />
+                <span className="text-zinc-400 text-xs">-</span>
+                <input 
+                  form="bulk-matches-form"
+                  type="number" 
+                  name={`${matchId}_penaltyAwayScore`} 
+                  defaultValue={penaltyAwayScore ?? ''} 
+                  placeholder="-"
+                  className="w-9 h-7 text-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-emerald-600 dark:text-emerald-400 text-xs"
+                />
+              </div>
+            </div>
+          )}
           
           {/* Röda kort & Självmål */}
           <div className="flex items-center gap-2 mt-1">

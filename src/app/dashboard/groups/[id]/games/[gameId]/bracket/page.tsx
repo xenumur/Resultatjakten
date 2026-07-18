@@ -18,7 +18,7 @@ export default async function BracketPage({
     supabase.from('games').select('name').eq('id', gameId).single(),
     supabase
       .from('matches')
-      .select('id, stage, home_team, away_team, final_home_score, final_away_score, status, api_match_num')
+      .select('id, stage, home_team, away_team, final_home_score, final_away_score, status, api_match_num, ot_home_score, ot_away_score, penalty_home_score, penalty_away_score')
       .eq('game_id', gameId)
       .in('stage', ['Round of 32', 'Round of 16', 'Quarter-final', 'Semi-final', 'Final', 'Match for third place']),
     supabase
